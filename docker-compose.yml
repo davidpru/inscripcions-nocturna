@@ -1,17 +1,17 @@
 services:
   mysql:
-    image: 'mysql:8.0'
+    image: "mysql:8.0"
     ports:
-      - '${FORWARD_DB_PORT:-3306}:3306'
+      - "${FORWARD_DB_PORT:-3306}:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD:-root}'
-      MYSQL_ROOT_HOST: '%'
-      MYSQL_DATABASE: '${DB_DATABASE:-inscripcions_nocturna}'
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-root}"
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: "${DB_DATABASE:-inscripcions_nocturna}"
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
     volumes:
-      - 'mysql-data:/var/lib/mysql'
+      - "mysql-data:/var/lib/mysql"
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-proot']
+      test: ["CMD", "mysqladmin", "ping", "-proot"]
       retries: 3
       timeout: 5s
 

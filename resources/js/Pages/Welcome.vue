@@ -1,29 +1,35 @@
-<script setup>
+<script setup lang="ts">
+import { Button } from '@/components/ui/button';
 import { Head } from '@inertiajs/vue3';
 
-defineProps({
-    message: String
-});
+defineProps<{
+  message: string;
+}>();
 </script>
 
 <template>
-    <Head title="Bienvenido" />
+  <Head title="Bienvenido" />
 
-    <div class="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div class="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">
-                ¡Laravel 12 + Inertia + Vue 3!
-            </h1>
-            <p class="text-lg text-gray-600 mb-6">
-                {{ message }}
-            </p>
-            <div class="space-y-2 text-sm text-gray-500">
-                <p>✅ Laravel 12 instalado</p>
-                <p>✅ Inertia.js configurado</p>
-                <p>✅ Vue 3 funcionando</p>
-                <p>✅ Vite configurado</p>
-                <p>✅ MySQL en Docker</p>
-            </div>
-        </div>
+  <div class="flex min-h-screen items-center justify-center bg-gray-100">
+    <div class="mx-auto max-w-2xl rounded-lg bg-white p-8 shadow-lg">
+      <h1 class="mb-4 text-4xl font-bold text-gray-900">¡Laravel 12 + Inertia + Vue 3!</h1>
+      <p class="mb-6 text-lg text-gray-600">
+        {{ message }}
+      </p>
+      <div class="mb-6 space-y-2 text-sm text-gray-500">
+        <p>✅ Laravel 12 instalado</p>
+        <p>✅ Inertia.js configurado</p>
+        <p>✅ Vue 3 funcionando</p>
+        <p>✅ Vite configurado</p>
+        <p>✅ MySQL en Docker</p>
+        <p>✅ shadcn-vue instalado</p>
+      </div>
+      <div class="flex gap-4">
+        <Button>Botón por defecto</Button>
+        <Button variant="secondary">Secundario</Button>
+        <Button variant="destructive">Destructivo</Button>
+        <Button variant="outline">Outline</Button>
+      </div>
     </div>
+  </div>
 </template>
