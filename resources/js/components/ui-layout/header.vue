@@ -1,14 +1,16 @@
+<script setup lang="ts">
+import logoLight from '@/assets/logos/logo-nocturna-h-light.svg';
+import { Link } from '@inertiajs/vue3';
+</script>
+
 <template>
-  <header class="bg-slate-800 shadow-sm dark:bg-slate-800">
+  <header class="bg-red-600 shadow-sm dark:bg-red-600">
     <div class="mx-auto flex max-w-7xl items-center gap-10 px-4 py-4 sm:px-6 lg:px-8">
-      <router-link to="/">
-        <img src="@/assets/logos/logo-nocturna-h-light.svg" class="h-10" alt="" />
-      </router-link>
-      <h1 class="text-lg font-semibold text-white dark:text-gray-100">UEC Tortosa</h1>
+      <Link href="/" class="flex items-center gap-4">
+        <img :src="logoLight" alt="Nocturna Fredes Paüls" class="h-10" />
+      </Link>
     </div>
   </header>
 </template>
-
-<script setup lang="ts"></script>
 
 <style scoped></style>

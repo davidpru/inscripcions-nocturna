@@ -5,17 +5,27 @@ use App\Http\Controllers\Admin\EdicionController;
 use App\Http\Controllers\Admin\InscripcionController as AdminInscripcionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\Edicion;
 
+// Página de inicio
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'message' => '¡Tu aplicación de inscripciones está lista para comenzar!'
+    $edicion = Edicion::where('activa', true)->first();
+    return Inertia::render('Home', [
+        'edicion' => $edicion
     ]);
-});
+})->name('home');
 
 // Rutas públicas de inscripción
 Route::prefix('inscripcion')->group(function () {
     Route::get('/', [InscripcionController::class, 'index'])->name('inscripcion.index');
+    Route::get('/consulta', function () {
+        $edicion = Edicion::where('activa', true)->first();
+        return Inertia::render('Inscripcion/Consulta', [
+            'edicion' => $edicion
+        ]);
+    })->name('inscripcion.consulta');
     Route::post('/buscar-participante', [InscripcionController::class, 'buscarParticipante'])->name('inscripcion.buscar');
+    Route::post('/buscar-inscripcion', [InscripcionController::class, 'buscarInscripcion'])->name('inscripcion.buscar-inscripcion');
     Route::post('/calcular-precio', [InscripcionController::class, 'calcularPrecio'])->name('inscripcion.calcular-precio');
     Route::post('/', [InscripcionController::class, 'store'])->name('inscripcion.store');
     Route::get('/confirmacion/{inscripcion}', [InscripcionController::class, 'confirmacion'])->name('inscripcion.confirmacion');

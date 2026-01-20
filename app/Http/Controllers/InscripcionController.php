@@ -16,7 +16,7 @@ class InscripcionController extends Controller
         private TarifaService $tarifaService
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $edicionActiva = Edicion::where('estado', 'abierta')
             ->orderBy('anio', 'desc')
@@ -28,6 +28,8 @@ class InscripcionController extends Controller
 
         return Inertia::render('Inscripcion/Index', [
             'edicion' => $edicionActiva,
+            'dni' => $request->query('dni'),
+            'participante' => $request->query('participante'),
         ]);
     }
 

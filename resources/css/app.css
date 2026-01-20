@@ -1,10 +1,9 @@
 @import 'tailwindcss';
 @plugin 'tailwindcss-animate';
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 :root {
   --background: #ffffff;
+  --background: #c8c8c8;
   --foreground: #020817;
   --card: #ffffff;
   --card-foreground: #020817;
@@ -24,28 +23,6 @@
   --input: #e2e8f0;
   --ring: #020817;
   --radius: 0.5rem;
-}
-
-.dark {
-  --background: #020817;
-  --foreground: #f8fafc;
-  --card: #020817;
-  --card-foreground: #f8fafc;
-  --popover: #020817;
-  --popover-foreground: #f8fafc;
-  --primary: #f8fafc;
-  --primary-foreground: #0f172a;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --destructive: #7f1d1d;
-  --destructive-foreground: #f8fafc;
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #cbd5e1;
 }
 
 @theme inline {
@@ -92,4 +69,8 @@
       height: 0;
     }
   }
+}
+
+body {
+  background: var(--color-background);
 }

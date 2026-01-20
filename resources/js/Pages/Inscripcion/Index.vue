@@ -5,18 +5,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldLegend, FieldSet } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Head, useForm } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import axios from 'axios';
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 interface Edicion {
   id: number;
@@ -43,6 +37,8 @@ interface ParticipanteData {
 
 const props = defineProps<{
   edicion: Edicion;
+  dni?: string;
+  participante?: string;
 }>();
 
 const buscandoDNI = ref(false);
@@ -74,6 +70,32 @@ const form = useForm({
   seguro_anulacion: false,
   talla_camiseta_caro: '',
   talla_camiseta_pauls: '',
+});
+
+// Cargar datos iniciales desde props (pasados desde Home)
+onMounted(() => {
+  if (props.dni) {
+    form.dni = props.dni;
+  }
+
+  if (props.participante) {
+    try {
+      const datos = JSON.parse(props.participante) as ParticipanteData;
+      form.nombre = datos.nombre || '';
+      form.apellidos = datos.apellidos || '';
+      form.genero = datos.genero || '';
+      form.fecha_nacimiento = datos.fecha_nacimiento || '';
+      form.telefono = datos.telefono || '';
+      form.email = datos.email || '';
+      form.direccion = datos.direccion || '';
+      form.codigo_postal = datos.codigo_postal || '';
+      form.poblacion = datos.poblacion || '';
+      form.provincia = datos.provincia || '';
+      participanteEncontrado.value = true;
+    } catch (e) {
+      console.error('Error parsing participante data:', e);
+    }
+  }
 });
 
 const buscarParticipante = async () => {
@@ -159,28 +181,26 @@ const enviarInscripcion = () => {
 
 <template>
   <Header></Header>
-  <Head title="Inscripción - Nocturna Fredes Paüls" />
 
-  <div
-    class="min-h-screen bg-linear-to-b from-slate-50 to-slate-100 px-4 py-12 dark:from-slate-900 dark:to-slate-800"
-  >
+  <div class="min-h-screen">
     <div class="mx-auto max-w-4xl">
       <!-- Header -->
-      <div class="mb-8 text-center">
-        <h1 class="mb-2 text-4xl font-bold text-slate-900 dark:text-slate-100">
-          Nocturna Fredes Paüls {{ edicion.anio }}
-        </h1>
-        <p class="text-lg text-slate-600 dark:text-slate-400">Formulario de Inscripción</p>
+      <div class="my-8 text-center">
+        <h2 class="mb-2 text-2xl font-bold text-balance text-slate-900">
+          Nocturna <span>Fredes-Paüls {{ edicion.anio }}</span>
+        </h2>
+        <p class="text-md text-slate-900">Formulario de Inscripción</p>
       </div>
 
-      <!-- Formulario -->
-      <div class="rounded-lg bg-white p-8 shadow-lg dark:bg-slate-800">
+      <!-- Formulario de inscripción -->
+      <div class="rounded-lg bg-white p-8 shadow-lg">
+        <Link href="/">
+          <Button variant="ghost" class="mb-4"> ← Volver </Button>
+        </Link>
         <form @submit.prevent="enviarInscripcion" class="space-y-8">
           <!-- Sección DNI -->
           <div>
-            <h2 class="mb-4 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-              Identificación
-            </h2>
+            <h2 class="mb-4 text-2xl font-semibold">Identificación</h2>
             <div class="flex gap-4">
               <Field class="flex-1">
                 <Label for="dni">DNI/NIE *</Label>
@@ -204,10 +224,7 @@ const enviarInscripcion = () => {
                 </Button>
               </div>
             </div>
-            <p
-              v-if="participanteEncontrado"
-              class="mt-2 text-sm text-green-600 dark:text-green-400"
-            >
+            <p v-if="participanteEncontrado" class="mt-2 text-sm text-green-600">
               ✓ Participante encontrado. Verifica que tus datos sean correctos.
             </p>
           </div>
@@ -218,7 +235,7 @@ const enviarInscripcion = () => {
               variant="legend"
               class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
             >
-              Datos Personales
+              Datos personales
             </FieldLegend>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field>
@@ -233,15 +250,11 @@ const enviarInscripcion = () => {
 
               <Field>
                 <Label for="genero">Género *</Label>
-                <Select v-model="form.genero" required>
-                  <SelectTrigger id="genero">
-                    <SelectValue placeholder="Seleccionar..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="masculino">Masculino</SelectItem>
-                    <SelectItem value="femenino">Femenino</SelectItem>
-                  </SelectContent>
-                </Select>
+                <NativeSelect id="genero" v-model="form.genero" required class="w-full">
+                  <NativeSelectOption value="" disabled>Seleccionar...</NativeSelectOption>
+                  <NativeSelectOption value="masculino">Masculino</NativeSelectOption>
+                  <NativeSelectOption value="femenino">Femenino</NativeSelectOption>
+                </NativeSelect>
               </Field>
 
               <Field>
@@ -298,7 +311,7 @@ const enviarInscripcion = () => {
               variant="legend"
               class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
             >
-              Información Deportiva
+              Información deportiva
             </FieldLegend>
             <div class="space-y-4">
               <Field orientation="horizontal">
@@ -336,15 +349,15 @@ const enviarInscripcion = () => {
               variant="legend"
               class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
             >
-              Servicios Adicionales
+              Servicios adicionales
             </FieldLegend>
             <div class="space-y-4">
-              <div class="rounded-md border border-slate-200 p-4 dark:border-slate-700">
+              <div class="rounded-md border border-slate-200 p-4">
                 <Field orientation="horizontal">
                   <Checkbox id="autobus" v-model="form.necesita_autobus" />
                   <div>
                     <Label for="autobus">Servei d'autobús cap a Fredes</Label>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">
+                    <p class="text-sm text-slate-500">
                       {{ precioCalculado?.precio_autobus || 12 }}€
                     </p>
                   </div>
@@ -364,9 +377,7 @@ const enviarInscripcion = () => {
                           <Label for="parada-tortosa" class="cursor-pointer font-normal"
                             >Salida desde Tortosa</Label
                           >
-                          <p class="text-sm text-slate-500 dark:text-slate-400">
-                            Rotonda Quatre Camins
-                          </p>
+                          <p class="text-sm text-slate-500">Rotonda Quatre Camins</p>
                         </div>
                       </div>
                       <div class="flex items-start space-x-2">
@@ -375,9 +386,7 @@ const enviarInscripcion = () => {
                           <Label for="parada-pauls" class="cursor-pointer font-normal"
                             >Salida desde Paüls</Label
                           >
-                          <p class="text-sm text-slate-500 dark:text-slate-400">
-                            Bàscula municipal, entrada de Paüls
-                          </p>
+                          <p class="text-sm text-slate-500">Bàscula municipal, entrada de Paüls</p>
                         </div>
                       </div>
                     </RadioGroup>
@@ -385,14 +394,12 @@ const enviarInscripcion = () => {
                 </div>
               </div>
 
-              <div
-                class="flex items-start justify-between rounded-md border border-slate-200 p-4 dark:border-slate-700"
-              >
+              <div class="flex items-start justify-between rounded-md border border-slate-200 p-4">
                 <Field orientation="horizontal">
                   <Checkbox id="seguro" v-model="form.seguro_anulacion" />
                   <div>
                     <Label for="seguro">Seguro de Anulación</Label>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">9€</p>
+                    <p class="text-sm text-slate-500">9€</p>
                   </div>
                 </Field>
               </div>
@@ -410,76 +417,65 @@ const enviarInscripcion = () => {
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field>
                 <Label for="talla_caro">Talla Camiseta Caro *</Label>
-                <Select v-model="form.talla_camiseta_caro" required>
-                  <SelectTrigger id="talla_caro">
-                    <SelectValue placeholder="Seleccionar..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="XS">XS</SelectItem>
-                    <SelectItem value="S">S</SelectItem>
-                    <SelectItem value="M">M</SelectItem>
-                    <SelectItem value="L">L</SelectItem>
-                    <SelectItem value="XL">XL</SelectItem>
-                    <SelectItem value="XXL">XXL</SelectItem>
-                  </SelectContent>
-                </Select>
+                <NativeSelect
+                  id="talla_caro"
+                  v-model="form.talla_camiseta_caro"
+                  required
+                  class="w-full"
+                >
+                  <NativeSelectOption value="" disabled>Seleccionar...</NativeSelectOption>
+                  <NativeSelectOption value="XS">XS</NativeSelectOption>
+                  <NativeSelectOption value="S">S</NativeSelectOption>
+                  <NativeSelectOption value="M">M</NativeSelectOption>
+                  <NativeSelectOption value="L">L</NativeSelectOption>
+                  <NativeSelectOption value="XL">XL</NativeSelectOption>
+                  <NativeSelectOption value="XXL">XXL</NativeSelectOption>
+                </NativeSelect>
               </Field>
 
               <Field>
                 <Label for="talla_pauls">Talla Camiseta Paüls *</Label>
-                <Select v-model="form.talla_camiseta_pauls" required>
-                  <SelectTrigger id="talla_pauls">
-                    <SelectValue placeholder="Seleccionar..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="XS">XS</SelectItem>
-                    <SelectItem value="S">S</SelectItem>
-                    <SelectItem value="M">M</SelectItem>
-                    <SelectItem value="L">L</SelectItem>
-                    <SelectItem value="XL">XL</SelectItem>
-                    <SelectItem value="XXL">XXL</SelectItem>
-                  </SelectContent>
-                </Select>
+                <NativeSelect
+                  id="talla_pauls"
+                  v-model="form.talla_camiseta_pauls"
+                  required
+                  class="w-full"
+                >
+                  <NativeSelectOption value="" disabled>Seleccionar...</NativeSelectOption>
+                  <NativeSelectOption value="XS">XS</NativeSelectOption>
+                  <NativeSelectOption value="S">S</NativeSelectOption>
+                  <NativeSelectOption value="M">M</NativeSelectOption>
+                  <NativeSelectOption value="L">L</NativeSelectOption>
+                  <NativeSelectOption value="XL">XL</NativeSelectOption>
+                  <NativeSelectOption value="XXL">XXL</NativeSelectOption>
+                </NativeSelect>
               </Field>
             </div>
           </FieldSet>
 
           <!-- Resumen de Precio -->
-          <div v-if="precioCalculado" class="rounded-lg bg-slate-50 p-6 dark:bg-slate-700">
-            <h3 class="mb-4 text-xl font-semibold text-slate-900 dark:text-slate-100">
-              Resumen del Precio
-            </h3>
+          <div v-if="precioCalculado" class="rounded-lg bg-slate-50 p-6">
+            <h3 class="mb-4 text-xl font-semibold text-slate-900">Resumen del Precio</h3>
             <div class="space-y-2">
-              <div class="flex justify-between text-slate-700 dark:text-slate-300">
+              <div class="flex justify-between text-slate-700">
                 <span>Inscripción:</span>
                 <span>{{ precioCalculado.tarifa_base }}€</span>
               </div>
-              <div
-                v-if="form.necesita_autobus"
-                class="flex justify-between text-slate-700 dark:text-slate-300"
-              >
+              <div v-if="form.necesita_autobus" class="flex justify-between text-slate-700">
                 <span>Autobús:</span>
                 <span>{{ precioCalculado.precio_autobus }}€</span>
               </div>
-              <div
-                v-if="form.seguro_anulacion"
-                class="flex justify-between text-slate-700 dark:text-slate-300"
-              >
+              <div v-if="form.seguro_anulacion" class="flex justify-between text-slate-700">
                 <span>Seguro:</span>
                 <span>{{ precioCalculado.precio_seguro }}€</span>
               </div>
-              <div class="mt-2 border-t border-slate-300 pt-2 dark:border-slate-600">
-                <div
-                  class="flex justify-between text-lg font-bold text-slate-900 dark:text-slate-100"
-                >
+              <div class="mt-2 border-t border-slate-300 pt-2">
+                <div class="flex justify-between text-lg font-bold text-slate-900">
                   <span>TOTAL:</span>
                   <span>{{ precioCalculado.precio_total }}€</span>
                 </div>
               </div>
-              <p
-                v-if="precioCalculado.es_tarifa_tardia"
-                class="text-sm text-amber-600 dark:text-amber-400"
-              >
+              <p v-if="precioCalculado.es_tarifa_tardia" class="text-sm text-amber-600">
                 * Se ha aplicado tarifa tardía
               </p>
             </div>
@@ -487,7 +483,7 @@ const enviarInscripcion = () => {
 
           <!-- Botón Submit -->
           <div class="flex justify-center pt-6">
-            <Button type="submit" :disabled="form.processing" size="lg" class="px-12">
+            <Button type="submit" :disabled="form.processing" size="xl" class="px-12">
               {{ form.processing ? 'Procesando...' : 'Confirmar Inscripción' }}
             </Button>
           </div>
