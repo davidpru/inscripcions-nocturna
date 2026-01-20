@@ -1,11 +1,11 @@
-<script setup>
-import { cn } from "@/lib/utils";
-import { fieldVariants } from ".";
+<script setup lang="ts">
+import { cn } from '@/lib/utils';
+import { fieldVariants } from '.';
 
-const props = defineProps({
-  class: { type: null, required: false },
-  orientation: { type: null, required: false },
-});
+const props = defineProps<{
+  class?: any;
+  orientation?: 'horizontal' | 'vertical' | 'responsive';
+}>();
 </script>
 
 <template>

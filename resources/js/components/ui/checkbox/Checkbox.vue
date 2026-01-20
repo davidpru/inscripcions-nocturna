@@ -1,42 +1,50 @@
-<script setup>
-import { reactiveOmit } from "@vueuse/core";
-import { Check } from "lucide-vue-next";
-import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from "reka-ui";
-import { cn } from "@/lib/utils";
+<script setup lang="ts">
+import { cn } from '@/lib/utils';
+import { Check } from 'lucide-vue-next';
+import { CheckboxIndicator, CheckboxRoot } from 'reka-ui';
+import { computed } from 'vue';
 
-const props = defineProps({
-  defaultValue: { type: [Boolean, String], required: false },
-  modelValue: { type: [Boolean, String, null], required: false },
-  disabled: { type: Boolean, required: false },
-  value: { type: null, required: false },
-  id: { type: String, required: false },
-  asChild: { type: Boolean, required: false },
-  as: { type: null, required: false },
-  name: { type: String, required: false },
-  required: { type: Boolean, required: false },
-  class: { type: null, required: false },
+const props = defineProps<{
+  defaultValue?: boolean | 'indeterminate';
+  modelValue?: boolean | 'indeterminate' | null;
+  disabled?: boolean;
+  value?: string;
+  id?: string;
+  asChild?: boolean;
+  as?: any;
+  name?: string;
+  required?: boolean;
+  class?: any;
+}>();
+
+const emits = defineEmits<{
+  'update:modelValue': [value: boolean | 'indeterminate'];
+}>();
+
+const checkboxValue = computed({
+  get: () => props.modelValue,
+  set: (value) => emits('update:modelValue', value as boolean | 'indeterminate'),
 });
-const emits = defineEmits(["update:modelValue"]);
-
-const delegatedProps = reactiveOmit(props, "class");
-
-const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
 
 <template>
   <CheckboxRoot
-    v-bind="forwarded"
+    v-model="checkboxValue"
+    :id="id"
+    :name="name"
+    :disabled="disabled"
+    :required="required"
+    :value="value"
+    :default-value="defaultValue"
     :class="
       cn(
-        'grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
-        props.class,
+        'peer ring-offset-background focus-visible:ring-ring data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-primary-foreground h-4 w-4 shrink-0 rounded-sm border-2 border-slate-300 bg-transparent focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600',
+        props.class
       )
     "
   >
-    <CheckboxIndicator class="grid place-content-center text-current">
-      <slot>
-        <Check class="h-4 w-4" />
-      </slot>
+    <CheckboxIndicator class="flex items-center justify-center text-current">
+      <Check class="h-4 w-4" />
     </CheckboxIndicator>
   </CheckboxRoot>
 </template>

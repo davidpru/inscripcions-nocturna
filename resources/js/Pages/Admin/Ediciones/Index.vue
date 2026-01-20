@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
+import { Head, Link } from '@inertiajs/vue3';
 
 interface Edicion {
   id: number;
@@ -34,15 +34,15 @@ const getEstadoBadgeClass = (estado: string) => {
 <template>
   <Head title="Gestión de Ediciones" />
 
-  <div class="min-h-screen bg-slate-50 dark:bg-slate-900 py-8 px-4">
-    <div class="max-w-6xl mx-auto">
+  <div class="min-h-screen bg-slate-50 px-4 py-8 dark:bg-slate-900">
+    <div class="mx-auto max-w-6xl">
       <!-- Header -->
-      <div class="flex justify-between items-center mb-8">
+      <div class="mb-8 flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">
             Gestión de Ediciones
           </h1>
-          <p class="text-slate-600 dark:text-slate-400 mt-1">
+          <p class="mt-1 text-slate-600 dark:text-slate-400">
             Administra las ediciones de la Nocturna Fredes Paüls
           </p>
         </div>
@@ -52,31 +52,43 @@ const getEstadoBadgeClass = (estado: string) => {
       </div>
 
       <!-- Lista de Ediciones -->
-      <div class="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
+      <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-slate-800">
         <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
           <thead class="bg-slate-50 dark:bg-slate-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+              >
                 Año
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+              >
                 Fecha Evento
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+              >
                 Inscritos
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+              >
                 Fecha Límite
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+              >
                 Estado
               </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+              >
                 Acciones
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+          <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-800">
             <tr v-for="edicion in ediciones" :key="edicion.id">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-slate-900 dark:text-slate-100">
@@ -101,12 +113,12 @@ const getEstadoBadgeClass = (estado: string) => {
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
                   :class="getEstadoBadgeClass(edicion.estado)"
-                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                  class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold"
                 >
                   {{ edicion.estado }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+              <td class="space-x-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                 <Link :href="`/admin/ediciones/${edicion.id}/edit`">
                   <Button variant="outline" size="sm">Editar</Button>
                 </Link>
@@ -118,7 +130,7 @@ const getEstadoBadgeClass = (estado: string) => {
           </tbody>
         </table>
 
-        <div v-if="ediciones.length === 0" class="text-center py-12">
+        <div v-if="ediciones.length === 0" class="py-12 text-center">
           <p class="text-slate-500 dark:text-slate-400">No hay ediciones creadas</p>
           <Link href="/admin/ediciones/create" class="mt-4 inline-block">
             <Button>Crear Primera Edición</Button>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
+import { Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 interface Participante {
@@ -74,28 +74,28 @@ const getEstadoPagoBadgeClass = (estado: string) => {
 <template>
   <Head title="Gestión de Inscripciones" />
 
-  <div class="min-h-screen bg-slate-50 dark:bg-slate-900 py-8 px-4">
-    <div class="max-w-7xl mx-auto">
+  <div class="min-h-screen bg-slate-50 px-4 py-8 dark:bg-slate-900">
+    <div class="mx-auto max-w-7xl">
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">
           Gestión de Inscripciones
         </h1>
-        <p class="text-slate-600 dark:text-slate-400 mt-1">
+        <p class="mt-1 text-slate-600 dark:text-slate-400">
           Total: {{ inscripciones.total }} inscripciones
         </p>
       </div>
 
       <!-- Filtros -->
-      <div class="bg-white dark:bg-slate-800 rounded-lg shadow p-4 mb-6">
-        <div class="flex gap-4 items-end">
+      <div class="mb-6 rounded-lg bg-white p-4 shadow dark:bg-slate-800">
+        <div class="flex items-end gap-4">
           <div class="flex-1">
-            <label class="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
+            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Filtrar por Edición
             </label>
             <select
               v-model="edicionSeleccionada"
-              class="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+              class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
             >
               <option value="">Todas las ediciones</option>
               <option v-for="edicion in ediciones" :key="edicion.id" :value="edicion.id">
@@ -113,40 +113,58 @@ const getEstadoPagoBadgeClass = (estado: string) => {
       </div>
 
       <!-- Tabla de Inscripciones -->
-      <div class="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
+      <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-slate-800">
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
             <thead class="bg-slate-50 dark:bg-slate-700">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                >
                   #
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                >
                   Participante
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                >
                   DNI
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                >
                   Edición
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                >
                   Precio
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                >
                   Estado Pago
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                >
                   Fecha
                 </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                >
                   Acciones
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+            <tbody
+              class="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-800"
+            >
               <tr v-for="inscripcion in inscripciones.data" :key="inscripcion.id">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
+                <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-900 dark:text-slate-100">
                   {{ inscripcion.id }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -157,27 +175,29 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                     {{ inscripcion.participante.email }}
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
+                <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-900 dark:text-slate-100">
                   {{ inscripcion.participante.dni }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
+                <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-900 dark:text-slate-100">
                   {{ inscripcion.edicion.anio }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <td
+                  class="px-6 py-4 text-sm font-semibold whitespace-nowrap text-slate-900 dark:text-slate-100"
+                >
                   {{ inscripcion.precio_total }}€
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
                     :class="getEstadoPagoBadgeClass(inscripcion.estado_pago)"
-                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold"
                   >
                     {{ inscripcion.estado_pago }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
+                <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-900 dark:text-slate-100">
                   {{ formatearFecha(inscripcion.created_at) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                <td class="space-x-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                   <Link :href="`/admin/inscripciones/${inscripcion.id}`">
                     <Button variant="outline" size="sm">Ver</Button>
                   </Link>
@@ -190,16 +210,21 @@ const getEstadoPagoBadgeClass = (estado: string) => {
           </table>
         </div>
 
-        <div v-if="inscripciones.data.length === 0" class="text-center py-12">
+        <div v-if="inscripciones.data.length === 0" class="py-12 text-center">
           <p class="text-slate-500 dark:text-slate-400">No hay inscripciones</p>
         </div>
 
         <!-- Paginación -->
-        <div v-if="inscripciones.last_page > 1" class="bg-white dark:bg-slate-800 px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+        <div
+          v-if="inscripciones.last_page > 1"
+          class="border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-800"
+        >
           <div class="flex items-center justify-between">
             <div class="text-sm text-slate-700 dark:text-slate-300">
-              Mostrando {{ (inscripciones.current_page - 1) * inscripciones.per_page + 1 }} - 
-              {{ Math.min(inscripciones.current_page * inscripciones.per_page, inscripciones.total) }}
+              Mostrando {{ (inscripciones.current_page - 1) * inscripciones.per_page + 1 }} -
+              {{
+                Math.min(inscripciones.current_page * inscripciones.per_page, inscripciones.total)
+              }}
               de {{ inscripciones.total }} resultados
             </div>
             <div class="flex gap-2">

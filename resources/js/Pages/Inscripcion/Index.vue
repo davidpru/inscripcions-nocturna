@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -65,6 +68,7 @@ const form = useForm({
   numero_licencia: '',
   club: '',
   necesita_autobus: false,
+  parada_autobus: '',
   seguro_anulacion: false,
   talla_camiseta_caro: '',
   talla_camiseta_pauls: '',
@@ -163,7 +167,7 @@ const enviarInscripcion = () => {
               Identificación
             </h2>
             <div class="flex gap-4">
-              <div class="flex-1 space-y-2">
+              <Field class="flex-1">
                 <Label for="dni">DNI/NIE *</Label>
                 <Input
                   id="dni"
@@ -173,7 +177,7 @@ const enviarInscripcion = () => {
                   required
                   placeholder="12345678X"
                 />
-              </div>
+              </Field>
               <div class="flex items-end">
                 <Button
                   type="button"
@@ -199,17 +203,17 @@ const enviarInscripcion = () => {
               Datos Personales
             </h2>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div class="space-y-2">
+              <Field>
                 <Label for="nombre">Nombre *</Label>
                 <Input id="nombre" v-model="form.nombre" type="text" required />
-              </div>
+              </Field>
 
-              <div class="space-y-2">
+              <Field>
                 <Label for="apellidos">Apellidos *</Label>
                 <Input id="apellidos" v-model="form.apellidos" type="text" required />
-              </div>
+              </Field>
 
-              <div class="space-y-2">
+              <Field>
                 <Label for="genero">Género *</Label>
                 <Select v-model="form.genero" required>
                   <SelectTrigger id="genero">
@@ -220,22 +224,22 @@ const enviarInscripcion = () => {
                     <SelectItem value="femenino">Femenino</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </Field>
 
-              <div class="space-y-2">
+              <Field>
                 <Label for="fecha_nacimiento">Fecha de Nacimiento *</Label>
                 <Input id="fecha_nacimiento" v-model="form.fecha_nacimiento" type="date" required />
-              </div>
+              </Field>
 
-              <div class="space-y-2">
+              <Field>
                 <Label for="telefono">Teléfono *</Label>
                 <Input id="telefono" v-model="form.telefono" type="tel" required />
-              </div>
+              </Field>
 
-              <div class="space-y-2">
+              <Field>
                 <Label for="email">Email *</Label>
                 <Input id="email" v-model="form.email" type="email" required />
-              </div>
+              </Field>
             </div>
           </div>
 
@@ -245,25 +249,25 @@ const enviarInscripcion = () => {
               Dirección
             </h2>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div class="space-y-2 md:col-span-2">
+              <Field class="md:col-span-2">
                 <Label for="direccion">Dirección *</Label>
                 <Input id="direccion" v-model="form.direccion" type="text" required />
-              </div>
+              </Field>
 
-              <div class="space-y-2">
+              <Field>
                 <Label for="codigo_postal">Código Postal *</Label>
                 <Input id="codigo_postal" v-model="form.codigo_postal" type="text" required />
-              </div>
+              </Field>
 
-              <div class="space-y-2">
+              <Field>
                 <Label for="poblacion">Población *</Label>
                 <Input id="poblacion" v-model="form.poblacion" type="text" required />
-              </div>
+              </Field>
 
-              <div class="space-y-2 md:col-span-2">
+              <Field class="md:col-span-2">
                 <Label for="provincia">Provincia *</Label>
                 <Input id="provincia" v-model="form.provincia" type="text" required />
-              </div>
+              </Field>
             </div>
           </div>
 
@@ -273,28 +277,18 @@ const enviarInscripcion = () => {
               Información Deportiva
             </h2>
             <div class="space-y-4">
-              <div class="flex items-center space-x-2">
-                <Checkbox id="socio_uec" v-model:checked="form.es_socio_uec" />
-                <Label
-                  for="socio_uec"
-                  class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  ¿Eres socio de la UEC Tortosa?
-                </Label>
-              </div>
+              <Field orientation="horizontal">
+                <Checkbox id="socio_uec" v-model="form.es_socio_uec" />
+                <Label for="socio_uec">¿Eres socio de la UEC Tortosa?</Label>
+              </Field>
 
-              <div class="flex items-center space-x-2">
-                <Checkbox id="federado" v-model:checked="form.esta_federado" />
-                <Label
-                  for="federado"
-                  class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  ¿Estás federado?
-                </Label>
-              </div>
+              <Field orientation="horizontal">
+                <Checkbox id="federado" v-model="form.esta_federado" />
+                <Label for="federado">¿Estás federado?</Label>
+              </Field>
 
               <div v-if="form.esta_federado" class="ml-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div class="space-y-2">
+                <Field>
                   <Label for="numero_licencia">Número de Licencia *</Label>
                   <Input
                     id="numero_licencia"
@@ -302,12 +296,12 @@ const enviarInscripcion = () => {
                     type="text"
                     :required="form.esta_federado"
                   />
-                </div>
+                </Field>
 
-                <div class="space-y-2">
+                <Field>
                   <Label for="club">Club</Label>
                   <Input id="club" v-model="form.club" type="text" />
-                </div>
+                </Field>
               </div>
             </div>
           </div>
@@ -318,26 +312,60 @@ const enviarInscripcion = () => {
               Servicios Adicionales
             </h2>
             <div class="space-y-4">
-              <div
-                class="flex items-center justify-between rounded-md border border-slate-200 p-4 dark:border-slate-700"
-              >
-                <div>
-                  <Label for="autobus" class="text-sm font-medium"> Autobús Paüls-Fredes </Label>
-                  <p class="text-sm text-slate-500 dark:text-slate-400">
-                    {{ precioCalculado?.precio_autobus || 12 }}€
-                  </p>
+              <div class="rounded-md border border-slate-200 p-4 dark:border-slate-700">
+                <Field orientation="horizontal">
+                  <Checkbox id="autobus" v-model="form.necesita_autobus" />
+                  <div>
+                    <Label for="autobus">Servei d'autobús cap a Fredes</Label>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
+                      {{ precioCalculado?.precio_autobus || 12 }}€
+                    </p>
+                  </div>
+                </Field>
+
+                <div v-if="form.necesita_autobus" class="mt-4 ml-6">
+                  <Field>
+                    <Label>Parada de Autobús *</Label>
+                    <RadioGroup
+                      v-model="form.parada_autobus"
+                      :required="form.necesita_autobus"
+                      class="flex flex-col space-y-3"
+                    >
+                      <div class="flex items-start space-x-2">
+                        <RadioGroupItem id="parada-tortosa" value="tortosa" class="mt-1" />
+                        <div class="flex flex-col">
+                          <Label for="parada-tortosa" class="cursor-pointer font-normal"
+                            >Tortosa</Label
+                          >
+                          <p class="text-sm text-slate-500 dark:text-slate-400">
+                            Rotonda Quatre Camins
+                          </p>
+                        </div>
+                      </div>
+                      <div class="flex items-start space-x-2">
+                        <RadioGroupItem id="parada-pauls" value="pauls" class="mt-1" />
+                        <div class="flex flex-col">
+                          <Label for="parada-pauls" class="cursor-pointer font-normal">Paüls</Label>
+                          <p class="text-sm text-slate-500 dark:text-slate-400">
+                            Bàscula municipal, entrada de Paüls
+                          </p>
+                        </div>
+                      </div>
+                    </RadioGroup>
+                  </Field>
                 </div>
-                <Checkbox id="autobus" v-model:checked="form.necesita_autobus" />
               </div>
 
               <div
-                class="flex items-center justify-between rounded-md border border-slate-200 p-4 dark:border-slate-700"
+                class="flex items-start justify-between rounded-md border border-slate-200 p-4 dark:border-slate-700"
               >
-                <div>
-                  <Label for="seguro" class="text-sm font-medium"> Seguro de Anulación </Label>
-                  <p class="text-sm text-slate-500 dark:text-slate-400">9€</p>
-                </div>
-                <Checkbox id="seguro" v-model:checked="form.seguro_anulacion" />
+                <Field orientation="horizontal">
+                  <Checkbox id="seguro" v-model="form.seguro_anulacion" />
+                  <div>
+                    <Label for="seguro">Seguro de Anulación</Label>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">9€</p>
+                  </div>
+                </Field>
               </div>
             </div>
           </div>
@@ -348,7 +376,7 @@ const enviarInscripcion = () => {
               Tallas de Camisetas
             </h2>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div class="space-y-2">
+              <Field>
                 <Label for="talla_caro">Talla Camiseta Caro *</Label>
                 <Select v-model="form.talla_camiseta_caro" required>
                   <SelectTrigger id="talla_caro">
@@ -363,9 +391,9 @@ const enviarInscripcion = () => {
                     <SelectItem value="XXL">XXL</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </Field>
 
-              <div class="space-y-2">
+              <Field>
                 <Label for="talla_pauls">Talla Camiseta Paüls *</Label>
                 <Select v-model="form.talla_camiseta_pauls" required>
                   <SelectTrigger id="talla_pauls">
@@ -380,7 +408,7 @@ const enviarInscripcion = () => {
                     <SelectItem value="XXL">XXL</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </Field>
             </div>
           </div>
 
