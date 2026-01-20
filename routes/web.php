@@ -34,10 +34,12 @@ Route::prefix('inscripcion')->group(function () {
 
 // Rutas de pago con Redsys
 Route::prefix('pago')->name('redsys.')->group(function () {
-    Route::get('/{inscripcion}', [RedsysController::class, 'procesarPago'])->name('procesar');
+    // Rutas específicas primero (antes de la ruta con parámetro)
     Route::any('/success', [RedsysController::class, 'success'])->name('success');
     Route::any('/error', [RedsysController::class, 'error'])->name('error');
     Route::post('/notification', [RedsysController::class, 'notification'])->name('notification');
+    // Ruta con parámetro al final
+    Route::get('/{inscripcion}', [RedsysController::class, 'procesarPago'])->name('procesar');
 });
 
 // Rutas de administración

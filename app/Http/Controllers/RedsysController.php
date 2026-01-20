@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inscripcion;
+use Creagia\Redsys\RedsysClient;
 use Creagia\Redsys\RedsysRequest;
+use Creagia\Redsys\Support\RequestParameters;
 use Creagia\Redsys\Enums\ConsumerLanguage;
-use Creagia\Redsys\Enums\PaymentMethod;
-use Creagia\Redsys\Enums\ResponseCode;
+use Creagia\Redsys\Enums\Currency;
+use Creagia\Redsys\Enums\Environment;
+use Creagia\Redsys\Enums\TransactionType;
+use Creagia\Redsys\RedsysResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -27,32 +31,36 @@ class RedsysController extends Controller
         // Cargar relaciones necesarias
         $inscripcion->load(['participante', 'edicion']);
 
-        // Guardar el número de pedido en la inscripción
-        $orderNumber = $inscripcion->id;
-        $orderNumberFormatted = str_pad((string)$orderNumber, 4, '0', STR_PAD_LEFT); 
-        $inscripcion->update(['numero_pedido' => $orderNumber]);
+        // Generar número de pedido único (Redsys no permite repetidos)
+        // Formato: 4 dígitos del ID + 8 caracteres timestamp = 12 chars máx
+        $orderNumberFormatted = str_pad((string)$inscripcion->id, 4, '0', STR_PAD_LEFT) . substr((string)time(), -8);
+        $inscripcion->update(['numero_pedido' => $orderNumberFormatted]);
 
-        $redsysClient = new \Creagia\Redsys\RedsysClient(
-            config('redsys.tpv.key'),
-            config('redsys.tpv.merchantCode'),
-            config('redsys.tpv.terminal'),
-            config('redsys.environment') === 'production' ? \Creagia\Redsys\Enums\Environment::Production : \Creagia\Redsys\Enums\Environment::Test
+        $redsysClient = new RedsysClient(
+            merchantCode: (int)config('redsys.tpv.merchantCode'),
+            secretKey: config('redsys.tpv.key'),
+            terminal: (int)config('redsys.tpv.terminal'),
+            environment: config('redsys.environment') === 'production' ? Environment::Production : Environment::Test
         );
 
-        $redsysRequest = \Creagia\Redsys\RedsysRequest::create($redsysClient, new \Creagia\Redsys\RequestParameters(
-            amount: (float)$inscripcion->precio_total,
+        // Convertir precio a céntimos (Redsys espera céntimos)
+        $amountInCents = (int)($inscripcion->precio_total * 100);
+
+        $requestParams = new RequestParameters(
+            amountInCents: $amountInCents,
+            transactionType: TransactionType::Autorizacion,
+            currency: Currency::EUR,
             order: $orderNumberFormatted,
-            transactionType: \Creagia\Redsys\Enums\TransactionType::Autorizacion,
-            currency: \Creagia\Redsys\Enums\Currency::EUR,
             merchantUrl: route('redsys.notification'),
             urlOk: route('redsys.success'),
-            urlKo: route('redsys.error')
-        ));
-        
-        $redsysRequest->setMerchantData($inscripcion->id);
-        $redsysRequest->setProductDescription('Inscripción Nocturna Fredes Paüls ' . $inscripcion->edicion->anio);
-        $redsysRequest->setTitular($inscripcion->participante->nombre . ' ' . $inscripcion->participante->apellidos);
-        $redsysRequest->setConsumerLanguage(ConsumerLanguage::CA);
+            urlKo: route('redsys.error'),
+            merchantData: (string)$inscripcion->id,
+            productDescription: 'Inscripción Nocturna Fredes Paüls ' . $inscripcion->edicion->anio,
+            titular: $inscripcion->participante->nombre . ' ' . $inscripcion->participante->apellidos,
+            consumerLanguage: ConsumerLanguage::Spanish
+        );
+
+        $redsysRequest = RedsysRequest::create($redsysClient, $requestParams);
 
         $formFields = $redsysRequest->getRequestFieldsArray();
         
@@ -82,50 +90,48 @@ class RedsysController extends Controller
     public function notification(Request $request)
     {
         try {
-            $notification = RedsysRequest::getNotification($request->all());
+            $redsysClient = new RedsysClient(
+                merchantCode: (int)config('redsys.tpv.merchantCode'),
+                secretKey: config('redsys.tpv.key'),
+                terminal: (int)config('redsys.tpv.terminal'),
+                environment: config('redsys.environment') === 'production' ? Environment::Production : Environment::Test
+            );
+
+            $redsysResponse = new RedsysResponse($redsysClient);
+            $redsysResponse->setParametersFromResponse($request->all());
             
-            // Validar la firma de la notificación
-            if (!$notification->isValid()) {
-                Log::error('Redsys notification: Invalid signature', [
-                    'data' => $request->all()
-                ]);
-                return response('Invalid signature', 400);
-            }
+            // Validar firma y obtener parámetros
+            $params = $redsysResponse->checkResponse();
 
             // Obtener la inscripción
-            $inscripcion = Inscripcion::where('numero_pedido', $notification->getOrder())->first();
+            $inscripcion = Inscripcion::where('numero_pedido', $params->order)->first();
             
             if (!$inscripcion) {
                 Log::error('Redsys notification: Inscripcion not found', [
-                    'order' => $notification->getOrder()
+                    'order' => $params->order
                 ]);
                 return response('Inscripcion not found', 404);
             }
 
-            // Verificar el estado del pago
-            if ($notification->isSuccessful()) {
-                $inscripcion->update([
-                    'estado_pago' => 'pagado',
-                    'numero_autorizacion' => $notification->getAuthorisationCode(),
-                    'fecha_pago' => now(),
-                ]);
+            // Pago exitoso
+            $inscripcion->update([
+                'estado_pago' => 'pagado',
+                'numero_autorizacion' => $params->responseAuthorisationCode,
+                'fecha_pago' => now(),
+            ]);
 
-                Log::info('Redsys notification: Payment successful', [
-                    'inscripcion_id' => $inscripcion->id,
-                    'amount' => $notification->getAmount(),
-                ]);
-            } else {
-                $inscripcion->update([
-                    'estado_pago' => 'rechazado',
-                ]);
-
-                Log::warning('Redsys notification: Payment failed', [
-                    'inscripcion_id' => $inscripcion->id,
-                    'response_code' => $notification->getResponseCode(),
-                ]);
-            }
+            Log::info('Redsys notification: Payment successful', [
+                'inscripcion_id' => $inscripcion->id,
+                'amount' => $params->amount,
+            ]);
 
             return response('OK', 200);
+        } catch (\Creagia\Redsys\Exceptions\DeniedRedsysPaymentResponseException $e) {
+            Log::warning('Redsys notification: Payment denied', [
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+            ]);
+            return response('Payment denied', 200);
         } catch (\Exception $e) {
             Log::error('Redsys notification error', [
                 'error' => $e->getMessage(),
@@ -140,25 +146,45 @@ class RedsysController extends Controller
      */
     public function success(Request $request)
     {
+        Log::info('Redsys success: Request received', ['data' => $request->all()]);
+        
         try {
-            $response = RedsysRequest::getNotification($request->all());
+            $redsysClient = new RedsysClient(
+                merchantCode: (int)config('redsys.tpv.merchantCode'),
+                secretKey: config('redsys.tpv.key'),
+                terminal: (int)config('redsys.tpv.terminal'),
+                environment: config('redsys.environment') === 'production' ? Environment::Production : Environment::Test
+            );
+
+            $redsysResponse = new RedsysResponse($redsysClient);
+            $redsysResponse->setParametersFromResponse($request->all());
             
-            if (!$response->isValid()) {
-                Log::error('Redsys success: Invalid signature');
-                return redirect()->route('redsys.error');
+            // Validar firma y obtener parámetros
+            $params = $redsysResponse->checkResponse();
+            
+            Log::info('Redsys success: Response params', [
+                'order' => $params->order,
+                'authCode' => $params->responseAuthorisationCode,
+                'merchantData' => $params->merchantData ?? null,
+            ]);
+
+            // Buscar por numero_pedido O por ID en merchantData
+            $inscripcion = Inscripcion::where('numero_pedido', $params->order)->first();
+            
+            if (!$inscripcion && isset($params->merchantData)) {
+                $inscripcion = Inscripcion::find($params->merchantData);
+                Log::info('Redsys success: Found by merchantData', ['id' => $params->merchantData]);
             }
 
-            $inscripcion = Inscripcion::where('numero_pedido', $response->getOrder())->first();
-
             if (!$inscripcion) {
-                Log::error('Redsys success: Inscripcion not found');
-                return redirect()->route('redsys.error');
+                Log::error('Redsys success: Inscripcion not found', ['order' => $params->order]);
+                return redirect()->route('home')->with('error', 'Inscripción no encontrada');
             }
 
             // Asegurar que guardamos la transacción aunque el webhook se retrase
             $inscripcion->update([
                 'estado_pago' => 'pagado',
-                'numero_autorizacion' => $response->getAuthorisationCode(), // Guardar ID transacción
+                'numero_autorizacion' => $params->responseAuthorisationCode,
                 'fecha_pago' => now(),
             ]);
 
@@ -166,8 +192,8 @@ class RedsysController extends Controller
                 'inscripcion' => $inscripcion->load(['participante', 'edicion']),
             ]);
         } catch (\Exception $e) {
-            Log::error('Redsys success error', ['error' => $e->getMessage()]);
-            return redirect()->route('redsys.error');
+            Log::error('Redsys success error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return redirect()->route('home')->with('error', 'Error procesando el pago');
         }
     }
 
@@ -176,41 +202,29 @@ class RedsysController extends Controller
      */
     public function error(Request $request)
     {
+        $errorMessage = 'El pago no pudo ser procesado.';
+        $inscripcion = null;
+
         try {
-            $response = RedsysRequest::getNotification($request->all());
+            $redsysClient = new RedsysClient(
+                merchantCode: (int)config('redsys.tpv.merchantCode'),
+                secretKey: config('redsys.tpv.key'),
+                terminal: (int)config('redsys.tpv.terminal'),
+                environment: config('redsys.environment') === 'production' ? Environment::Production : Environment::Test
+            );
+
+            $redsysResponse = new RedsysResponse($redsysClient);
+            $redsysResponse->setParametersFromResponse($request->all());
             
-            $inscripcion = null;
-            $errorMessage = 'El pago no pudo ser procesado.';
-
-            if ($response->isValid()) {
-                $inscripcion = Inscripcion::where('numero_pedido', $response->getOrder())->first();
-                
-                $responseCode = $response->getResponseCode();
-                $errorMessage = $this->getErrorMessage($responseCode);
-            }
-
-            return Inertia::render('Pago/Error', [
-                'inscripcion' => $inscripcion,
-                'errorMessage' => $errorMessage,
-            ]);
+            $inscripcion = Inscripcion::where('numero_pedido', $redsysResponse->parameters->order)->first();
+            $errorMessage = 'El pago fue rechazado. Código: ' . $redsysResponse->parameters->responseCode;
         } catch (\Exception $e) {
             Log::error('Redsys error page', ['error' => $e->getMessage()]);
-            
-            return Inertia::render('Pago/Error', [
-                'inscripcion' => null,
-                'errorMessage' => 'Ha ocurrido un error al procesar el pago.',
-            ]);
         }
-    }
 
-    private function getErrorMessage($responseCode): string
-    {
-        return match ($responseCode) {
-            ResponseCode::CANCELLED_BY_USER->value => 'Has cancelado el pago.',
-            ResponseCode::EXPIRED_CARD->value => 'La tarjeta ha caducado.',
-            ResponseCode::INSUFFICIENT_FUNDS->value => 'No hay fondos suficientes.',
-            ResponseCode::CARD_NOT_VALID->value => 'Tarjeta no válida.',
-            default => 'El pago no pudo ser procesado. Código: ' . $responseCode,
-        };
+        return Inertia::render('Pago/Error', [
+            'inscripcion' => $inscripcion,
+            'errorMessage' => $errorMessage,
+        ]);
     }
 }
