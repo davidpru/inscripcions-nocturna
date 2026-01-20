@@ -85,6 +85,84 @@ class RedsysController extends Controller
     }
 
     /**
+     * Procesar el pago del autobús para una inscripción ya pagada
+     */
+    public function procesarPagoAutobus(Inscripcion $inscripcion)
+    {
+        // Verificar que la inscripción esté pagada y no tenga autobús
+        if ($inscripcion->estado_pago !== 'pagado') {
+            return redirect()->route('home')
+                ->with('error', 'La inscripción debe estar pagada');
+        }
+
+        if ($inscripcion->necesita_autobus) {
+            return redirect()->route('home')
+                ->with('error', 'Ya tienes contratado el servicio de autobús');
+        }
+
+        // Verificar que hay una parada pendiente
+        if (!$inscripcion->parada_autobus_pendiente) {
+            return redirect()->route('inscripcion.consulta')
+                ->with('error', 'Debes seleccionar una parada de autobús');
+        }
+
+        $inscripcion->load(['participante', 'edicion']);
+
+        // Generar número de pedido único para el autobús
+        // Formato: BUS + 3 dígitos ID + 6 caracteres timestamp
+        $orderNumberFormatted = 'BUS' . str_pad((string)$inscripcion->id, 3, '0', STR_PAD_LEFT) . substr((string)time(), -6);
+        
+        // Guardar en un campo temporal (usaremos numero_pedido_autobus si existe, sino reutilizamos otro campo)
+        $inscripcion->update(['numero_pedido_autobus' => $orderNumberFormatted]);
+
+        $redsysClient = new RedsysClient(
+            merchantCode: (int)config('redsys.tpv.merchantCode'),
+            secretKey: config('redsys.tpv.key'),
+            terminal: (int)config('redsys.tpv.terminal'),
+            environment: config('redsys.environment') === 'production' ? Environment::Production : Environment::Test
+        );
+
+        // Precio del autobús en céntimos
+        $precioAutobus = $inscripcion->edicion->precio_autobus ?? 12;
+        $amountInCents = (int)($precioAutobus * 100);
+
+        $requestParams = new RequestParameters(
+            amountInCents: $amountInCents,
+            transactionType: TransactionType::Autorizacion,
+            currency: Currency::EUR,
+            order: $orderNumberFormatted,
+            merchantUrl: route('redsys.notification'),
+            urlOk: route('redsys.success'),
+            urlKo: route('redsys.error'),
+            merchantData: 'BUS_' . $inscripcion->id, // Prefijo para identificar que es pago de autobús
+            productDescription: 'Autobús Nocturna Fredes Paüls ' . $inscripcion->edicion->anio,
+            titular: $inscripcion->participante->nombre . ' ' . $inscripcion->participante->apellidos,
+            consumerLanguage: ConsumerLanguage::Spanish
+        );
+
+        $redsysRequest = RedsysRequest::create($redsysClient, $requestParams);
+
+        $formFields = $redsysRequest->getRequestFieldsArray();
+        
+        $formInputs = [];
+        foreach ($formFields as $name => $value) {
+            $formInputs[] = ['name' => $name, 'value' => $value];
+        }
+
+        $redsysEnvironment = config('redsys.environment', 'test');
+        $redsysUrl = $redsysEnvironment === 'production'
+            ? 'https://sis.redsys.es/sis/realizarPago'
+            : 'https://sis-t.redsys.es:25443/sis/realizarPago';
+
+        return Inertia::render('Pago/Redsys', [
+            'inscripcion' => $inscripcion,
+            'formAction' => $redsysUrl,
+            'formInputs' => $formInputs,
+            'esAutobus' => true,
+        ]);
+    }
+
+    /**
      * Redsys notifica el resultado del pago aquí (webhook).
      */
     public function notification(Request $request)
@@ -103,8 +181,43 @@ class RedsysController extends Controller
             // Validar firma y obtener parámetros
             $params = $redsysResponse->checkResponse();
 
-            // Obtener la inscripción
+            Log::info('Redsys notification: Received', [
+                'order' => $params->order,
+                'merchantData' => $params->merchantData ?? null,
+            ]);
+
+            // Verificar si es un pago de autobús
+            $esAutobus = isset($params->merchantData) && str_starts_with($params->merchantData, 'BUS_');
+            
+            if ($esAutobus) {
+                // Extraer ID de inscripción del merchantData
+                $inscripcionId = str_replace('BUS_', '', $params->merchantData);
+                $inscripcion = Inscripcion::find($inscripcionId);
+                
+                if (!$inscripcion) {
+                    Log::error('Redsys notification: Inscripcion not found for bus payment', ['merchantData' => $params->merchantData]);
+                    return response('Inscripcion not found', 404);
+                }
+
+                // Activar el autobús
+                $inscripcion->update([
+                    'necesita_autobus' => true,
+                    'parada_autobus' => $inscripcion->parada_autobus_pendiente,
+                    'parada_autobus_pendiente' => null,
+                    'precio_total' => $inscripcion->precio_total + ($inscripcion->edicion->precio_autobus ?? 12),
+                ]);
+
+                Log::info('Redsys notification: Bus payment successful', ['inscripcion_id' => $inscripcion->id]);
+
+                return response('OK');
+            }
+
+            // Obtener la inscripción para pago normal
             $inscripcion = Inscripcion::where('numero_pedido', $params->order)->first();
+            
+            if (!$inscripcion && isset($params->merchantData)) {
+                $inscripcion = Inscripcion::find($params->merchantData);
+            }
             
             if (!$inscripcion) {
                 Log::error('Redsys notification: Inscripcion not found', [
@@ -168,7 +281,36 @@ class RedsysController extends Controller
                 'merchantData' => $params->merchantData ?? null,
             ]);
 
-            // Buscar por numero_pedido O por ID en merchantData
+            // Verificar si es un pago de autobús
+            $esAutobus = isset($params->merchantData) && str_starts_with($params->merchantData, 'BUS_');
+            
+            if ($esAutobus) {
+                // Extraer ID de inscripción del merchantData
+                $inscripcionId = str_replace('BUS_', '', $params->merchantData);
+                $inscripcion = Inscripcion::find($inscripcionId);
+                
+                if (!$inscripcion) {
+                    Log::error('Redsys success: Inscripcion not found for bus payment', ['merchantData' => $params->merchantData]);
+                    return redirect()->route('home')->with('error', 'Inscripción no encontrada');
+                }
+
+                // Activar el autobús
+                $inscripcion->update([
+                    'necesita_autobus' => true,
+                    'parada_autobus' => $inscripcion->parada_autobus_pendiente,
+                    'parada_autobus_pendiente' => null,
+                    'numero_pedido_autobus' => null, // Limpiar
+                    'precio_total' => $inscripcion->precio_total + ($inscripcion->edicion->precio_autobus ?? 12),
+                ]);
+
+                Log::info('Redsys success: Bus payment successful', ['inscripcion_id' => $inscripcion->id]);
+
+                return Inertia::render('Pago/ExitoAutobus', [
+                    'inscripcion' => $inscripcion->load(['participante', 'edicion']),
+                ]);
+            }
+
+            // Pago normal de inscripción
             $inscripcion = Inscripcion::where('numero_pedido', $params->order)->first();
             
             if (!$inscripcion && isset($params->merchantData)) {

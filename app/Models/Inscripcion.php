@@ -17,6 +17,8 @@ class Inscripcion extends Model
         'numero_licencia',
         'club',
         'necesita_autobus',
+        'parada_autobus',
+        'parada_autobus_pendiente',
         'seguro_anulacion',
         'talla_camiseta_caro',
         'talla_camiseta_pauls',

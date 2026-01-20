@@ -89,22 +89,34 @@ class InscripcionController extends Controller
              return back()->withErrors(['dni' => 'No tienes ninguna inscripción para la edición actual.']);
         }
 
-        // Si está pagada
-        if ($inscripcion->estado_pago === 'pagado') {
-             // Usamos la vista de éxito de pago para mostrar que todo está OK, 
-             // o podríamos crear una vista específica de "Estado Inscripción".
-             // Por ahora, reutilizamos la lógica de éxito visual si es posible, 
-             // pero la ruta redsys.success requiere parámetros de Redsys.
-             // Mejor redirigir a un metodo confirmacion si existe o renderizar Exito directamente.
-             
-             // Vamos a renderizar la vista de Exito directamente como si fuera confirmación
-             return Inertia::render('Pago/Exito', [
-                'inscripcion' => $inscripcion->load(['participante', 'edicion']),
-            ]);
+        // Mostrar siempre la vista de detalle de inscripción
+        return Inertia::render('Inscripcion/Detalle', [
+            'inscripcion' => $inscripcion->load(['participante', 'edicion']),
+            'precioAutobus' => $edicionActiva->precio_autobus ?? 12,
+        ]);
+    }
+
+    public function contratarAutobus(Request $request, Inscripcion $inscripcion)
+    {
+        $request->validate([
+            'parada_autobus' => 'required|in:tortosa,pauls',
+        ]);
+
+        // Verificar que la inscripción está pagada y no tiene autobús
+        if ($inscripcion->estado_pago !== 'pagado') {
+            return back()->withErrors(['general' => 'La inscripción debe estar pagada para contratar el autobús.']);
         }
 
-        // Si está pendiente, permitir pagar de nuevo
-        return redirect()->route('redsys.procesar', $inscripcion);
+        if ($inscripcion->necesita_autobus) {
+            return back()->withErrors(['general' => 'Ya tienes contratado el servicio de autobús.']);
+        }
+
+        // Guardar la parada temporalmente y redirigir al pago
+        $inscripcion->update([
+            'parada_autobus_pendiente' => $request->parada_autobus,
+        ]);
+
+        return redirect()->route('redsys.procesar-autobus', $inscripcion);
     }
 
     public function calcularPrecio(Request $request)
@@ -156,6 +168,7 @@ class InscripcionController extends Controller
                 'numero_licencia' => 'nullable|required_if:esta_federado,true|string|max:50',
                 'club' => 'nullable|string|max:255',
                 'necesita_autobus' => 'required|boolean',
+                'parada_autobus' => 'nullable|required_if:necesita_autobus,true|in:tortosa,pauls',
                 'seguro_anulacion' => 'required|boolean',
                 'talla_camiseta_caro' => 'required|string|max:10',
                 'talla_camiseta_pauls' => 'required|string|max:10',
@@ -206,6 +219,7 @@ class InscripcionController extends Controller
                 'numero_licencia' => $validated['numero_licencia'],
                 'club' => $validated['club'],
                 'necesita_autobus' => $validated['necesita_autobus'],
+                'parada_autobus' => $validated['parada_autobus'] ?? null,
                 'seguro_anulacion' => $validated['seguro_anulacion'],
                 'talla_camiseta_caro' => $validated['talla_camiseta_caro'],
                 'talla_camiseta_pauls' => $validated['talla_camiseta_pauls'],

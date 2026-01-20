@@ -30,6 +30,7 @@ Route::prefix('inscripcion')->group(function () {
     Route::post('/calcular-precio', [InscripcionController::class, 'calcularPrecio'])->name('inscripcion.calcular-precio');
     Route::post('/', [InscripcionController::class, 'store'])->name('inscripcion.store');
     Route::get('/confirmacion/{inscripcion}', [InscripcionController::class, 'confirmacion'])->name('inscripcion.confirmacion');
+    Route::post('/{inscripcion}/contratar-autobus', [InscripcionController::class, 'contratarAutobus'])->name('inscripcion.contratar-autobus');
 });
 
 // Rutas de pago con Redsys
@@ -38,7 +39,8 @@ Route::prefix('pago')->name('redsys.')->group(function () {
     Route::any('/success', [RedsysController::class, 'success'])->name('success');
     Route::any('/error', [RedsysController::class, 'error'])->name('error');
     Route::post('/notification', [RedsysController::class, 'notification'])->name('notification');
-    // Ruta con parámetro al final
+    // Rutas con parámetro al final
+    Route::get('/autobus/{inscripcion}', [RedsysController::class, 'procesarPagoAutobus'])->name('procesar-autobus');
     Route::get('/{inscripcion}', [RedsysController::class, 'procesarPago'])->name('procesar');
 });
 

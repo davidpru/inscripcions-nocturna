@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import Header from '@/components/ui-layout/header.vue';
+import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/vue3';
+import { CheckCircle } from 'lucide-vue-next';
 
 interface Participante {
   nombre: string;
@@ -14,6 +17,11 @@ interface Edicion {
 interface Inscripcion {
   id: number;
   precio_total: number;
+  numero_autorizacion: string | null;
+  talla_camiseta_caro: string;
+  talla_camiseta_pauls: string;
+  necesita_autobus: boolean;
+  parada_autobus: string | null;
   participante: Participante;
   edicion: Edicion;
 }
@@ -24,46 +32,69 @@ defineProps<{
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-    <div class="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-lg">
-      <div class="mb-6">
-        <div
-          class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100"
-        >
-          <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+  <Header />
+
+  <div class="min-h-screen bg-slate-50 py-8">
+    <div class="mx-auto max-w-2xl px-4">
+      <!-- Mensaje de éxito -->
+      <div class="mb-6 rounded-lg bg-green-100 p-8 text-center">
+        <CheckCircle class="mx-auto mb-4 h-16 w-16 text-green-600" />
+        <h1 class="mb-2 text-2xl font-bold text-green-800">¡Pago realizado con éxito!</h1>
+        <p class="text-green-700">
+          Tu inscripción para la Nocturna Fredes Paüls {{ inscripcion.edicion.anio }} ha sido
+          confirmada.
+        </p>
+      </div>
+
+      <!-- Resumen de la inscripción -->
+      <div class="mb-6 rounded-lg bg-white p-6 shadow">
+        <h2 class="mb-4 text-lg font-semibold text-slate-900">Resumen de tu Inscripción</h2>
+        <div class="space-y-3">
+          <div class="flex justify-between border-b pb-2">
+            <span class="text-slate-600">Nº Inscripción</span>
+            <span class="font-medium">#{{ inscripcion.id }}</span>
+          </div>
+          <div class="flex justify-between border-b pb-2">
+            <span class="text-slate-600">Participante</span>
+            <span class="font-medium">
+              {{ inscripcion.participante.nombre }} {{ inscripcion.participante.apellidos }}
+            </span>
+          </div>
+          <div class="flex justify-between border-b pb-2">
+            <span class="text-slate-600">Camiseta Caro</span>
+            <span class="font-medium">Talla {{ inscripcion.talla_camiseta_caro }}</span>
+          </div>
+          <div class="flex justify-between border-b pb-2">
+            <span class="text-slate-600">Camiseta Paüls</span>
+            <span class="font-medium">Talla {{ inscripcion.talla_camiseta_pauls }}</span>
+          </div>
+          <div v-if="inscripcion.necesita_autobus" class="flex justify-between border-b pb-2">
+            <span class="text-slate-600">Autobús</span>
+            <span class="font-medium">{{ inscripcion.parada_autobus }}</span>
+          </div>
+          <div class="flex justify-between pt-2">
+            <span class="text-lg font-semibold text-slate-900">Total pagado</span>
+            <span class="text-lg font-bold text-green-600">{{ inscripcion.precio_total }}€</span>
+          </div>
         </div>
-        <h1 class="mb-2 text-2xl font-bold text-slate-900">¡Pago realizado con éxito!</h1>
-        <p class="text-slate-600">
-          Tu inscripción ha sido confirmada. Recibirás un email con los detalles.
+      </div>
+
+      <!-- Información adicional -->
+      <div class="mb-6 rounded-lg bg-blue-50 p-4">
+        <p class="text-sm text-blue-800">
+          <strong>Importante:</strong> Recibirás un email de confirmación en
+          <strong>{{ inscripcion.participante.email }}</strong> con todos los detalles de tu
+          inscripción y la información necesaria para el día del evento.
         </p>
       </div>
 
-      <div class="mb-6 rounded-lg bg-green-50 p-4">
-        <p class="text-sm text-green-800">
-          Tu número de inscripción y los detalles del evento han sido enviados a tu correo
-          electrónico.
-        </p>
-      </div>
-
-      <div class="space-y-3">
-        <Link
-          href="/"
-          class="block w-full rounded-md bg-red-700 px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-red-800"
-        >
-          Volver al inicio
+      <!-- Botones -->
+      <div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
+        <Link href="/">
+          <Button class="w-full sm:w-auto">Volver al inicio</Button>
         </Link>
-        <Link
-          href="/inscripcion/consulta"
-          class="block w-full rounded-md border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-        >
-          Consultar mi inscripción
+        <Link href="/inscripcion/consulta">
+          <Button variant="outline" class="w-full sm:w-auto">Consultar mi inscripción</Button>
         </Link>
       </div>
     </div>

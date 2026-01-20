@@ -52,15 +52,61 @@ class InscripcionController extends Controller
     public function update(Request $request, Inscripcion $inscripcion)
     {
         $validated = $request->validate([
+            // Datos del participante
+            'nombre' => 'required|string|max:255',
+            'apellidos' => 'required|string|max:255',
+            'dni' => 'required|string|max:20',
+            'email' => 'required|email|max:255',
+            'telefono' => 'required|string|max:20',
+            'direccion' => 'required|string|max:255',
+            'codigo_postal' => 'required|string|max:10',
+            'poblacion' => 'required|string|max:100',
+            'provincia' => 'required|string|max:100',
+            'genero' => 'required|in:masculino,femenino',
+            'fecha_nacimiento' => 'required|date',
+            // Datos de la inscripción
             'estado_pago' => 'required|in:pendiente,pagado,cancelado',
-            'talla_camiseta_caro' => 'nullable|string|max:10',
-            'talla_camiseta_pauls' => 'nullable|string|max:10',
+            'es_socio_uec' => 'boolean',
+            'esta_federado' => 'boolean',
+            'numero_licencia' => 'nullable|string|max:50',
+            'club' => 'nullable|string|max:100',
+            'necesita_autobus' => 'boolean',
+            'parada_autobus' => 'nullable|string|max:100',
+            'seguro_anulacion' => 'boolean',
+            'talla_camiseta_caro' => 'required|string|max:10',
+            'talla_camiseta_pauls' => 'required|string|max:10',
         ]);
 
-        $inscripcion->update($validated);
+        // Actualizar participante
+        $inscripcion->participante->update([
+            'nombre' => $validated['nombre'],
+            'apellidos' => $validated['apellidos'],
+            'dni' => $validated['dni'],
+            'email' => $validated['email'],
+            'telefono' => $validated['telefono'],
+            'direccion' => $validated['direccion'],
+            'codigo_postal' => $validated['codigo_postal'],
+            'poblacion' => $validated['poblacion'],
+            'provincia' => $validated['provincia'],
+            'genero' => $validated['genero'],
+            'fecha_nacimiento' => $validated['fecha_nacimiento'],
+        ]);
 
-        return redirect()->route('admin.inscripciones.index')
-            ->with('success', 'Inscripción actualizada con éxito');
+        // Actualizar inscripción
+        $inscripcion->update([
+            'estado_pago' => $validated['estado_pago'],
+            'es_socio_uec' => $validated['es_socio_uec'] ?? false,
+            'esta_federado' => $validated['esta_federado'] ?? false,
+            'numero_licencia' => $validated['numero_licencia'],
+            'club' => $validated['club'],
+            'necesita_autobus' => $validated['necesita_autobus'] ?? false,
+            'parada_autobus' => $validated['parada_autobus'],
+            'seguro_anulacion' => $validated['seguro_anulacion'] ?? false,
+            'talla_camiseta_caro' => $validated['talla_camiseta_caro'],
+            'talla_camiseta_pauls' => $validated['talla_camiseta_pauls'],
+        ]);
+
+        return back()->with('success', 'Inscripción actualizada con éxito');
     }
 
     public function destroy(Inscripcion $inscripcion)
