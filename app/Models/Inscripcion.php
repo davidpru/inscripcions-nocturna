@@ -29,6 +29,8 @@ class Inscripcion extends Model
         'numero_pedido',
         'numero_autorizacion',
         'fecha_pago',
+        'fecha_devolucion',
+        'importe_devolucion',
     ];
 
     protected $casts = [
@@ -39,7 +41,9 @@ class Inscripcion extends Model
         'es_celiaco' => 'boolean',
         'tarifa_aplicada' => 'decimal:2',
         'precio_total' => 'decimal:2',
+        'importe_devolucion' => 'decimal:2',
         'fecha_pago' => 'datetime',
+        'fecha_devolucion' => 'datetime',
     ];
 
     public function participante(): BelongsTo

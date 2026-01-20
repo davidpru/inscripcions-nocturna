@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Sheet,
   SheetContent,
@@ -11,8 +20,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Head, router } from '@inertiajs/vue3';
-import { Eye, Pencil, Save, Trash2, X } from 'lucide-vue-next';
-import { reactive, ref } from 'vue';
+import { Eye, Pencil, RotateCcw, Save, Trash2, X } from 'lucide-vue-next';
+import { computed, reactive, ref } from 'vue';
 
 interface Participante {
   id: number;
@@ -162,6 +171,62 @@ const eliminarInscripcion = (id: number) => {
   }
 };
 
+const processingRefund = ref<number | null>(null);
+
+// Estado del diálogo de devolución
+const refundDialogOpen = ref(false);
+const refundInscripcion = ref<Inscripcion | null>(null);
+const refundTipo = ref<'manual' | 'redsys'>('manual');
+const refundImporte = ref('');
+const refundError = ref('');
+
+const maxRefundAmount = computed(() => refundInscripcion.value?.precio_total || 0);
+
+const abrirDialogoDevolucion = (inscripcion: Inscripcion) => {
+  if (inscripcion.estado_pago !== 'pagado') {
+    return;
+  }
+  refundInscripcion.value = inscripcion;
+  refundTipo.value = 'manual';
+  refundImporte.value = inscripcion.precio_total.toString();
+  refundError.value = '';
+  refundDialogOpen.value = true;
+};
+
+const confirmarDevolucion = () => {
+  if (!refundInscripcion.value) return;
+
+  const importeNum = parseFloat(refundImporte.value);
+  if (isNaN(importeNum) || importeNum <= 0 || importeNum > maxRefundAmount.value) {
+    refundError.value = `El importe debe ser entre 0.01€ y ${maxRefundAmount.value}€`;
+    return;
+  }
+
+  processingRefund.value = refundInscripcion.value.id;
+  const ruta =
+    refundTipo.value === 'manual'
+      ? `/admin/inscripciones/${refundInscripcion.value.id}/devolucion-manual`
+      : `/admin/inscripciones/${refundInscripcion.value.id}/devolucion`;
+
+  router.post(
+    ruta,
+    { importe: importeNum },
+    {
+      preserveScroll: true,
+      onSuccess: () => {
+        refundDialogOpen.value = false;
+        refundInscripcion.value = null;
+      },
+      onFinish: () => {
+        processingRefund.value = null;
+      },
+      onError: (errors) => {
+        refundError.value = errors.error || 'Error al procesar la devolución';
+      },
+    }
+  );
+};
+
 const formatearFecha = (fecha: string) => {
   return new Date(fecha).toLocaleDateString('es-ES', {
     day: '2-digit',
@@ -177,6 +242,8 @@ const getEstadoPagoBadgeClass = (estado: string) => {
     return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
   } else if (estado === 'cancelado') {
     return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+  } else if (estado === 'devuelto') {
+    return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
   } else {
     return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200';
   }
@@ -674,6 +741,20 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                   </Sheet>
 
                   <Button
+                    v-if="inscripcion.estado_pago === 'pagado'"
+                    variant="outline"
+                    size="sm"
+                    :disabled="processingRefund === inscripcion.id"
+                    @click="abrirDialogoDevolucion(inscripcion)"
+                    title="Procesar devolución"
+                  >
+                    <RotateCcw
+                      class="h-4 w-4"
+                      :class="{ 'animate-spin': processingRefund === inscripcion.id }"
+                    />
+                  </Button>
+
+                  <Button
                     variant="destructive"
                     size="sm"
                     @click="eliminarInscripcion(inscripcion.id)"
@@ -727,5 +808,76 @@ const getEstadoPagoBadgeClass = (estado: string) => {
         </div>
       </div>
     </div>
+
+    <!-- Diálogo de devolución -->
+    <Dialog v-model:open="refundDialogOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Procesar devolución</DialogTitle>
+          <DialogDescription v-if="refundInscripcion">
+            Devolución para {{ refundInscripcion.participante.nombre }}
+            {{ refundInscripcion.participante.apellidos }}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-4 py-4">
+          <!-- Tipo de devolución -->
+          <div class="space-y-3">
+            <div class="mb-2!">Tipo de devolución</div>
+            <RadioGroup v-model="refundTipo" class="space-y-2">
+              <div class="flex items-start space-x-3">
+                <RadioGroupItem id="manual" value="manual" class="mt-1" />
+                <div>
+                  <Label for="manual" class="cursor-pointer font-medium">Manual</Label>
+                  <div class="text-sm text-slate-500">
+                    Registrar devolución hecha por transferencia o efectivo
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-start space-x-3">
+                <RadioGroupItem id="redsys" value="redsys" class="mt-1" />
+                <div>
+                  <Label for="redsys" class="cursor-pointer font-medium">Automática (Redsys)</Label>
+                  <div class="text-sm text-slate-500">
+                    Requiere TPV con devoluciones habilitadas
+                  </div>
+                </div>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <!-- Importe -->
+          <div class="space-y-2">
+            <Label for="refund-amount">Importe a devolver (€)</Label>
+            <Input
+              id="refund-amount"
+              v-model="refundImporte"
+              type="number"
+              step="0.01"
+              min="0.01"
+              :max="maxRefundAmount"
+              placeholder="0.00"
+            />
+            <p class="text-sm text-slate-500">Máximo: {{ maxRefundAmount }}€</p>
+          </div>
+
+          <!-- Error -->
+          <div
+            v-if="refundError"
+            class="rounded-md bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400"
+          >
+            {{ refundError }}
+          </div>
+        </div>
+
+        <DialogFooter class="flex gap-2 sm:gap-0">
+          <Button variant="outline" @click="refundDialogOpen = false"> Cancelar </Button>
+          <Button :disabled="processingRefund !== null" @click="confirmarDevolucion">
+            <RotateCcw v-if="processingRefund" class="mr-2 h-4 w-4 animate-spin" />
+            Confirmar devolución
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>

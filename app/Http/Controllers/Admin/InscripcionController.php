@@ -16,8 +16,8 @@ class InscripcionController extends Controller
         $query = Inscripcion::with(['participante', 'edicion'])
             ->orderBy('created_at', 'desc');
 
-        // Filtrar por edición si se especifica
-        if ($request->has('edicion_id')) {
+        // Filtrar por edición si se especifica y tiene valor
+        if ($request->filled('edicion_id')) {
             $query->where('edicion_id', $request->edicion_id);
         }
 

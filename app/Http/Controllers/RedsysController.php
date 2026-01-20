@@ -369,4 +369,109 @@ class RedsysController extends Controller
             'errorMessage' => $errorMessage,
         ]);
     }
+
+    /**
+     * Procesar devolución de una inscripción pagada.
+     * Las devoluciones en Redsys requieren WebService REST, no redirección.
+     */
+    public function procesarDevolucion(Request $request, Inscripcion $inscripcion)
+    {
+        Log::info('Iniciando devolución', ['inscripcion_id' => $inscripcion->id]);
+
+        // Verificar que la inscripción esté pagada
+        if ($inscripcion->estado_pago !== 'pagado') {
+            return back()->withErrors(['error' => 'Solo se pueden devolver inscripciones pagadas']);
+        }
+
+        // Verificar que tenga número de pedido original
+        if (!$inscripcion->numero_pedido) {
+            return back()->withErrors(['error' => 'No se encontró el número de pedido original']);
+        }
+
+        // Calcular importe a devolver (puede ser parcial o total)
+        $importeDevolucion = $request->input('importe', $inscripcion->precio_total);
+        $amountInCents = (int)($importeDevolucion * 100);
+
+        try {
+            $redsysClient = new RedsysClient(
+                merchantCode: (int)config('redsys.tpv.merchantCode'),
+                secretKey: config('redsys.tpv.key'),
+                terminal: (int)config('redsys.tpv.terminal'),
+                environment: config('redsys.environment') === 'production' ? Environment::Production : Environment::Test
+            );
+
+            // Crear petición de devolución (TransactionType 3)
+            $requestParams = new RequestParameters(
+                amountInCents: $amountInCents,
+                transactionType: TransactionType::Devolucion,
+                currency: Currency::EUR,
+                order: $inscripcion->numero_pedido,
+            );
+
+            $redsysRequest = RedsysRequest::create($redsysClient, $requestParams);
+
+            // Enviar petición por WebService REST usando el método de la librería
+            $response = $redsysRequest->sendPostRequest();
+            
+            Log::info('Respuesta devolución Redsys', ['response' => get_class($response)]);
+
+            // Verificar si es una respuesta exitosa o un error
+            if ($response instanceof \Creagia\Redsys\RedsysResponse) {
+                $responseCode = $response->parameters->responseCode ?? null;
+
+                // Códigos 0000-0099 = éxito
+                if ($responseCode !== null && (int)$responseCode >= 0 && (int)$responseCode <= 99) {
+                    // Devolución exitosa
+                    $inscripcion->update([
+                        'estado_pago' => 'devuelto',
+                        'fecha_devolucion' => now(),
+                        'importe_devolucion' => $importeDevolucion,
+                    ]);
+
+                    Log::info('Devolución exitosa', ['inscripcion_id' => $inscripcion->id, 'response_code' => $responseCode]);
+
+                    return back()->with('success', 'Devolución procesada correctamente');
+                } else {
+                    $errorMsg = 'Devolución rechazada. Código: ' . ($responseCode ?? 'desconocido');
+                    Log::error('Devolución rechazada', ['response_code' => $responseCode]);
+                    return back()->withErrors(['error' => $errorMsg]);
+                }
+            } elseif ($response instanceof \Creagia\Redsys\Support\PostRequestError) {
+                Log::error('Error en petición de devolución', ['code' => $response->code, 'message' => $response->message]);
+                return back()->withErrors(['error' => 'Error de Redsys: ' . $response->message]);
+            } else {
+                Log::error('Respuesta inesperada de Redsys');
+                return back()->withErrors(['error' => 'Error al procesar la devolución con Redsys']);
+            }
+        } catch (\Exception $e) {
+            Log::error('Excepción en devolución', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()->withErrors(['error' => 'Error interno: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Marcar devolución manual (sin pasar por Redsys).
+     * Útil cuando la devolución se procesa por transferencia, efectivo, etc.
+     */
+    public function devolucionManual(Request $request, Inscripcion $inscripcion)
+    {
+        Log::info('Devolución manual', ['inscripcion_id' => $inscripcion->id]);
+
+        // Verificar que la inscripción esté pagada
+        if ($inscripcion->estado_pago !== 'pagado') {
+            return back()->withErrors(['error' => 'Solo se pueden devolver inscripciones pagadas']);
+        }
+
+        $importeDevolucion = $request->input('importe', $inscripcion->precio_total);
+
+        $inscripcion->update([
+            'estado_pago' => 'devuelto',
+            'fecha_devolucion' => now(),
+            'importe_devolucion' => $importeDevolucion,
+        ]);
+
+        Log::info('Devolución manual completada', ['inscripcion_id' => $inscripcion->id, 'importe' => $importeDevolucion]);
+
+        return back()->with('success', 'Devolución manual registrada correctamente');
+    }
 }

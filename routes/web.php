@@ -57,4 +57,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('inscripciones/{inscripcion}', [AdminInscripcionController::class, 'update'])->name('inscripciones.update');
     Route::delete('inscripciones/{inscripcion}', [AdminInscripcionController::class, 'destroy'])->name('inscripciones.destroy');
     Route::post('inscripciones/exportar', [AdminInscripcionController::class, 'exportar'])->name('inscripciones.exportar');
+    Route::post('inscripciones/{inscripcion}/devolucion', [RedsysController::class, 'procesarDevolucion'])->name('inscripciones.devolucion');
+    Route::post('inscripciones/{inscripcion}/devolucion-manual', [RedsysController::class, 'devolucionManual'])->name('inscripciones.devolucion-manual');
 });
