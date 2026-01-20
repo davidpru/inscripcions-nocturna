@@ -46,6 +46,7 @@ class InscripcionController extends Controller
         if ($participante && $request->edicion_id) {
             $yaInscrito = Inscripcion::where('participante_id', $participante->id)
                 ->where('edicion_id', $request->edicion_id)
+                ->where('estado_pago', 'pagado')
                 ->exists();
         }
 
@@ -179,13 +180,13 @@ class InscripcionController extends Controller
                 ]
             );
 
-            // Verificar si ya está inscrito
-            $yaInscrito = Inscripcion::where('participante_id', $participante->id)
+            // Verificar si ya está inscrito (independientemente del pago)
+            $inscripcionExistente = Inscripcion::where('participante_id', $participante->id)
                 ->where('edicion_id', $validated['edicion_id'])
-                ->exists();
+                ->first();
 
-            if ($yaInscrito) {
-                \Illuminate\Support\Facades\Log::warning('Usuario ya inscrito', ['dni' => $validated['dni']]);
+            if ($inscripcionExistente && $inscripcionExistente->estado_pago === 'pagado') {
+                \Illuminate\Support\Facades\Log::warning('Usuario ya inscrito y pagado', ['dni' => $validated['dni']]);
                 return back()->withErrors(['dni' => 'Ya estás inscrito en esta edición']);
             }
 
@@ -199,10 +200,7 @@ class InscripcionController extends Controller
                 $validated['seguro_anulacion']
             );
 
-            // Crear inscripción
-            $inscripcion = Inscripcion::create([
-                'participante_id' => $participante->id,
-                'edicion_id' => $validated['edicion_id'],
+            $datosInscripcion = [
                 'es_socio_uec' => $validated['es_socio_uec'],
                 'esta_federado' => $validated['esta_federado'],
                 'numero_licencia' => $validated['numero_licencia'],
@@ -214,7 +212,18 @@ class InscripcionController extends Controller
                 'tarifa_aplicada' => $precio['tarifa_base'],
                 'precio_total' => $precio['precio_total'],
                 'estado_pago' => 'pendiente',
-            ]);
+            ];
+
+            if ($inscripcionExistente) {
+                // Actualizar inscripción existente si estaba pendiente/rechazada
+                $inscripcionExistente->update($datosInscripcion);
+                $inscripcion = $inscripcionExistente;
+            } else {
+                // Crear nueva inscripción
+                $datosInscripcion['participante_id'] = $participante->id;
+                $datosInscripcion['edicion_id'] = $validated['edicion_id'];
+                $inscripcion = Inscripcion::create($datosInscripcion);
+            }
 
             \Illuminate\Support\Facades\Log::info('Inscripción creada, redirigiendo a redsys: ' . $inscripcion->id);
 

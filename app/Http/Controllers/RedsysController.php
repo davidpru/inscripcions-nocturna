@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inscripcion;
-use Creagia\LaravelRedsys\Facades\RedsysRequest;
+use Creagia\Redsys\RedsysRequest;
 use Creagia\Redsys\Enums\ConsumerLanguage;
 use Creagia\Redsys\Enums\PaymentMethod;
 use Creagia\Redsys\Enums\ResponseCode;
@@ -29,18 +29,30 @@ class RedsysController extends Controller
 
         // Guardar el número de pedido en la inscripción
         $orderNumber = $inscripcion->id;
+        $orderNumberFormatted = str_pad((string)$orderNumber, 4, '0', STR_PAD_LEFT); 
         $inscripcion->update(['numero_pedido' => $orderNumber]);
 
-        // Crear el formulario de pago Redsys
-        $redsysRequest = RedsysRequest::setAmount($inscripcion->precio_total)
-            ->setOrder($orderNumber)
-            ->setMerchantData($inscripcion->id)
-            ->setTransactionType(PaymentMethod::NORMAL_PAYMENT)
-            ->setProductDescription('Inscripción Nocturna Fredes Paüls ' . $inscripcion->edicion->anio)
-            ->setTitular($inscripcion->participante->nombre . ' ' . $inscripcion->participante->apellidos)
-            ->setUrlOk(route('redsys.success'))
-            ->setUrlKo(route('redsys.error')) // UrlKo en backend para registro
-            ->setConsumerLanguage(ConsumerLanguage::CA);
+        $redsysClient = new \Creagia\Redsys\RedsysClient(
+            config('redsys.tpv.key'),
+            config('redsys.tpv.merchantCode'),
+            config('redsys.tpv.terminal'),
+            config('redsys.environment') === 'production' ? \Creagia\Redsys\Enums\Environment::Production : \Creagia\Redsys\Enums\Environment::Test
+        );
+
+        $redsysRequest = \Creagia\Redsys\RedsysRequest::create($redsysClient, new \Creagia\Redsys\RequestParameters(
+            amount: (float)$inscripcion->precio_total,
+            order: $orderNumberFormatted,
+            transactionType: \Creagia\Redsys\Enums\TransactionType::Autorizacion,
+            currency: \Creagia\Redsys\Enums\Currency::EUR,
+            merchantUrl: route('redsys.notification'),
+            urlOk: route('redsys.success'),
+            urlKo: route('redsys.error')
+        ));
+        
+        $redsysRequest->setMerchantData($inscripcion->id);
+        $redsysRequest->setProductDescription('Inscripción Nocturna Fredes Paüls ' . $inscripcion->edicion->anio);
+        $redsysRequest->setTitular($inscripcion->participante->nombre . ' ' . $inscripcion->participante->apellidos);
+        $redsysRequest->setConsumerLanguage(ConsumerLanguage::CA);
 
         $formFields = $redsysRequest->getRequestFieldsArray();
         

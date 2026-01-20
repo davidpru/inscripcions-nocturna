@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Head, Link } from '@inertiajs/vue3';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Head, router } from '@inertiajs/vue3';
+import { Eye, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface Participante {
@@ -9,6 +18,12 @@ interface Participante {
   apellidos: string;
   email: string;
   telefono: string;
+  direccion: string;
+  codigo_postal: string;
+  poblacion: string;
+  provincia: string;
+  genero: string;
+  fecha_nacimiento: string;
 }
 
 interface Edicion {
@@ -26,6 +41,10 @@ interface Inscripcion {
   es_socio_uec: boolean;
   esta_federado: boolean;
   necesita_autobus: boolean;
+  seguro_anulacion: boolean;
+  talla_camiseta_caro: string;
+  talla_camiseta_pauls: string;
+  club: string;
 }
 
 interface Paginacion {
@@ -48,6 +67,21 @@ const edicionSeleccionada = ref(props.filtros.edicion_id || '');
 
 const filtrarPorEdicion = () => {
   window.location.href = `/admin/inscripciones?edicion_id=${edicionSeleccionada.value}`;
+};
+
+const eliminarInscripcion = (id: number) => {
+  if (
+    confirm(
+      '¿Estás seguro de que deseas eliminar esta inscripción? Esta acción no se puede deshacer.'
+    )
+  ) {
+    router.delete(`/admin/inscripciones/${id}`, {
+      preserveScroll: true,
+      onSuccess: () => {
+        // Opcional: mostrar notificación
+      },
+    });
+  }
 };
 
 const formatearFecha = (fecha: string) => {
@@ -198,12 +232,147 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                   {{ formatearFecha(inscripcion.created_at) }}
                 </td>
                 <td class="space-x-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                  <Link :href="`/admin/inscripciones/${inscripcion.id}`">
-                    <Button variant="outline" size="sm">Ver</Button>
-                  </Link>
-                  <Link :href="`/admin/inscripciones/${inscripcion.id}/edit`">
-                    <Button variant="outline" size="sm">Editar</Button>
-                  </Link>
+                  <Sheet>
+                    <SheetTrigger as-child>
+                      <Button variant="outline" size="sm">
+                        <Eye class="mr-2 h-4 w-4" />
+                        Ver
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent class="w-[400px] overflow-y-auto sm:w-[540px]">
+                      <SheetHeader>
+                        <SheetTitle>Detalle Inscripción #{{ inscripcion.id }}</SheetTitle>
+                        <SheetDescription>
+                          Inscripción realizada el {{ formatearFecha(inscripcion.created_at) }}
+                        </SheetDescription>
+                      </SheetHeader>
+                      <div class="mt-6 space-y-6 text-sm">
+                        <!-- Datos personales -->
+                        <div class="space-y-2">
+                          <h3 class="font-semibold text-slate-900">Datos Personales</h3>
+                          <div class="grid grid-cols-2 gap-4 rounded-lg border bg-slate-50 p-4">
+                            <div>
+                              <span class="block text-xs text-slate-500">Nombre completo</span>
+                              <span class="block font-medium"
+                                >{{ inscripcion.participante.nombre }}
+                                {{ inscripcion.participante.apellidos }}</span
+                              >
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">DNI</span>
+                              <span class="block font-medium">{{
+                                inscripcion.participante.dni
+                              }}</span>
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">Email</span>
+                              <span class="block font-medium">{{
+                                inscripcion.participante.email
+                              }}</span>
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">Teléfono</span>
+                              <span class="block font-medium">{{
+                                inscripcion.participante.telefono
+                              }}</span>
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">Fecha Nacimiento</span>
+                              <span class="block font-medium">{{
+                                new Date(
+                                  inscripcion.participante.fecha_nacimiento
+                                ).toLocaleDateString('es-ES')
+                              }}</span>
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">Género</span>
+                              <span class="block font-medium capitalize">{{
+                                inscripcion.participante.genero
+                              }}</span>
+                            </div>
+                            <div class="col-span-2">
+                              <span class="block text-xs text-slate-500">Dirección</span>
+                              <span class="block font-medium"
+                                >{{ inscripcion.participante.direccion }},
+                                {{ inscripcion.participante.codigo_postal }}
+                                {{ inscripcion.participante.poblacion }} ({{
+                                  inscripcion.participante.provincia
+                                }})</span
+                              >
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Detalles Inscripción -->
+                        <div class="space-y-2">
+                          <h3 class="font-semibold text-slate-900">Detalles Inscripción</h3>
+                          <div class="grid grid-cols-2 gap-4 rounded-lg border bg-slate-50 p-4">
+                            <div>
+                              <span class="block text-xs text-slate-500">Estado Pago</span>
+                              <span
+                                :class="getEstadoPagoBadgeClass(inscripcion.estado_pago)"
+                                class="mt-1 inline-flex rounded-full px-2 text-xs leading-5 font-semibold"
+                              >
+                                {{ inscripcion.estado_pago }}
+                              </span>
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">Precio Total</span>
+                              <span class="block font-medium">{{ inscripcion.precio_total }}€</span>
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">Socio UEC</span>
+                              <span class="block font-medium">{{
+                                inscripcion.es_socio_uec ? 'Sí' : 'No'
+                              }}</span>
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">Federado</span>
+                              <span class="block font-medium">{{
+                                inscripcion.esta_federado ? 'Sí' : 'No'
+                              }}</span>
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">Autobús</span>
+                              <span class="block font-medium">{{
+                                inscripcion.necesita_autobus ? 'Sí' : 'No'
+                              }}</span>
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">Seguro Anulación</span>
+                              <span class="block font-medium">{{
+                                inscripcion.seguro_anulacion ? 'Sí' : 'No'
+                              }}</span>
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">Camiseta Caro</span>
+                              <span class="block font-medium">{{
+                                inscripcion.talla_camiseta_caro
+                              }}</span>
+                            </div>
+                            <div>
+                              <span class="block text-xs text-slate-500">Camiseta Paüls</span>
+                              <span class="block font-medium">{{
+                                inscripcion.talla_camiseta_pauls
+                              }}</span>
+                            </div>
+                            <div class="col-span-2" v-if="inscripcion.club">
+                              <span class="block text-xs text-slate-500">Club</span>
+                              <span class="block font-medium">{{ inscripcion.club }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    @click="eliminarInscripcion(inscripcion.id)"
+                  >
+                    <Trash2 class="h-4 w-4" />
+                  </Button>
                 </td>
               </tr>
             </tbody>

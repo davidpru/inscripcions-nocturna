@@ -65,41 +65,53 @@ const iniciarInscripcion = async () => {
 
       <!-- Selección -->
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle class="text-2xl">Nueva Inscripción</CardTitle>
-            <CardDescription>Inscríbete a la Fredes-Paüls</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p class="mb-4 text-balance text-slate-600">
-              Introduce tu DNI/NIE para comenzar el proceso de inscripción.
-            </p>
-            <form @submit.prevent="iniciarInscripcion" class="space-y-4">
-              <div>
-                <Label for="dni">DNI/NIE</Label>
-                <Input id="dni" v-model="dni" type="text" placeholder="12345678X" class="mt-1" />
-                <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
-              </div>
-              <Button type="submit" :disabled="buscando" class="w-full">
-                {{ buscando ? 'Buscando...' : 'Continuar' }}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <Link href="/inscripcion/consulta">
-          <Card class="cursor-pointer transition-all hover:shadow-xl">
-            <CardHeader>
-              <CardTitle class="text-2xl">Consultar Inscripción</CardTitle>
-              <CardDescription>Verifica tu inscripción</CardDescription>
+        <div class="">
+          <Card>
+            <CardHeader class="pb-2">
+              <CardTitle class="text-2xl">Nueva Inscripción</CardTitle>
+              <CardDescription>Inscríbete a la Fredes-Paüls</CardDescription>
             </CardHeader>
             <CardContent>
-              <p class="text-slate-600 dark:text-slate-400">
-                Consulta el estado de tu inscripción con tu DNI y fecha de nacimiento.
+              <p class="mb-4 text-balance text-slate-600">
+                Introduce tu DNI/NIE para comenzar el proceso de inscripción.
               </p>
+              <form @submit.prevent="iniciarInscripcion" class="space-y-4">
+                <div>
+                  <Label for="dni">DNI/NIE</Label>
+                  <Input id="dni" v-model="dni" type="text" placeholder="12345678X" class="mt-1" />
+                  <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
+                </div>
+                <Button type="submit" :disabled="buscando" class="w-full">
+                  {{ buscando ? 'Buscando...' : 'Continuar' }}
+                </Button>
+              </form>
             </CardContent>
           </Card>
-        </Link>
+        </div>
+        <div class="flex flex-col gap-4">
+          <Card class="cursor-pointer transition-all hover:shadow-xl">
+            <CardHeader>
+              <CardTitle class="text-2xl">Consultar inscripción</CardTitle>
+              <CardDescription>Verifica tu inscripción con tus datos personales</CardDescription>
+            </CardHeader>
+            <CardContent class="">
+              <Link href="/inscripcion/consulta">
+                <Button class="w-full"> Consultar Inscripción </Button>
+              </Link>
+            </CardContent>
+          </Card>
+          <Card class="cursor-pointer transition-all hover:shadow-xl">
+            <CardHeader>
+              <CardTitle class="text-2xl">Listado de inscritos</CardTitle>
+              <CardDescription>Comprueba el listado general de inscritos</CardDescription>
+            </CardHeader>
+            <CardContent class="">
+              <Link href="/inscripcion/consulta">
+                <Button class="w-full"> Consultar Inscripción </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   </div>
