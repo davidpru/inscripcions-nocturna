@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Field } from '@/components/ui/field';
+import { Field, FieldLegend, FieldSet } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -12,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Head, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ref, watch } from 'vue';
@@ -134,6 +136,18 @@ watch(
   }
 );
 
+// Autocompletar club cuando es socio UEC
+watch(
+  () => form.es_socio_uec,
+  (esSocio) => {
+    if (esSocio) {
+      form.club = 'UEC Tortosa';
+    } else {
+      form.club = '';
+    }
+  }
+);
+
 const enviarInscripcion = () => {
   form.post('/inscripcion', {
     onSuccess: () => {
@@ -144,6 +158,7 @@ const enviarInscripcion = () => {
 </script>
 
 <template>
+  <Header></Header>
   <Head title="Inscripción - Nocturna Fredes Paüls" />
 
   <div
@@ -198,10 +213,13 @@ const enviarInscripcion = () => {
           </div>
 
           <!-- Datos Personales -->
-          <div>
-            <h2 class="mb-4 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          <FieldSet>
+            <FieldLegend
+              variant="legend"
+              class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
+            >
               Datos Personales
-            </h2>
+            </FieldLegend>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field>
                 <Label for="nombre">Nombre *</Label>
@@ -241,13 +259,16 @@ const enviarInscripcion = () => {
                 <Input id="email" v-model="form.email" type="email" required />
               </Field>
             </div>
-          </div>
+          </FieldSet>
 
           <!-- Dirección -->
-          <div>
-            <h2 class="mb-4 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          <FieldSet>
+            <FieldLegend
+              variant="legend"
+              class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
+            >
               Dirección
-            </h2>
+            </FieldLegend>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field class="md:col-span-2">
                 <Label for="direccion">Dirección *</Label>
@@ -269,48 +290,54 @@ const enviarInscripcion = () => {
                 <Input id="provincia" v-model="form.provincia" type="text" required />
               </Field>
             </div>
-          </div>
+          </FieldSet>
 
           <!-- Información Deportiva -->
-          <div>
-            <h2 class="mb-4 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          <FieldSet>
+            <FieldLegend
+              variant="legend"
+              class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
+            >
               Información Deportiva
-            </h2>
+            </FieldLegend>
             <div class="space-y-4">
               <Field orientation="horizontal">
                 <Checkbox id="socio_uec" v-model="form.es_socio_uec" />
                 <Label for="socio_uec">¿Eres socio de la UEC Tortosa?</Label>
               </Field>
 
+              <Field class="">
+                <Label for="club">Club</Label>
+                <Input id="club" v-model="form.club" type="text" class="w-lg!" />
+              </Field>
+
+              <Separator class="my-4" />
+
               <Field orientation="horizontal">
                 <Checkbox id="federado" v-model="form.esta_federado" />
                 <Label for="federado">¿Estás federado?</Label>
               </Field>
 
-              <div v-if="form.esta_federado" class="ml-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Field>
-                  <Label for="numero_licencia">Número de Licencia *</Label>
-                  <Input
-                    id="numero_licencia"
-                    v-model="form.numero_licencia"
-                    type="text"
-                    :required="form.esta_federado"
-                  />
-                </Field>
-
-                <Field>
-                  <Label for="club">Club</Label>
-                  <Input id="club" v-model="form.club" type="text" />
-                </Field>
-              </div>
+              <Field v-if="form.esta_federado">
+                <Label for="numero_licencia">Número de Licencia *</Label>
+                <Input
+                  id="numero_licencia"
+                  v-model="form.numero_licencia"
+                  type="text"
+                  :required="form.esta_federado"
+                />
+              </Field>
             </div>
-          </div>
+          </FieldSet>
 
           <!-- Servicios Adicionales -->
-          <div>
-            <h2 class="mb-4 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          <FieldSet>
+            <FieldLegend
+              variant="legend"
+              class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
+            >
               Servicios Adicionales
-            </h2>
+            </FieldLegend>
             <div class="space-y-4">
               <div class="rounded-md border border-slate-200 p-4 dark:border-slate-700">
                 <Field orientation="horizontal">
@@ -335,7 +362,7 @@ const enviarInscripcion = () => {
                         <RadioGroupItem id="parada-tortosa" value="tortosa" class="mt-1" />
                         <div class="flex flex-col">
                           <Label for="parada-tortosa" class="cursor-pointer font-normal"
-                            >Tortosa</Label
+                            >Salida desde Tortosa</Label
                           >
                           <p class="text-sm text-slate-500 dark:text-slate-400">
                             Rotonda Quatre Camins
@@ -345,7 +372,9 @@ const enviarInscripcion = () => {
                       <div class="flex items-start space-x-2">
                         <RadioGroupItem id="parada-pauls" value="pauls" class="mt-1" />
                         <div class="flex flex-col">
-                          <Label for="parada-pauls" class="cursor-pointer font-normal">Paüls</Label>
+                          <Label for="parada-pauls" class="cursor-pointer font-normal"
+                            >Salida desde Paüls</Label
+                          >
                           <p class="text-sm text-slate-500 dark:text-slate-400">
                             Bàscula municipal, entrada de Paüls
                           </p>
@@ -368,13 +397,16 @@ const enviarInscripcion = () => {
                 </Field>
               </div>
             </div>
-          </div>
+          </FieldSet>
 
           <!-- Tallas de Camisetas -->
-          <div>
-            <h2 class="mb-4 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          <FieldSet>
+            <FieldLegend
+              variant="legend"
+              class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
+            >
               Tallas de Camisetas
-            </h2>
+            </FieldLegend>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field>
                 <Label for="talla_caro">Talla Camiseta Caro *</Label>
@@ -410,7 +442,7 @@ const enviarInscripcion = () => {
                 </Select>
               </Field>
             </div>
-          </div>
+          </FieldSet>
 
           <!-- Resumen de Precio -->
           <div v-if="precioCalculado" class="rounded-lg bg-slate-50 p-6 dark:bg-slate-700">
