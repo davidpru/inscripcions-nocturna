@@ -16,6 +16,36 @@ class InscripcionController extends Controller
         private TarifaService $tarifaService
     ) {}
 
+    /**
+     * Listado público de inscritos
+     */
+    public function listado(): Response
+    {
+        $edicionActiva = Edicion::where('estado', 'abierta')
+            ->orderBy('anio', 'desc')
+            ->first();
+
+        if (!$edicionActiva) {
+            abort(404, 'No hay ediciones abiertas');
+        }
+
+        $inscritos = Inscripcion::where('edicion_id', $edicionActiva->id)
+            ->where('estado_pago', 'pagado')
+            ->with(['participante:id,nombre,apellidos,poblacion'])
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(fn ($inscripcion) => [
+                'id' => $inscripcion->id,
+                'participante' => $inscripcion->participante,
+                'club' => $inscripcion->club,
+            ]);
+
+        return Inertia::render('Inscripcion/Listado', [
+            'edicion' => $edicionActiva,
+            'inscritos' => $inscritos,
+        ]);
+    }
+
     public function index(Request $request): Response
     {
         $edicionActiva = Edicion::where('estado', 'abierta')
@@ -172,6 +202,8 @@ class InscripcionController extends Controller
                 'seguro_anulacion' => 'required|boolean',
                 'talla_camiseta_caro' => 'required|string|max:10',
                 'talla_camiseta_pauls' => 'required|string|max:10',
+                'es_celiaco' => 'required|in:si,no',
+                'acepta_reglamento' => 'required|accepted',
             ]);
 
             \Illuminate\Support\Facades\Log::info('Validación correcta');
@@ -223,6 +255,7 @@ class InscripcionController extends Controller
                 'seguro_anulacion' => $validated['seguro_anulacion'],
                 'talla_camiseta_caro' => $validated['talla_camiseta_caro'],
                 'talla_camiseta_pauls' => $validated['talla_camiseta_pauls'],
+                'es_celiaco' => $validated['es_celiaco'] === 'si',
                 'tarifa_aplicada' => $precio['tarifa_base'],
                 'precio_total' => $precio['precio_total'],
                 'estado_pago' => 'pendiente',

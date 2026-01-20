@@ -71,6 +71,8 @@ const form = useForm({
   seguro_anulacion: false,
   talla_camiseta_caro: '',
   talla_camiseta_pauls: '',
+  es_celiaco: '',
+  acepta_reglamento: false,
 });
 
 // Cargar datos iniciales desde props (pasados desde Home)
@@ -235,13 +237,13 @@ const enviarInscripcion = () => {
         <h2 class="mb-2 text-2xl font-bold text-balance text-slate-900">
           Nocturna <span>Fredes-Paüls {{ edicion.anio }}</span>
         </h2>
-        <p class="text-md text-slate-900">Formulario de Inscripción</p>
+        <p class="text-md text-slate-900">Formulari d'Inscripció</p>
       </div>
 
       <!-- Formulario de inscripción -->
       <div class="rounded-lg bg-white p-8 shadow-lg">
         <Link href="/">
-          <Button variant="ghost" class="mb-4"> ← Volver </Button>
+          <Button variant="ghost" class="mb-4"> ← Tornar </Button>
         </Link>
         <form @submit.prevent="enviarInscripcion" class="space-y-8">
           <!-- Mensaje de errores general -->
@@ -260,7 +262,7 @@ const enviarInscripcion = () => {
                 </svg>
               </div>
               <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">Hay errores en el formulario</h3>
+                <h3 class="text-sm font-medium text-red-800">Hi ha errors al formulari</h3>
                 <div class="mt-2 text-sm text-red-700">
                   <ul class="list-disc space-y-1 pl-5">
                     <li v-for="(error, field) in form.errors" :key="field">{{ error }}</li>
@@ -272,7 +274,7 @@ const enviarInscripcion = () => {
 
           <!-- Sección DNI -->
           <div>
-            <h2 class="mb-4 text-2xl font-semibold">Identificación</h2>
+            <h2 class="mb-4 text-2xl font-semibold">Identificació</h2>
             <div class="flex gap-4">
               <Field class="flex-1">
                 <Label for="dni">DNI/NIE *</Label>
@@ -296,12 +298,12 @@ const enviarInscripcion = () => {
                   :disabled="buscandoDNI"
                   variant="outline"
                 >
-                  {{ buscandoDNI ? 'Buscando...' : 'Buscar' }}
+                  {{ buscandoDNI ? 'Cercant...' : 'Cercar' }}
                 </Button>
               </div>
             </div>
             <p v-if="participanteEncontrado && !yaInscrito" class="mt-2 text-sm text-green-600">
-              ✓ Participante encontrado. Verifica que tus datos sean correctos.
+              ✓ Participant trobat. Verifica que les teves dades siguin correctes.
             </p>
 
             <div v-if="yaInscrito" class="mt-4 rounded-md border border-green-200 bg-green-50 p-4">
@@ -317,16 +319,16 @@ const enviarInscripcion = () => {
                 </div>
                 <div class="ml-3">
                   <h3 class="text-sm font-medium text-green-800">
-                    Ya estás inscrito en esta edición
+                    Ja estàs inscrit en aquesta edició
                   </h3>
                   <div class="mt-2 text-sm text-green-700">
-                    <p class="mb-4">El DNI indicado ya tiene una inscripción activa.</p>
+                    <p class="mb-4">El DNI indicat ja té una inscripció activa.</p>
                     <Button
                       variant="default"
                       size="lg"
                       @click="router.get('/inscripcion/consulta')"
                     >
-                      Comprobar mi inscripción
+                      Comprovar la meva inscripció
                     </Button>
                   </div>
                 </div>
@@ -341,30 +343,30 @@ const enviarInscripcion = () => {
                 variant="legend"
                 class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
               >
-                Datos personales
+                Dades personals
               </FieldLegend>
               <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Field>
-                  <Label for="nombre">Nombre *</Label>
+                  <Label for="nombre">Nom *</Label>
                   <Input id="nombre" v-model="form.nombre" type="text" required />
                 </Field>
 
                 <Field>
-                  <Label for="apellidos">Apellidos *</Label>
+                  <Label for="apellidos">Cognoms *</Label>
                   <Input id="apellidos" v-model="form.apellidos" type="text" required />
                 </Field>
 
                 <Field>
-                  <Label for="genero">Género *</Label>
+                  <Label for="genero">Gènere *</Label>
                   <NativeSelect id="genero" v-model="form.genero" required class="w-full">
                     <NativeSelectOption value="" disabled>Seleccionar...</NativeSelectOption>
-                    <NativeSelectOption value="masculino">Masculino</NativeSelectOption>
-                    <NativeSelectOption value="femenino">Femenino</NativeSelectOption>
+                    <NativeSelectOption value="masculino">Masculí</NativeSelectOption>
+                    <NativeSelectOption value="femenino">Femení</NativeSelectOption>
                   </NativeSelect>
                 </Field>
 
                 <Field>
-                  <Label for="fecha_nacimiento">Fecha de Nacimiento *</Label>
+                  <Label for="fecha_nacimiento">Data de Naixement *</Label>
                   <Input
                     id="fecha_nacimiento"
                     v-model="form.fecha_nacimiento"
@@ -374,12 +376,12 @@ const enviarInscripcion = () => {
                 </Field>
 
                 <Field>
-                  <Label for="telefono">Teléfono *</Label>
+                  <Label for="telefono">Telèfon *</Label>
                   <Input id="telefono" v-model="form.telefono" type="tel" required />
                 </Field>
 
                 <Field>
-                  <Label for="email">Email *</Label>
+                  <Label for="email">Correu electrònic *</Label>
                   <Input id="email" v-model="form.email" type="email" required />
                 </Field>
               </div>
@@ -391,26 +393,27 @@ const enviarInscripcion = () => {
                 variant="legend"
                 class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
               >
-                Dirección
+                Adreça
               </FieldLegend>
               <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Field class="md:col-span-2">
-                  <Label for="direccion">Dirección *</Label>
+                  <Label for="direccion">Adreça *</Label>
                   <Input id="direccion" v-model="form.direccion" type="text" required />
                 </Field>
-
+              </div>
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <Field>
-                  <Label for="codigo_postal">Código Postal *</Label>
+                  <Label for="codigo_postal">Codi Postal *</Label>
                   <Input id="codigo_postal" v-model="form.codigo_postal" type="text" required />
                 </Field>
 
                 <Field>
-                  <Label for="poblacion">Población *</Label>
+                  <Label for="poblacion">Població *</Label>
                   <Input id="poblacion" v-model="form.poblacion" type="text" required />
                 </Field>
 
-                <Field class="md:col-span-2">
-                  <Label for="provincia">Provincia *</Label>
+                <Field>
+                  <Label for="provincia">Província *</Label>
                   <Input id="provincia" v-model="form.provincia" type="text" required />
                 </Field>
               </div>
@@ -422,12 +425,12 @@ const enviarInscripcion = () => {
                 variant="legend"
                 class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
               >
-                Información deportiva
+                Informació esportiva
               </FieldLegend>
               <div class="space-y-4">
                 <Field orientation="horizontal">
                   <Checkbox id="socio_uec" v-model="form.es_socio_uec" />
-                  <Label for="socio_uec">¿Eres socio de la UEC Tortosa?</Label>
+                  <Label for="socio_uec">Ets soci de la UEC Tortosa?</Label>
                 </Field>
 
                 <Field class="">
@@ -439,11 +442,11 @@ const enviarInscripcion = () => {
 
                 <Field orientation="horizontal">
                   <Checkbox id="federado" v-model="form.esta_federado" />
-                  <Label for="federado">¿Estás federado?</Label>
+                  <Label for="federado">Estàs federat?</Label>
                 </Field>
 
                 <Field v-if="form.esta_federado">
-                  <Label for="numero_licencia">Número de Licencia *</Label>
+                  <Label for="numero_licencia">Número de Llicència *</Label>
                   <Input
                     id="numero_licencia"
                     v-model="form.numero_licencia"
@@ -461,7 +464,7 @@ const enviarInscripcion = () => {
                 variant="legend"
                 class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
               >
-                Servicios adicionales
+                Serveis addicionals
               </FieldLegend>
               <div class="space-y-4">
                 <div class="rounded-md border border-slate-200 p-4">
@@ -477,7 +480,7 @@ const enviarInscripcion = () => {
 
                   <div v-if="form.necesita_autobus" class="mt-4 ml-6">
                     <Field>
-                      <Label>Parada de Autobús *</Label>
+                      <Label>Parada d'Autobús *</Label>
                       <RadioGroup
                         v-model="form.parada_autobus"
                         :required="form.necesita_autobus"
@@ -487,7 +490,7 @@ const enviarInscripcion = () => {
                           <RadioGroupItem id="parada-tortosa" value="tortosa" class="mt-1" />
                           <div class="flex flex-col">
                             <Label for="parada-tortosa" class="cursor-pointer font-normal"
-                              >Salida desde Tortosa</Label
+                              >Sortida des de Tortosa</Label
                             >
                             <p class="text-sm text-slate-500">Rotonda Quatre Camins</p>
                           </div>
@@ -496,8 +499,9 @@ const enviarInscripcion = () => {
                           <RadioGroupItem id="parada-pauls" value="pauls" class="mt-1" />
                           <div class="flex flex-col">
                             <Label for="parada-pauls" class="cursor-pointer font-normal"
-                              >Salida desde Paüls</Label
+                              >Sortida des de Paüls</Label
                             >
+
                             <p class="text-sm text-slate-500">
                               Bàscula municipal, entrada de Paüls
                             </p>
@@ -514,7 +518,7 @@ const enviarInscripcion = () => {
                   <Field orientation="horizontal">
                     <Checkbox id="seguro" v-model="form.seguro_anulacion" />
                     <div>
-                      <Label for="seguro">Seguro de Anulación</Label>
+                      <Label for="seguro">Assegurança d'anul·lació</Label>
                       <p class="text-sm text-slate-500">9€</p>
                     </div>
                   </Field>
@@ -528,11 +532,11 @@ const enviarInscripcion = () => {
                 variant="legend"
                 class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
               >
-                Tallas de Camisetas
+                Talles de samarretes
               </FieldLegend>
               <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Field>
-                  <Label for="talla_caro">Talla Camiseta Caro *</Label>
+                  <Label for="talla_caro">Talla Samarreta Caro *</Label>
                   <NativeSelect
                     id="talla_caro"
                     v-model="form.talla_camiseta_caro"
@@ -554,7 +558,7 @@ const enviarInscripcion = () => {
                 </Field>
 
                 <Field>
-                  <Label for="talla_pauls">Talla Camiseta Paüls *</Label>
+                  <Label for="talla_pauls">Talla Samarreta Paüls *</Label>
                   <NativeSelect
                     id="talla_pauls"
                     v-model="form.talla_camiseta_pauls"
@@ -577,12 +581,62 @@ const enviarInscripcion = () => {
               </div>
             </FieldSet>
 
+            <!-- Información adicional -->
+            <FieldSet>
+              <FieldLegend
+                variant="legend"
+                class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
+              >
+                Informació addicional
+              </FieldLegend>
+              <div class="space-y-4">
+                <Field>
+                  <Label>Ets celíac? *</Label>
+                  <RadioGroup v-model="form.es_celiaco" class="mt-2 flex space-x-6">
+                    <div class="flex items-center space-x-2">
+                      <RadioGroupItem id="celiaco-no" value="no" />
+                      <Label for="celiaco-no" class="cursor-pointer font-normal">No</Label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <RadioGroupItem id="celiaco-si" value="si" />
+                      <Label for="celiaco-si" class="cursor-pointer font-normal">Sí</Label>
+                    </div>
+                  </RadioGroup>
+                  <p class="mt-1 text-sm text-slate-500">
+                    Indica si necessites menú sense gluten a l'avituallament
+                  </p>
+                </Field>
+              </div>
+            </FieldSet>
+
+            <!-- Aceptación de reglamento -->
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <Field orientation="horizontal" class="items-start">
+                <Checkbox
+                  id="acepta_reglamento"
+                  v-model="form.acepta_reglamento"
+                  required
+                  :class="{ 'border-red-500': form.errors.acepta_reglamento }"
+                />
+                <div>
+                  <Label for="acepta_reglamento" class="cursor-pointer leading-relaxed">
+                    Accepto el reglament de la cursa, la política de devolucions descrita
+                    anteriorment i també accepto el plec de descàrrec de responsabilitats i aptitud
+                    física per participar a la Nocturna Fredes-Paüls {{ edicion.anio }}. *
+                  </Label>
+                  <p v-if="form.errors.acepta_reglamento" class="mt-1 text-sm text-red-500">
+                    {{ form.errors.acepta_reglamento }}
+                  </p>
+                </div>
+              </Field>
+            </div>
+
             <!-- Resumen de Precio -->
             <div v-if="precioCalculado" class="rounded-lg bg-slate-50 p-6">
-              <h3 class="mb-4 text-xl font-semibold text-slate-900">Resumen del Precio</h3>
+              <h3 class="mb-4 text-xl font-semibold text-slate-900">Resum del Preu</h3>
               <div class="space-y-2">
                 <div class="flex justify-between text-slate-700">
-                  <span>Inscripción:</span>
+                  <span>Inscripció:</span>
                   <span>{{ precioCalculado.tarifa_base }}€</span>
                 </div>
                 <div v-if="form.necesita_autobus" class="flex justify-between text-slate-700">
@@ -590,7 +644,7 @@ const enviarInscripcion = () => {
                   <span>{{ precioCalculado.precio_autobus }}€</span>
                 </div>
                 <div v-if="form.seguro_anulacion" class="flex justify-between text-slate-700">
-                  <span>Seguro:</span>
+                  <span>Assegurança:</span>
                   <span>{{ precioCalculado.precio_seguro }}€</span>
                 </div>
                 <div class="mt-2 border-t border-slate-300 pt-2">
@@ -600,7 +654,7 @@ const enviarInscripcion = () => {
                   </div>
                 </div>
                 <p v-if="precioCalculado.es_tarifa_tardia" class="text-sm text-amber-600">
-                  * Se ha aplicado tarifa tardía
+                  * S'ha aplicat tarifa tardana
                 </p>
               </div>
             </div>
@@ -616,10 +670,10 @@ const enviarInscripcion = () => {
               >
                 {{
                   form.processing
-                    ? 'Procesando...'
+                    ? 'Processant...'
                     : yaInscrito
-                      ? 'Ya inscrito'
-                      : 'Confirmar Inscripción'
+                      ? 'Ja inscrit'
+                      : 'Confirmar Inscripció'
                 }}
               </Button>
             </div>

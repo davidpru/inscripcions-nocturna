@@ -127,13 +127,14 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
     <div class="mx-auto max-w-3xl px-4">
       <!-- Estado de la inscripción -->
       <div :class="[estadoInfo.bgColor, 'mb-6 rounded-lg p-6 text-center']">
-        <component :is="estadoInfo.icon" :class="['mx-auto mb-3 h-12 w-12', estadoInfo.iconColor]" />
+        <component
+          :is="estadoInfo.icon"
+          :class="['mx-auto mb-3 h-12 w-12', estadoInfo.iconColor]"
+        />
         <h1 :class="['text-2xl font-bold', estadoInfo.textColor]">
           {{ estadoInfo.text }}
         </h1>
-        <p class="mt-2 text-slate-600">
-          Nocturna Fredes Paüls {{ inscripcion.edicion.anio }}
-        </p>
+        <p class="mt-2 text-slate-600">Nocturna Fredes Paüls {{ inscripcion.edicion.anio }}</p>
       </div>
 
       <!-- Datos del participante -->
@@ -160,7 +161,9 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
           </div>
           <div>
             <span class="block text-sm text-slate-500">Fecha de nacimiento</span>
-            <span class="font-medium">{{ formatDate(inscripcion.participante.fecha_nacimiento) }}</span>
+            <span class="font-medium">{{
+              formatDate(inscripcion.participante.fecha_nacimiento)
+            }}</span>
           </div>
           <div>
             <span class="block text-sm text-slate-500">Género</span>
@@ -227,7 +230,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
         class="mb-6 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 p-6"
       >
         <div class="flex items-start gap-4">
-          <Bus class="h-8 w-8 text-blue-600 shrink-0" />
+          <Bus class="h-8 w-8 shrink-0 text-blue-600" />
           <div class="flex-1">
             <h3 class="text-lg font-semibold text-blue-900">¿Necesitas transporte?</h3>
             <p class="mt-1 text-sm text-blue-700">
@@ -235,9 +238,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
             </p>
 
             <div v-if="!mostrarFormularioAutobus" class="mt-4">
-              <Button @click="mostrarFormularioAutobus = true">
-                Contratar Autobús
-              </Button>
+              <Button @click="mostrarFormularioAutobus = true"> Contratar Autobús </Button>
             </div>
 
             <form v-else @submit.prevent="contratarAutobus" class="mt-4 space-y-4">
@@ -251,7 +252,10 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
                   <div class="flex items-start space-x-2">
                     <RadioGroupItem id="parada-tortosa-det" value="tortosa" class="mt-1" />
                     <div class="flex flex-col">
-                      <Label for="parada-tortosa-det" class="cursor-pointer font-normal text-slate-900">
+                      <Label
+                        for="parada-tortosa-det"
+                        class="cursor-pointer font-normal text-slate-900"
+                      >
                         Salida desde Tortosa
                       </Label>
                       <p class="text-sm text-slate-500">Rotonda Quatre Camins</p>
@@ -260,7 +264,10 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
                   <div class="flex items-start space-x-2">
                     <RadioGroupItem id="parada-pauls-det" value="pauls" class="mt-1" />
                     <div class="flex flex-col">
-                      <Label for="parada-pauls-det" class="cursor-pointer font-normal text-slate-900">
+                      <Label
+                        for="parada-pauls-det"
+                        class="cursor-pointer font-normal text-slate-900"
+                      >
                         Salida desde Paüls
                       </Label>
                       <p class="text-sm text-slate-500">Bàscula municipal, entrada de Paüls</p>
@@ -273,7 +280,10 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
               </div>
 
               <div class="flex gap-3">
-                <Button type="submit" :disabled="autobusForm.processing || !autobusForm.parada_autobus">
+                <Button
+                  type="submit"
+                  :disabled="autobusForm.processing || !autobusForm.parada_autobus"
+                >
                   {{ autobusForm.processing ? 'Procesando...' : `Pagar ${precioAutobus || 12}€` }}
                 </Button>
                 <Button type="button" variant="outline" @click="mostrarFormularioAutobus = false">

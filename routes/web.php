@@ -19,6 +19,7 @@ Route::get('/', function () {
 // Rutas públicas de inscripción
 Route::prefix('inscripcion')->group(function () {
     Route::get('/', [InscripcionController::class, 'index'])->name('inscripcion.index');
+    Route::get('/listado', [InscripcionController::class, 'listado'])->name('inscripcion.listado');
     Route::get('/consulta', function () {
         $edicion = Edicion::where('activa', true)->first();
         return Inertia::render('Inscripcion/Consulta', [

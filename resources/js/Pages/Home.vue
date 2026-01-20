@@ -58,7 +58,7 @@ const iniciarInscripcion = async () => {
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-slate-90 mb-2 text-4xl font-bold">
-          Nocturna Fredes Paüls {{ edicion.anio }}
+          Nocturna Fredes-Paüls {{ edicion.anio }}
         </h1>
         <p class="text-foreground text-lg">Selecciona una opción</p>
       </div>
@@ -102,12 +102,12 @@ const iniciarInscripcion = async () => {
           </Card>
           <Card class="cursor-pointer transition-all hover:shadow-xl">
             <CardHeader>
-              <CardTitle class="text-2xl">Listado de inscritos</CardTitle>
-              <CardDescription>Comprueba el listado general de inscritos</CardDescription>
+              <CardTitle class="text-2xl">Llistat d'inscrits</CardTitle>
+              <CardDescription>Comprova el llistat general d'inscrits</CardDescription>
             </CardHeader>
             <CardContent class="">
-              <Link href="/inscripcion/consulta">
-                <Button class="w-full"> Consultar Inscripción </Button>
+              <Link href="/inscripcion/listado">
+                <Button class="w-full"> Veure llistat </Button>
               </Link>
             </CardContent>
           </Card>
