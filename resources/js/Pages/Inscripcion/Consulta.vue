@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 
 interface Edicion {
   id: number;
@@ -16,7 +16,11 @@ defineProps<{
   edicion: Edicion;
 }>();
 
-const consultaForm = useForm({
+const consultaForm = useForm<{
+  dni: string;
+  fecha_nacimiento: string;
+  general?: string;
+}>({
   dni: '',
   fecha_nacimiento: '',
 });
@@ -28,27 +32,32 @@ const consultarInscripcion = () => {
 
 <template>
   <Header />
-  <Head title="Consultar Inscripción - Nocturna Fredes Paüls" />
 
-  <div
-    class="min-h-screen bg-linear-to-b from-slate-50 to-slate-100 px-4 py-12 dark:from-slate-900 dark:to-slate-800"
-  >
+  <div class="min-h-screen">
     <div class="mx-auto max-w-4xl">
       <!-- Header -->
       <div class="mb-8 text-center">
-        <h1 class="mb-2 text-4xl font-bold text-slate-900 dark:text-slate-100">
+        <h1 class="mb-2 text-4xl font-bold text-slate-900">
           Nocturna Fredes Paüls {{ edicion.anio }}
         </h1>
-        <p class="text-lg text-slate-600 dark:text-slate-400">Consultar Inscripción</p>
+        <p class="text-lg text-slate-600">Consultar Inscripción</p>
       </div>
 
       <!-- Formulario de consulta -->
-      <div class="rounded-lg bg-white p-8 shadow-lg dark:bg-slate-800">
+      <div class="rounded-lg bg-white p-8 shadow-lg">
         <Link href="/">
           <Button variant="ghost" class="mb-4">← Volver</Button>
         </Link>
 
         <form @submit.prevent="consultarInscripcion" class="space-y-6">
+          <!-- Error general -->
+          <div
+            v-if="consultaForm.errors.general"
+            class="rounded-md bg-red-50 p-4 text-sm text-red-500"
+          >
+            {{ consultaForm.errors.general }}
+          </div>
+
           <Field>
             <Label for="consulta_dni">DNI/NIE *</Label>
             <Input
@@ -57,7 +66,11 @@ const consultarInscripcion = () => {
               type="text"
               required
               placeholder="12345678X"
+              :class="{ 'border-red-500': consultaForm.errors.dni }"
             />
+            <p v-if="consultaForm.errors.dni" class="mt-1 text-sm text-red-500">
+              {{ consultaForm.errors.dni }}
+            </p>
           </Field>
 
           <Field>
@@ -67,7 +80,11 @@ const consultarInscripcion = () => {
               v-model="consultaForm.fecha_nacimiento"
               type="date"
               required
+              :class="{ 'border-red-500': consultaForm.errors.fecha_nacimiento }"
             />
+            <p v-if="consultaForm.errors.fecha_nacimiento" class="mt-1 text-sm text-red-500">
+              {{ consultaForm.errors.fecha_nacimiento }}
+            </p>
           </Field>
 
           <div class="flex justify-center pt-4">

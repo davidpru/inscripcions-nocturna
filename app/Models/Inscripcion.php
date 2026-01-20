@@ -23,6 +23,9 @@ class Inscripcion extends Model
         'tarifa_aplicada',
         'precio_total',
         'estado_pago',
+        'numero_pedido',
+        'numero_autorizacion',
+        'fecha_pago',
     ];
 
     protected $casts = [
@@ -32,6 +35,7 @@ class Inscripcion extends Model
         'seguro_anulacion' => 'boolean',
         'tarifa_aplicada' => 'decimal:2',
         'precio_total' => 'decimal:2',
+        'fecha_pago' => 'datetime',
     ];
 
     public function participante(): BelongsTo

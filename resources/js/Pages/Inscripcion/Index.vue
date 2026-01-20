@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { useForm } from '@inertiajs/vue3';
+import { Link, router, useForm } from '@inertiajs/vue3';
+import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
 import { onMounted, ref, watch } from 'vue';
 
@@ -43,8 +44,8 @@ const props = defineProps<{
 
 const buscandoDNI = ref(false);
 const participanteEncontrado = ref(false);
+const yaInscrito = ref(false);
 const precioCalculado = ref<any>(null);
-
 const form = useForm({
   // Datos participante
   dni: '',
@@ -84,7 +85,8 @@ onMounted(() => {
       form.nombre = datos.nombre || '';
       form.apellidos = datos.apellidos || '';
       form.genero = datos.genero || '';
-      form.fecha_nacimiento = datos.fecha_nacimiento || '';
+      // Convertir fecha al formato yyyy-MM-dd
+      form.fecha_nacimiento = datos.fecha_nacimiento ? datos.fecha_nacimiento.split('T')[0] : '';
       form.telefono = datos.telefono || '';
       form.email = datos.email || '';
       form.direccion = datos.direccion || '';
@@ -98,15 +100,48 @@ onMounted(() => {
   }
 });
 
+// Búsqueda automática de DNI con debounce
+const buscarParticipanteDebounced = useDebounceFn(() => {
+  buscarParticipante();
+}, 800);
+
+watch(
+  () => form.dni,
+  (newDni) => {
+    // Si tiene longitud suficiente, buscar
+    if (newDni && newDni.length >= 8) {
+      buscarParticipanteDebounced();
+    }
+    // Si borra, resetear estado encontrado
+    else if (!newDni || newDni.length < 5) {
+      participanteEncontrado.value = false;
+      yaInscrito.value = false;
+      form.clearErrors(); // Limpiar errores al resetear
+    }
+  }
+);
+
 const buscarParticipante = async () => {
   if (!form.dni || form.dni.length < 3) return;
 
+  console.log('Iniciando búsqueda de participante para DNI:', form.dni);
   buscandoDNI.value = true;
+  yaInscrito.value = false;
 
   try {
     const response = await axios.post('/inscripcion/buscar-participante', {
       dni: form.dni,
+      edicion_id: form.edicion_id,
     });
+
+    console.log('Respuesta búsqueda:', response.data);
+
+    // Si ya está inscrito, marcarlo
+    if (response.data.ya_inscrito) {
+      yaInscrito.value = true;
+      participanteEncontrado.value = true; // Mostramos que le hemos encontrado
+      form.clearErrors(); // Limpiar errores si ya está inscrito
+    }
 
     if (response.data.encontrado && response.data.datos) {
       const datos = response.data.datos as ParticipanteData;
@@ -115,7 +150,8 @@ const buscarParticipante = async () => {
       form.nombre = datos.nombre;
       form.apellidos = datos.apellidos;
       form.genero = datos.genero;
-      form.fecha_nacimiento = datos.fecha_nacimiento;
+      // Convertir fecha al formato yyyy-MM-dd
+      form.fecha_nacimiento = datos.fecha_nacimiento ? datos.fecha_nacimiento.split('T')[0] : '';
       form.telefono = datos.telefono;
       form.email = datos.email;
       form.direccion = datos.direccion;
@@ -172,8 +208,18 @@ watch(
 
 const enviarInscripcion = () => {
   form.post('/inscripcion', {
+    preserveScroll: true, // Mantener scroll para que vea el error si está cerca, o dejar false si queremos que suba.
+    // Dejamos preserveScroll en false (por defecto) o true?
+    // Si hay errores, Inertia por defecto hace scroll a top si no se indica lo contrario? No, Inertia mantiene scroll en validation errors (422).
+    // Si el usuario dice que "le devuelve arriba", es que Inertia está haciendo scroll reset.
+    // Vamos a forzar scroll al mensaje de error si hay errores.
     onSuccess: () => {
       // Redirigirá automáticamente a la página de confirmación
+    },
+    onError: (errors) => {
+      console.log('Errores de validación:', errors);
+      // Forzar scroll al top suavemente para ver el mensaje de error
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
   });
 };
@@ -198,6 +244,32 @@ const enviarInscripcion = () => {
           <Button variant="ghost" class="mb-4"> ← Volver </Button>
         </Link>
         <form @submit.prevent="enviarInscripcion" class="space-y-8">
+          <!-- Mensaje de errores general -->
+          <div
+            v-if="Object.keys(form.errors).length > 0 && !yaInscrito"
+            class="rounded-md bg-red-50 p-4"
+          >
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">Hay errores en el formulario</h3>
+                <div class="mt-2 text-sm text-red-700">
+                  <ul class="list-disc space-y-1 pl-5">
+                    <li v-for="(error, field) in form.errors" :key="field">{{ error }}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Sección DNI -->
           <div>
             <h2 class="mb-4 text-2xl font-semibold">Identificación</h2>
@@ -211,7 +283,11 @@ const enviarInscripcion = () => {
                   type="text"
                   required
                   placeholder="12345678X"
+                  :class="{ 'border-red-500': form.errors.dni }"
                 />
+                <p v-if="form.errors.dni" class="mt-1 text-sm text-red-500">
+                  {{ form.errors.dni }}
+                </p>
               </Field>
               <div class="flex items-end">
                 <Button
@@ -224,268 +300,329 @@ const enviarInscripcion = () => {
                 </Button>
               </div>
             </div>
-            <p v-if="participanteEncontrado" class="mt-2 text-sm text-green-600">
+            <p v-if="participanteEncontrado && !yaInscrito" class="mt-2 text-sm text-green-600">
               ✓ Participante encontrado. Verifica que tus datos sean correctos.
             </p>
+
+            <div v-if="yaInscrito" class="mt-4 rounded-md border border-green-200 bg-green-50 p-4">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                      fill-rule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-green-800">
+                    Ya estás inscrito en esta edición
+                  </h3>
+                  <div class="mt-2 text-sm text-green-700">
+                    <p class="mb-4">El DNI indicado ya tiene una inscripción activa.</p>
+                    <Button
+                      variant="default"
+                      size="lg"
+                      @click="router.get('/inscripcion/consulta')"
+                    >
+                      Comprobar mi inscripción
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Datos Personales -->
-          <FieldSet>
-            <FieldLegend
-              variant="legend"
-              class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
-            >
-              Datos personales
-            </FieldLegend>
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Field>
-                <Label for="nombre">Nombre *</Label>
-                <Input id="nombre" v-model="form.nombre" type="text" required />
-              </Field>
-
-              <Field>
-                <Label for="apellidos">Apellidos *</Label>
-                <Input id="apellidos" v-model="form.apellidos" type="text" required />
-              </Field>
-
-              <Field>
-                <Label for="genero">Género *</Label>
-                <NativeSelect id="genero" v-model="form.genero" required class="w-full">
-                  <NativeSelectOption value="" disabled>Seleccionar...</NativeSelectOption>
-                  <NativeSelectOption value="masculino">Masculino</NativeSelectOption>
-                  <NativeSelectOption value="femenino">Femenino</NativeSelectOption>
-                </NativeSelect>
-              </Field>
-
-              <Field>
-                <Label for="fecha_nacimiento">Fecha de Nacimiento *</Label>
-                <Input id="fecha_nacimiento" v-model="form.fecha_nacimiento" type="date" required />
-              </Field>
-
-              <Field>
-                <Label for="telefono">Teléfono *</Label>
-                <Input id="telefono" v-model="form.telefono" type="tel" required />
-              </Field>
-
-              <Field>
-                <Label for="email">Email *</Label>
-                <Input id="email" v-model="form.email" type="email" required />
-              </Field>
-            </div>
-          </FieldSet>
-
-          <!-- Dirección -->
-          <FieldSet>
-            <FieldLegend
-              variant="legend"
-              class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
-            >
-              Dirección
-            </FieldLegend>
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Field class="md:col-span-2">
-                <Label for="direccion">Dirección *</Label>
-                <Input id="direccion" v-model="form.direccion" type="text" required />
-              </Field>
-
-              <Field>
-                <Label for="codigo_postal">Código Postal *</Label>
-                <Input id="codigo_postal" v-model="form.codigo_postal" type="text" required />
-              </Field>
-
-              <Field>
-                <Label for="poblacion">Población *</Label>
-                <Input id="poblacion" v-model="form.poblacion" type="text" required />
-              </Field>
-
-              <Field class="md:col-span-2">
-                <Label for="provincia">Provincia *</Label>
-                <Input id="provincia" v-model="form.provincia" type="text" required />
-              </Field>
-            </div>
-          </FieldSet>
-
-          <!-- Información Deportiva -->
-          <FieldSet>
-            <FieldLegend
-              variant="legend"
-              class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
-            >
-              Información deportiva
-            </FieldLegend>
-            <div class="space-y-4">
-              <Field orientation="horizontal">
-                <Checkbox id="socio_uec" v-model="form.es_socio_uec" />
-                <Label for="socio_uec">¿Eres socio de la UEC Tortosa?</Label>
-              </Field>
-
-              <Field class="">
-                <Label for="club">Club</Label>
-                <Input id="club" v-model="form.club" type="text" class="w-lg!" />
-              </Field>
-
-              <Separator class="my-4" />
-
-              <Field orientation="horizontal">
-                <Checkbox id="federado" v-model="form.esta_federado" />
-                <Label for="federado">¿Estás federado?</Label>
-              </Field>
-
-              <Field v-if="form.esta_federado">
-                <Label for="numero_licencia">Número de Licencia *</Label>
-                <Input
-                  id="numero_licencia"
-                  v-model="form.numero_licencia"
-                  type="text"
-                  :required="form.esta_federado"
-                />
-              </Field>
-            </div>
-          </FieldSet>
-
-          <!-- Servicios Adicionales -->
-          <FieldSet>
-            <FieldLegend
-              variant="legend"
-              class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
-            >
-              Servicios adicionales
-            </FieldLegend>
-            <div class="space-y-4">
-              <div class="rounded-md border border-slate-200 p-4">
-                <Field orientation="horizontal">
-                  <Checkbox id="autobus" v-model="form.necesita_autobus" />
-                  <div>
-                    <Label for="autobus">Servei d'autobús cap a Fredes</Label>
-                    <p class="text-sm text-slate-500">
-                      {{ precioCalculado?.precio_autobus || 12 }}€
-                    </p>
-                  </div>
+          <div v-if="!yaInscrito" class="space-y-8">
+            <!-- Datos Personales -->
+            <FieldSet>
+              <FieldLegend
+                variant="legend"
+                class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
+              >
+                Datos personales
+              </FieldLegend>
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Field>
+                  <Label for="nombre">Nombre *</Label>
+                  <Input id="nombre" v-model="form.nombre" type="text" required />
                 </Field>
 
-                <div v-if="form.necesita_autobus" class="mt-4 ml-6">
-                  <Field>
-                    <Label>Parada de Autobús *</Label>
-                    <RadioGroup
-                      v-model="form.parada_autobus"
-                      :required="form.necesita_autobus"
-                      class="flex flex-col space-y-3"
-                    >
-                      <div class="flex items-start space-x-2">
-                        <RadioGroupItem id="parada-tortosa" value="tortosa" class="mt-1" />
-                        <div class="flex flex-col">
-                          <Label for="parada-tortosa" class="cursor-pointer font-normal"
-                            >Salida desde Tortosa</Label
-                          >
-                          <p class="text-sm text-slate-500">Rotonda Quatre Camins</p>
+                <Field>
+                  <Label for="apellidos">Apellidos *</Label>
+                  <Input id="apellidos" v-model="form.apellidos" type="text" required />
+                </Field>
+
+                <Field>
+                  <Label for="genero">Género *</Label>
+                  <NativeSelect id="genero" v-model="form.genero" required class="w-full">
+                    <NativeSelectOption value="" disabled>Seleccionar...</NativeSelectOption>
+                    <NativeSelectOption value="masculino">Masculino</NativeSelectOption>
+                    <NativeSelectOption value="femenino">Femenino</NativeSelectOption>
+                  </NativeSelect>
+                </Field>
+
+                <Field>
+                  <Label for="fecha_nacimiento">Fecha de Nacimiento *</Label>
+                  <Input
+                    id="fecha_nacimiento"
+                    v-model="form.fecha_nacimiento"
+                    type="date"
+                    required
+                  />
+                </Field>
+
+                <Field>
+                  <Label for="telefono">Teléfono *</Label>
+                  <Input id="telefono" v-model="form.telefono" type="tel" required />
+                </Field>
+
+                <Field>
+                  <Label for="email">Email *</Label>
+                  <Input id="email" v-model="form.email" type="email" required />
+                </Field>
+              </div>
+            </FieldSet>
+
+            <!-- Dirección -->
+            <FieldSet>
+              <FieldLegend
+                variant="legend"
+                class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
+              >
+                Dirección
+              </FieldLegend>
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Field class="md:col-span-2">
+                  <Label for="direccion">Dirección *</Label>
+                  <Input id="direccion" v-model="form.direccion" type="text" required />
+                </Field>
+
+                <Field>
+                  <Label for="codigo_postal">Código Postal *</Label>
+                  <Input id="codigo_postal" v-model="form.codigo_postal" type="text" required />
+                </Field>
+
+                <Field>
+                  <Label for="poblacion">Población *</Label>
+                  <Input id="poblacion" v-model="form.poblacion" type="text" required />
+                </Field>
+
+                <Field class="md:col-span-2">
+                  <Label for="provincia">Provincia *</Label>
+                  <Input id="provincia" v-model="form.provincia" type="text" required />
+                </Field>
+              </div>
+            </FieldSet>
+
+            <!-- Información Deportiva -->
+            <FieldSet>
+              <FieldLegend
+                variant="legend"
+                class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
+              >
+                Información deportiva
+              </FieldLegend>
+              <div class="space-y-4">
+                <Field orientation="horizontal">
+                  <Checkbox id="socio_uec" v-model="form.es_socio_uec" />
+                  <Label for="socio_uec">¿Eres socio de la UEC Tortosa?</Label>
+                </Field>
+
+                <Field class="">
+                  <Label for="club">Club</Label>
+                  <Input id="club" v-model="form.club" type="text" class="w-lg!" />
+                </Field>
+
+                <Separator class="my-4" />
+
+                <Field orientation="horizontal">
+                  <Checkbox id="federado" v-model="form.esta_federado" />
+                  <Label for="federado">¿Estás federado?</Label>
+                </Field>
+
+                <Field v-if="form.esta_federado">
+                  <Label for="numero_licencia">Número de Licencia *</Label>
+                  <Input
+                    id="numero_licencia"
+                    v-model="form.numero_licencia"
+                    type="text"
+                    class="w-lg!"
+                    :required="form.esta_federado"
+                  />
+                </Field>
+              </div>
+            </FieldSet>
+
+            <!-- Servicios Adicionales -->
+            <FieldSet>
+              <FieldLegend
+                variant="legend"
+                class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
+              >
+                Servicios adicionales
+              </FieldLegend>
+              <div class="space-y-4">
+                <div class="rounded-md border border-slate-200 p-4">
+                  <Field orientation="horizontal">
+                    <Checkbox id="autobus" v-model="form.necesita_autobus" />
+                    <div>
+                      <Label for="autobus">Servei d'autobús cap a Fredes</Label>
+                      <p class="text-sm text-slate-500">
+                        {{ precioCalculado?.precio_autobus || 12 }}€
+                      </p>
+                    </div>
+                  </Field>
+
+                  <div v-if="form.necesita_autobus" class="mt-4 ml-6">
+                    <Field>
+                      <Label>Parada de Autobús *</Label>
+                      <RadioGroup
+                        v-model="form.parada_autobus"
+                        :required="form.necesita_autobus"
+                        class="flex flex-col space-y-3"
+                      >
+                        <div class="flex items-start space-x-2">
+                          <RadioGroupItem id="parada-tortosa" value="tortosa" class="mt-1" />
+                          <div class="flex flex-col">
+                            <Label for="parada-tortosa" class="cursor-pointer font-normal"
+                              >Salida desde Tortosa</Label
+                            >
+                            <p class="text-sm text-slate-500">Rotonda Quatre Camins</p>
+                          </div>
                         </div>
-                      </div>
-                      <div class="flex items-start space-x-2">
-                        <RadioGroupItem id="parada-pauls" value="pauls" class="mt-1" />
-                        <div class="flex flex-col">
-                          <Label for="parada-pauls" class="cursor-pointer font-normal"
-                            >Salida desde Paüls</Label
-                          >
-                          <p class="text-sm text-slate-500">Bàscula municipal, entrada de Paüls</p>
+                        <div class="flex items-start space-x-2">
+                          <RadioGroupItem id="parada-pauls" value="pauls" class="mt-1" />
+                          <div class="flex flex-col">
+                            <Label for="parada-pauls" class="cursor-pointer font-normal"
+                              >Salida desde Paüls</Label
+                            >
+                            <p class="text-sm text-slate-500">
+                              Bàscula municipal, entrada de Paüls
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </RadioGroup>
+                      </RadioGroup>
+                    </Field>
+                  </div>
+                </div>
+
+                <div
+                  class="flex items-start justify-between rounded-md border border-slate-200 p-4"
+                >
+                  <Field orientation="horizontal">
+                    <Checkbox id="seguro" v-model="form.seguro_anulacion" />
+                    <div>
+                      <Label for="seguro">Seguro de Anulación</Label>
+                      <p class="text-sm text-slate-500">9€</p>
+                    </div>
                   </Field>
                 </div>
               </div>
+            </FieldSet>
 
-              <div class="flex items-start justify-between rounded-md border border-slate-200 p-4">
-                <Field orientation="horizontal">
-                  <Checkbox id="seguro" v-model="form.seguro_anulacion" />
-                  <div>
-                    <Label for="seguro">Seguro de Anulación</Label>
-                    <p class="text-sm text-slate-500">9€</p>
-                  </div>
+            <!-- Tallas de Camisetas -->
+            <FieldSet>
+              <FieldLegend
+                variant="legend"
+                class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
+              >
+                Tallas de Camisetas
+              </FieldLegend>
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Field>
+                  <Label for="talla_caro">Talla Camiseta Caro *</Label>
+                  <NativeSelect
+                    id="talla_caro"
+                    v-model="form.talla_camiseta_caro"
+                    required
+                    class="w-full"
+                    :class="{ 'border-red-500': form.errors.talla_camiseta_caro }"
+                  >
+                    <NativeSelectOption value="" disabled>Seleccionar...</NativeSelectOption>
+                    <NativeSelectOption value="XS">XS</NativeSelectOption>
+                    <NativeSelectOption value="S">S</NativeSelectOption>
+                    <NativeSelectOption value="M">M</NativeSelectOption>
+                    <NativeSelectOption value="L">L</NativeSelectOption>
+                    <NativeSelectOption value="XL">XL</NativeSelectOption>
+                    <NativeSelectOption value="XXL">XXL</NativeSelectOption>
+                  </NativeSelect>
+                  <p v-if="form.errors.talla_camiseta_caro" class="mt-1 text-sm text-red-500">
+                    {{ form.errors.talla_camiseta_caro }}
+                  </p>
+                </Field>
+
+                <Field>
+                  <Label for="talla_pauls">Talla Camiseta Paüls *</Label>
+                  <NativeSelect
+                    id="talla_pauls"
+                    v-model="form.talla_camiseta_pauls"
+                    required
+                    class="w-full"
+                    :class="{ 'border-red-500': form.errors.talla_camiseta_pauls }"
+                  >
+                    <NativeSelectOption value="" disabled>Seleccionar...</NativeSelectOption>
+                    <NativeSelectOption value="XS">XS</NativeSelectOption>
+                    <NativeSelectOption value="S">S</NativeSelectOption>
+                    <NativeSelectOption value="M">M</NativeSelectOption>
+                    <NativeSelectOption value="L">L</NativeSelectOption>
+                    <NativeSelectOption value="XL">XL</NativeSelectOption>
+                    <NativeSelectOption value="XXL">XXL</NativeSelectOption>
+                  </NativeSelect>
+                  <p v-if="form.errors.talla_camiseta_pauls" class="mt-1 text-sm text-red-500">
+                    {{ form.errors.talla_camiseta_pauls }}
+                  </p>
                 </Field>
               </div>
-            </div>
-          </FieldSet>
+            </FieldSet>
 
-          <!-- Tallas de Camisetas -->
-          <FieldSet>
-            <FieldLegend
-              variant="legend"
-              class="mb-6 w-full border-b border-gray-300 pb-2 text-lg! font-semibold text-red-700"
-            >
-              Tallas de Camisetas
-            </FieldLegend>
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Field>
-                <Label for="talla_caro">Talla Camiseta Caro *</Label>
-                <NativeSelect
-                  id="talla_caro"
-                  v-model="form.talla_camiseta_caro"
-                  required
-                  class="w-full"
-                >
-                  <NativeSelectOption value="" disabled>Seleccionar...</NativeSelectOption>
-                  <NativeSelectOption value="XS">XS</NativeSelectOption>
-                  <NativeSelectOption value="S">S</NativeSelectOption>
-                  <NativeSelectOption value="M">M</NativeSelectOption>
-                  <NativeSelectOption value="L">L</NativeSelectOption>
-                  <NativeSelectOption value="XL">XL</NativeSelectOption>
-                  <NativeSelectOption value="XXL">XXL</NativeSelectOption>
-                </NativeSelect>
-              </Field>
-
-              <Field>
-                <Label for="talla_pauls">Talla Camiseta Paüls *</Label>
-                <NativeSelect
-                  id="talla_pauls"
-                  v-model="form.talla_camiseta_pauls"
-                  required
-                  class="w-full"
-                >
-                  <NativeSelectOption value="" disabled>Seleccionar...</NativeSelectOption>
-                  <NativeSelectOption value="XS">XS</NativeSelectOption>
-                  <NativeSelectOption value="S">S</NativeSelectOption>
-                  <NativeSelectOption value="M">M</NativeSelectOption>
-                  <NativeSelectOption value="L">L</NativeSelectOption>
-                  <NativeSelectOption value="XL">XL</NativeSelectOption>
-                  <NativeSelectOption value="XXL">XXL</NativeSelectOption>
-                </NativeSelect>
-              </Field>
-            </div>
-          </FieldSet>
-
-          <!-- Resumen de Precio -->
-          <div v-if="precioCalculado" class="rounded-lg bg-slate-50 p-6">
-            <h3 class="mb-4 text-xl font-semibold text-slate-900">Resumen del Precio</h3>
-            <div class="space-y-2">
-              <div class="flex justify-between text-slate-700">
-                <span>Inscripción:</span>
-                <span>{{ precioCalculado.tarifa_base }}€</span>
-              </div>
-              <div v-if="form.necesita_autobus" class="flex justify-between text-slate-700">
-                <span>Autobús:</span>
-                <span>{{ precioCalculado.precio_autobus }}€</span>
-              </div>
-              <div v-if="form.seguro_anulacion" class="flex justify-between text-slate-700">
-                <span>Seguro:</span>
-                <span>{{ precioCalculado.precio_seguro }}€</span>
-              </div>
-              <div class="mt-2 border-t border-slate-300 pt-2">
-                <div class="flex justify-between text-lg font-bold text-slate-900">
-                  <span>TOTAL:</span>
-                  <span>{{ precioCalculado.precio_total }}€</span>
+            <!-- Resumen de Precio -->
+            <div v-if="precioCalculado" class="rounded-lg bg-slate-50 p-6">
+              <h3 class="mb-4 text-xl font-semibold text-slate-900">Resumen del Precio</h3>
+              <div class="space-y-2">
+                <div class="flex justify-between text-slate-700">
+                  <span>Inscripción:</span>
+                  <span>{{ precioCalculado.tarifa_base }}€</span>
                 </div>
+                <div v-if="form.necesita_autobus" class="flex justify-between text-slate-700">
+                  <span>Autobús:</span>
+                  <span>{{ precioCalculado.precio_autobus }}€</span>
+                </div>
+                <div v-if="form.seguro_anulacion" class="flex justify-between text-slate-700">
+                  <span>Seguro:</span>
+                  <span>{{ precioCalculado.precio_seguro }}€</span>
+                </div>
+                <div class="mt-2 border-t border-slate-300 pt-2">
+                  <div class="flex justify-between text-lg font-bold text-slate-900">
+                    <span>TOTAL:</span>
+                    <span>{{ precioCalculado.precio_total }}€</span>
+                  </div>
+                </div>
+                <p v-if="precioCalculado.es_tarifa_tardia" class="text-sm text-amber-600">
+                  * Se ha aplicado tarifa tardía
+                </p>
               </div>
-              <p v-if="precioCalculado.es_tarifa_tardia" class="text-sm text-amber-600">
-                * Se ha aplicado tarifa tardía
-              </p>
             </div>
-          </div>
 
-          <!-- Botón Submit -->
-          <div class="flex justify-center pt-6">
-            <Button type="submit" :disabled="form.processing" size="xl" class="px-12">
-              {{ form.processing ? 'Procesando...' : 'Confirmar Inscripción' }}
-            </Button>
+            <!-- Botón Submit -->
+            <div class="flex justify-center pt-6">
+              <Button
+                type="submit"
+                :disabled="form.processing || yaInscrito"
+                size="xl"
+                class="w-full bg-red-500 px-12 text-lg"
+                :class="{ 'cursor-not-allowed opacity-50': yaInscrito }"
+              >
+                {{
+                  form.processing
+                    ? 'Procesando...'
+                    : yaInscrito
+                      ? 'Ya inscrito'
+                      : 'Confirmar Inscripción'
+                }}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InscripcionController;
+use App\Http\Controllers\RedsysController;
 use App\Http\Controllers\Admin\EdicionController;
 use App\Http\Controllers\Admin\InscripcionController as AdminInscripcionController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,14 @@ Route::prefix('inscripcion')->group(function () {
     Route::post('/calcular-precio', [InscripcionController::class, 'calcularPrecio'])->name('inscripcion.calcular-precio');
     Route::post('/', [InscripcionController::class, 'store'])->name('inscripcion.store');
     Route::get('/confirmacion/{inscripcion}', [InscripcionController::class, 'confirmacion'])->name('inscripcion.confirmacion');
+});
+
+// Rutas de pago con Redsys
+Route::prefix('pago')->name('redsys.')->group(function () {
+    Route::get('/{inscripcion}', [RedsysController::class, 'procesarPago'])->name('procesar');
+    Route::any('/success', [RedsysController::class, 'success'])->name('success');
+    Route::any('/error', [RedsysController::class, 'error'])->name('error');
+    Route::post('/notification', [RedsysController::class, 'notification'])->name('notification');
 });
 
 // Rutas de administración
