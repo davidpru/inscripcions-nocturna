@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\RedsysController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EdicionController;
 use App\Http\Controllers\Admin\InscripcionController as AdminInscripcionController;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,9 @@ Route::prefix('pago')->name('redsys.')->group(function () {
 
 // Rutas de administración
 Route::prefix('admin')->name('admin.')->group(function () {
+    // Dashboard
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    
     // Gestión de ediciones
     Route::resource('ediciones', EdicionController::class);
     
