@@ -81,7 +81,7 @@ const iniciarInscripcion = async () => {
                   <Input id="dni" v-model="dni" type="text" placeholder="12345678X" class="mt-1" />
                   <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
                 </div>
-                <Button type="submit" :disabled="buscando" class="w-full">
+                <Button type="submit" size="xl" :disabled="buscando" class="w-full">
                   {{ buscando ? 'Cercant...' : 'Continuar' }}
                 </Button>
               </form>
@@ -92,7 +92,9 @@ const iniciarInscripcion = async () => {
           <Card class="cursor-pointer transition-all hover:shadow-xl">
             <CardHeader>
               <CardTitle class="text-2xl">Consultar inscripció</CardTitle>
-              <CardDescription>Verifica la teva inscripció amb les teves dades personals</CardDescription>
+              <CardDescription
+                >Verifica la teva inscripció amb les teves dades personals</CardDescription
+              >
             </CardHeader>
             <CardContent class="">
               <Link href="/inscripcion/consulta">
