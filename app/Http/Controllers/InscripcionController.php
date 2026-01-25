@@ -129,7 +129,7 @@ class InscripcionController extends Controller
     public function contratarAutobus(Request $request, Inscripcion $inscripcion)
     {
         $request->validate([
-            'parada_autobus' => 'required|in:tortosa,pauls',
+            'parada_autobus' => 'required|in:tortosa,roquetes,pauls',
         ]);
 
         // Verificar que la inscripción está pagada y no tiene autobús
@@ -147,6 +147,29 @@ class InscripcionController extends Controller
         ]);
 
         return redirect()->route('redsys.procesar-autobus', $inscripcion);
+    }
+
+    public function cambiarParada(Request $request, Inscripcion $inscripcion)
+    {
+        $request->validate([
+            'parada_autobus' => 'required|in:tortosa,roquetes,pauls',
+        ]);
+
+        // Verificar que la inscripción está pagada y tiene autobús
+        if ($inscripcion->estado_pago !== 'pagado') {
+            return back()->withErrors(['general' => 'La inscripción debe estar pagada.']);
+        }
+
+        if (!$inscripcion->necesita_autobus) {
+            return back()->withErrors(['general' => 'No tienes contratado el servicio de autobús.']);
+        }
+
+        // Actualizar la parada
+        $inscripcion->update([
+            'parada_autobus' => $request->parada_autobus,
+        ]);
+
+        return back()->with('success', 'Parada de autobús actualizada correctamente.');
     }
 
     public function calcularPrecio(Request $request)

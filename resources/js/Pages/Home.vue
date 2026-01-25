@@ -24,7 +24,7 @@ const error = ref('');
 
 const iniciarInscripcion = async () => {
   if (!dni.value.trim()) {
-    error.value = 'Introduce tu DNI/NIE para continuar';
+    error.value = 'Introdueix el teu DNI/NIE per continuar';
     return;
   }
 
@@ -60,7 +60,7 @@ const iniciarInscripcion = async () => {
         <h1 class="text-slate-90 mb-2 text-4xl font-bold">
           Nocturna Fredes-Paüls {{ edicion.anio }}
         </h1>
-        <p class="text-foreground text-lg">Selecciona una opción</p>
+        <p class="text-foreground text-lg">Selecciona una opció</p>
       </div>
 
       <!-- Selección -->
@@ -68,12 +68,12 @@ const iniciarInscripcion = async () => {
         <div class="">
           <Card>
             <CardHeader class="pb-2">
-              <CardTitle class="text-2xl">Nueva Inscripción</CardTitle>
-              <CardDescription>Inscríbete a la Fredes-Paüls</CardDescription>
+              <CardTitle class="text-2xl">Nova Inscripció</CardTitle>
+              <CardDescription>Inscriu-te a la Fredes-Paüls</CardDescription>
             </CardHeader>
             <CardContent>
               <p class="mb-4 text-balance text-slate-600">
-                Introduce tu DNI/NIE para comenzar el proceso de inscripción.
+                Introdueix el teu DNI/NIE per començar el procés d'inscripció.
               </p>
               <form @submit.prevent="iniciarInscripcion" class="space-y-4">
                 <div>
@@ -82,7 +82,7 @@ const iniciarInscripcion = async () => {
                   <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
                 </div>
                 <Button type="submit" :disabled="buscando" class="w-full">
-                  {{ buscando ? 'Buscando...' : 'Continuar' }}
+                  {{ buscando ? 'Cercant...' : 'Continuar' }}
                 </Button>
               </form>
             </CardContent>
@@ -91,12 +91,12 @@ const iniciarInscripcion = async () => {
         <div class="flex flex-col gap-4">
           <Card class="cursor-pointer transition-all hover:shadow-xl">
             <CardHeader>
-              <CardTitle class="text-2xl">Consultar inscripción</CardTitle>
-              <CardDescription>Verifica tu inscripción con tus datos personales</CardDescription>
+              <CardTitle class="text-2xl">Consultar inscripció</CardTitle>
+              <CardDescription>Verifica la teva inscripció amb les teves dades personals</CardDescription>
             </CardHeader>
             <CardContent class="">
               <Link href="/inscripcion/consulta">
-                <Button class="w-full"> Consultar Inscripción </Button>
+                <Button class="w-full"> Consultar Inscripció </Button>
               </Link>
             </CardContent>
           </Card>

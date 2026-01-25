@@ -27,12 +27,17 @@ Route::prefix('inscripcion')->group(function () {
             'edicion' => $edicion
         ]);
     })->name('inscripcion.consulta');
+    // Redirigir GET a la página de consulta
+    Route::get('/buscar-inscripcion', function () {
+        return redirect()->route('inscripcion.consulta');
+    });
     Route::post('/buscar-participante', [InscripcionController::class, 'buscarParticipante'])->name('inscripcion.buscar');
     Route::post('/buscar-inscripcion', [InscripcionController::class, 'buscarInscripcion'])->name('inscripcion.buscar-inscripcion');
     Route::post('/calcular-precio', [InscripcionController::class, 'calcularPrecio'])->name('inscripcion.calcular-precio');
     Route::post('/', [InscripcionController::class, 'store'])->name('inscripcion.store');
     Route::get('/confirmacion/{inscripcion}', [InscripcionController::class, 'confirmacion'])->name('inscripcion.confirmacion');
     Route::post('/{inscripcion}/contratar-autobus', [InscripcionController::class, 'contratarAutobus'])->name('inscripcion.contratar-autobus');
+    Route::post('/{inscripcion}/cambiar-parada', [InscripcionController::class, 'cambiarParada'])->name('inscripcion.cambiar-parada');
 });
 
 // Rutas de pago con Redsys

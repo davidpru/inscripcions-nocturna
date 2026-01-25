@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PARADAS, getParadaLabel } from '@/constants/paradas';
@@ -55,12 +63,25 @@ const props = defineProps<{
 }>();
 
 const mostrarFormularioAutobus = ref(false);
+const mostrarFormularioCambiarParada = ref(false);
 const autobusForm = useForm({
   parada_autobus: '',
+});
+const cambiarParadaForm = useForm({
+  parada_autobus: props.inscripcion.parada_autobus || '',
 });
 
 const contratarAutobus = () => {
   autobusForm.post(`/inscripcion/${props.inscripcion.id}/contratar-autobus`);
+};
+
+const cambiarParada = () => {
+  cambiarParadaForm.post(`/inscripcion/${props.inscripcion.id}/cambiar-parada`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      mostrarFormularioCambiarParada.value = false;
+    },
+  });
 };
 
 const formatDate = (dateString: string): string => {
@@ -86,7 +107,7 @@ const getEstadoPagoInfo = (estado: string) => {
     case 'pagado':
       return {
         icon: CheckCircle,
-        text: 'Inscripción Confirmada',
+        text: 'Inscripció Confirmada',
         bgColor: 'bg-green-100',
         textColor: 'text-green-800',
         iconColor: 'text-green-600',
@@ -94,7 +115,7 @@ const getEstadoPagoInfo = (estado: string) => {
     case 'pendiente':
       return {
         icon: Clock,
-        text: 'Pendiente de Pago',
+        text: 'Pendent de Pagament',
         bgColor: 'bg-amber-100',
         textColor: 'text-amber-800',
         iconColor: 'text-amber-600',
@@ -102,7 +123,7 @@ const getEstadoPagoInfo = (estado: string) => {
     case 'cancelado':
       return {
         icon: XCircle,
-        text: 'Inscripción Cancelada',
+        text: 'Inscripció Cancel·lada',
         bgColor: 'bg-red-100',
         textColor: 'text-red-800',
         iconColor: 'text-red-600',
@@ -124,7 +145,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
 <template>
   <Header />
 
-  <div class="min-h-screen bg-slate-50 py-8">
+  <div class="min-h-screen py-8">
     <div class="mx-auto max-w-3xl px-4">
       <!-- Estado de la inscripción -->
       <div :class="[estadoInfo.bgColor, 'mb-6 rounded-lg p-6 text-center']">
@@ -138,12 +159,12 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
         <p class="mt-2 text-slate-600">Nocturna Fredes Paüls {{ inscripcion.edicion.anio }}</p>
       </div>
 
-      <!-- Datos del participante -->
+      <!-- Dades del participant -->
       <div class="mb-6 rounded-lg bg-white p-6 shadow">
-        <h2 class="mb-4 text-lg font-semibold text-slate-900">Datos Personales</h2>
+        <h2 class="mb-4 text-lg font-semibold text-slate-900">Dades Personals</h2>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <span class="block text-sm text-slate-500">Nombre completo</span>
+            <span class="block text-sm text-slate-500">Nom complet</span>
             <span class="font-medium">
               {{ inscripcion.participante.nombre }} {{ inscripcion.participante.apellidos }}
             </span>
@@ -157,21 +178,21 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
             <span class="font-medium">{{ inscripcion.participante.email }}</span>
           </div>
           <div>
-            <span class="block text-sm text-slate-500">Teléfono</span>
+            <span class="block text-sm text-slate-500">Telèfon</span>
             <span class="font-medium">{{ inscripcion.participante.telefono }}</span>
           </div>
           <div>
-            <span class="block text-sm text-slate-500">Fecha de nacimiento</span>
+            <span class="block text-sm text-slate-500">Data de naixement</span>
             <span class="font-medium">{{
               formatDate(inscripcion.participante.fecha_nacimiento)
             }}</span>
           </div>
           <div>
-            <span class="block text-sm text-slate-500">Género</span>
+            <span class="block text-sm text-slate-500">Gènere</span>
             <span class="font-medium capitalize">{{ inscripcion.participante.genero }}</span>
           </div>
           <div class="sm:col-span-2">
-            <span class="block text-sm text-slate-500">Dirección</span>
+            <span class="block text-sm text-slate-500">Adreça</span>
             <span class="font-medium">
               {{ inscripcion.participante.direccion }}, {{ inscripcion.participante.codigo_postal }}
               {{ inscripcion.participante.poblacion }} ({{ inscripcion.participante.provincia }})
@@ -180,16 +201,16 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
         </div>
       </div>
 
-      <!-- Detalles de la inscripción -->
+      <!-- Detalls de la inscripció -->
       <div class="mb-6 rounded-lg bg-white p-6 shadow">
-        <h2 class="mb-4 text-lg font-semibold text-slate-900">Detalles de la Inscripción</h2>
+        <h2 class="mb-4 text-lg font-semibold text-slate-900">Detalls de la Inscripció</h2>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <span class="block text-sm text-slate-500">Nº Inscripción</span>
+            <span class="block text-sm text-slate-500">Nº Inscripció</span>
             <span class="font-medium">#{{ inscripcion.id }}</span>
           </div>
           <div>
-            <span class="block text-sm text-slate-500">Fecha inscripción</span>
+            <span class="block text-sm text-slate-500">Data inscripció</span>
             <span class="font-medium">{{ formatDateTime(inscripcion.created_at) }}</span>
           </div>
           <div>
@@ -197,7 +218,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
             <span class="font-medium">{{ inscripcion.es_socio_uec ? 'Sí' : 'No' }}</span>
           </div>
           <div>
-            <span class="block text-sm text-slate-500">Federado</span>
+            <span class="block text-sm text-slate-500">Federat</span>
             <span class="font-medium">{{ inscripcion.esta_federado ? 'Sí' : 'No' }}</span>
           </div>
           <div v-if="inscripcion.club">
@@ -206,24 +227,32 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
           </div>
           <div>
             <span class="block text-sm text-slate-500">Autobús</span>
-            <span class="font-medium">
+            <span class="block font-medium">
               {{
                 inscripcion.necesita_autobus
                   ? `Sí (${getParadaLabel(inscripcion.parada_autobus)})`
                   : 'No'
               }}
             </span>
+            <button
+              v-if="inscripcion.necesita_autobus && inscripcion.estado_pago === 'pagado'"
+              type="button"
+              class="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+              @click="mostrarFormularioCambiarParada = true"
+            >
+              Canviar parada
+            </button>
           </div>
           <div>
-            <span class="block text-sm text-slate-500">Seguro de anulación</span>
+            <span class="block text-sm text-slate-500">Assegurança d'anul·lació</span>
             <span class="font-medium">{{ inscripcion.seguro_anulacion ? 'Sí' : 'No' }}</span>
           </div>
           <div>
-            <span class="block text-sm text-slate-500">Camiseta Caro</span>
+            <span class="block text-sm text-slate-500">Samarreta Caro</span>
             <span class="font-medium">Talla {{ inscripcion.talla_camiseta_caro }}</span>
           </div>
           <div>
-            <span class="block text-sm text-slate-500">Camiseta Paüls</span>
+            <span class="block text-sm text-slate-500">Samarreta Paüls</span>
             <span class="font-medium">Talla {{ inscripcion.talla_camiseta_pauls }}</span>
           </div>
         </div>
@@ -237,18 +266,20 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
         <div class="flex items-start gap-4">
           <Bus class="h-8 w-8 shrink-0 text-blue-600" />
           <div class="flex-1">
-            <h3 class="text-lg font-semibold text-blue-900">¿Necesitas transporte?</h3>
+            <h3 class="text-lg font-semibold text-blue-900">Necessites transport?</h3>
             <p class="mt-1 text-sm text-blue-700">
-              Puedes contratar el servicio de autobús por {{ precioAutobus || 12 }}€
+              Pots contractar el servei d'autobús per {{ precioAutobus || 12 }}€
             </p>
 
             <div v-if="!mostrarFormularioAutobus" class="mt-4">
-              <Button @click="mostrarFormularioAutobus = true"> Contratar Autobús </Button>
+              <Button @click="mostrarFormularioAutobus = true"> Contractar Autobús </Button>
             </div>
 
             <form v-else @submit.prevent="contratarAutobus" class="mt-4 space-y-4">
               <div>
-                <Label class="mb-2 block font-medium text-blue-900">Selecciona tu parada *</Label>
+                <Label class="mb-2 block font-medium text-blue-900"
+                  >Selecciona la teva parada *</Label
+                >
                 <RadioGroup
                   v-model="autobusForm.parada_autobus"
                   required
@@ -285,10 +316,10 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
                   type="submit"
                   :disabled="autobusForm.processing || !autobusForm.parada_autobus"
                 >
-                  {{ autobusForm.processing ? 'Procesando...' : `Pagar ${precioAutobus || 12}€` }}
+                  {{ autobusForm.processing ? 'Processant...' : `Pagar ${precioAutobus || 12}€` }}
                 </Button>
                 <Button type="button" variant="outline" @click="mostrarFormularioAutobus = false">
-                  Cancelar
+                  Cancel·lar
                 </Button>
               </div>
             </form>
@@ -296,16 +327,16 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
         </div>
       </div>
 
-      <!-- Información de pago -->
+      <!-- Informació de pagament -->
       <div class="mb-6 rounded-lg bg-white p-6 shadow">
-        <h2 class="mb-4 text-lg font-semibold text-slate-900">Información de Pago</h2>
+        <h2 class="mb-4 text-lg font-semibold text-slate-900">Informació de Pagament</h2>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <span class="block text-sm text-slate-500">Importe total</span>
+            <span class="block text-sm text-slate-500">Import total</span>
             <span class="text-xl font-bold text-slate-900">{{ inscripcion.precio_total }}€</span>
           </div>
           <div>
-            <span class="block text-sm text-slate-500">Estado</span>
+            <span class="block text-sm text-slate-500">Estat</span>
             <span
               :class="[
                 'inline-flex items-center rounded-full px-3 py-1 text-sm font-medium',
@@ -317,24 +348,89 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
             </span>
           </div>
           <div v-if="inscripcion.fecha_pago">
-            <span class="block text-sm text-slate-500">Fecha de pago</span>
+            <span class="block text-sm text-slate-500">Data de pagament</span>
             <span class="font-medium">{{ formatDateTime(inscripcion.fecha_pago) }}</span>
           </div>
           <div v-if="inscripcion.numero_autorizacion">
-            <span class="block text-sm text-slate-500">Nº Autorización</span>
+            <span class="block text-sm text-slate-500">Nº Autorització</span>
             <span class="font-medium">{{ inscripcion.numero_autorizacion }}</span>
           </div>
         </div>
       </div>
 
+      <!-- Dialog para cambiar parada de autobús -->
+      <Dialog v-model:open="mostrarFormularioCambiarParada">
+        <DialogContent class="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle class="flex items-center gap-2">
+              <Bus class="h-5 w-5 text-blue-600" />
+              Canviar parada d'autobús
+            </DialogTitle>
+            <DialogDescription>
+              Selecciona la nova parada on vols pujar a l'autobús
+            </DialogDescription>
+          </DialogHeader>
+
+          <form @submit.prevent="cambiarParada" class="space-y-4">
+            <div>
+              <RadioGroup
+                v-model="cambiarParadaForm.parada_autobus"
+                required
+                class="flex flex-col space-y-3"
+              >
+                <div
+                  v-for="parada in PARADAS"
+                  :key="parada.value"
+                  class="flex items-start space-x-2"
+                >
+                  <RadioGroupItem
+                    :id="`cambiar-parada-${parada.value}`"
+                    :value="parada.value"
+                    class="mt-1"
+                  />
+                  <div class="flex flex-col">
+                    <Label
+                      :for="`cambiar-parada-${parada.value}`"
+                      class="cursor-pointer font-normal text-slate-900"
+                    >
+                      {{ parada.label }}
+                    </Label>
+                    <p class="text-sm text-slate-500">{{ parada.descripcion }}</p>
+                  </div>
+                </div>
+              </RadioGroup>
+              <p v-if="cambiarParadaForm.errors.parada_autobus" class="mt-1 text-sm text-red-500">
+                {{ cambiarParadaForm.errors.parada_autobus }}
+              </p>
+            </div>
+
+            <DialogFooter class="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                @click="mostrarFormularioCambiarParada = false"
+              >
+                Cancel·lar
+              </Button>
+              <Button
+                type="submit"
+                :disabled="cambiarParadaForm.processing || !cambiarParadaForm.parada_autobus"
+              >
+                {{ cambiarParadaForm.processing ? 'Guardant...' : 'Guardar canvis' }}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <!-- Botón de pago si está pendiente -->
       <div v-if="inscripcion.estado_pago === 'pendiente'" class="mb-6 rounded-lg bg-amber-50 p-6">
         <p class="mb-4 text-center text-amber-800">
-          Tu inscripción está pendiente de pago. Pulsa el botón para completar el pago.
+          La teva inscripció està pendent de pagament. Prem el botó per completar el pagament.
         </p>
         <div class="flex justify-center">
           <Link :href="`/pago/${inscripcion.id}`">
-            <Button size="lg">Completar Pago</Button>
+            <Button size="lg">Completar Pagament</Button>
           </Link>
         </div>
       </div>
@@ -342,7 +438,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
       <!-- Botones de navegación -->
       <div class="flex justify-center gap-4">
         <Link href="/">
-          <Button variant="outline">Volver al inicio</Button>
+          <Button variant="outline">Tornar a l'inici</Button>
         </Link>
       </div>
     </div>
