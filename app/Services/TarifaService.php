@@ -6,18 +6,6 @@ use App\Models\Edicion;
 
 class TarifaService
 {
-    // Tarifas base de inscripción
-    private const TARIFAS = [
-        'publico_federado' => ['normal' => 35, 'tardia' => 40],
-        'publico_no_federado' => ['normal' => 40, 'tardia' => 45],
-        'socio_federado' => ['normal' => 30, 'tardia' => 35],
-        'socio_no_federado' => ['normal' => 35, 'tardia' => 40],
-    ];
-
-    // Tarifas de servicios adicionales
-    private const AUTOBUS = ['normal' => 12, 'tardia' => 14];
-    private const SEGURO = 9;
-
     public function calcularPrecio(
         Edicion $edicion,
         bool $esSocioUEC,
@@ -26,15 +14,15 @@ class TarifaService
         bool $seguroAnulacion
     ): array {
         $esTarifaTardia = $edicion->esTarifaTardia();
-        $tipoTarifa = $esTarifaTardia ? 'tardia' : 'normal';
 
-        // Determinar tarifa base según perfil
-        $perfilClave = $this->obtenerClavePerfil($esSocioUEC, $estaFederado);
-        $tarifaBase = self::TARIFAS[$perfilClave][$tipoTarifa];
+        // Determinar tarifa base según perfil (desde la base de datos)
+        $tarifaBase = $this->obtenerTarifaBase($edicion, $esSocioUEC, $estaFederado, $esTarifaTardia);
 
         // Calcular extras
-        $precioAutobus = $necesitaAutobus ? self::AUTOBUS[$tipoTarifa] : 0;
-        $precioSeguro = $seguroAnulacion ? self::SEGURO : 0;
+        $precioAutobus = $necesitaAutobus 
+            ? ($esTarifaTardia ? $edicion->precio_autobus_tardia : $edicion->precio_autobus_normal) 
+            : 0;
+        $precioSeguro = $seguroAnulacion ? $edicion->precio_seguro : 0;
 
         $precioTotal = $tarifaBase + $precioAutobus + $precioSeguro;
 
@@ -51,16 +39,16 @@ class TarifaService
         ];
     }
 
-    private function obtenerClavePerfil(bool $esSocioUEC, bool $estaFederado): string
+    private function obtenerTarifaBase(Edicion $edicion, bool $esSocioUEC, bool $estaFederado, bool $esTarifaTardia): float
     {
         if ($esSocioUEC && $estaFederado) {
-            return 'socio_federado';
+            return $esTarifaTardia ? (float) $edicion->tarifa_socio_federado_tardia : (float) $edicion->tarifa_socio_federado_normal;
         } elseif ($esSocioUEC && !$estaFederado) {
-            return 'socio_no_federado';
+            return $esTarifaTardia ? (float) $edicion->tarifa_socio_no_federado_tardia : (float) $edicion->tarifa_socio_no_federado_normal;
         } elseif (!$esSocioUEC && $estaFederado) {
-            return 'publico_federado';
+            return $esTarifaTardia ? (float) $edicion->tarifa_publico_federado_tardia : (float) $edicion->tarifa_publico_federado_normal;
         } else {
-            return 'publico_no_federado';
+            return $esTarifaTardia ? (float) $edicion->tarifa_publico_no_federado_tardia : (float) $edicion->tarifa_publico_no_federado_normal;
         }
     }
 

@@ -58,6 +58,8 @@ class InscripcionController extends Controller
 
         return Inertia::render('Inscripcion/Index', [
             'edicion' => $edicionActiva,
+            'inscripcionesAbiertas' => $edicionActiva->inscripcionesAbiertas(),
+            'fechaInicioInscripciones' => $edicionActiva->fecha_inicio_inscripciones?->toIso8601String(),
             'dni' => $request->query('dni'),
             'participante' => $request->query('participante'),
         ]);

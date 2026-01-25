@@ -12,7 +12,7 @@ import { PARADAS, getParadaShortLabel } from '@/constants/paradas';
 import { Link, useForm } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 interface Edicion {
   id: number;
@@ -39,9 +39,56 @@ interface ParticipanteData {
 
 const props = defineProps<{
   edicion: Edicion;
+  inscripcionesAbiertas: boolean;
+  fechaInicioInscripciones: string | null;
   dni?: string;
   participante?: string;
 }>();
+
+// Countdown timer
+const countdown = ref({ dias: 0, horas: 0, minutos: 0, segundos: 0 });
+const inscripcionesAbiertas = ref(props.inscripcionesAbiertas);
+let countdownInterval: ReturnType<typeof setInterval> | null = null;
+
+const actualizarCountdown = () => {
+  if (!props.fechaInicioInscripciones) {
+    inscripcionesAbiertas.value = true;
+    return;
+  }
+
+  const ahora = new Date().getTime();
+  const fechaInicio = new Date(props.fechaInicioInscripciones).getTime();
+  const diferencia = fechaInicio - ahora;
+
+  if (diferencia <= 0) {
+    inscripcionesAbiertas.value = true;
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
+    return;
+  }
+
+  countdown.value = {
+    dias: Math.floor(diferencia / (1000 * 60 * 60 * 24)),
+    horas: Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+    minutos: Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60)),
+    segundos: Math.floor((diferencia % (1000 * 60)) / 1000),
+  };
+};
+
+onMounted(() => {
+  if (props.fechaInicioInscripciones && !props.inscripcionesAbiertas) {
+    actualizarCountdown();
+    countdownInterval = setInterval(actualizarCountdown, 1000);
+  }
+});
+
+onUnmounted(() => {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+});
 
 const buscandoDNI = ref(false);
 const participanteEncontrado = ref(false);
@@ -249,7 +296,63 @@ const enviarInscripcion = () => {
         <Link href="/">
           <Button variant="ghost" class="mb-4"> ← Tornar </Button>
         </Link>
-        <form @submit.prevent="enviarInscripcion" class="space-y-8">
+
+        <!-- Countdown - inscripciones no abiertas -->
+        <div
+          v-if="!inscripcionesAbiertas"
+          class="flex flex-col items-center justify-center py-12 text-center"
+        >
+          <div class="mb-6 rounded-full bg-amber-100 p-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-12 w-12 text-amber-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h2 class="mb-2 text-2xl font-bold text-slate-900">Inscripcions encara no obertes</h2>
+          <p class="mb-8 text-slate-600">Les inscripcions s'obriran en:</p>
+
+          <div class="mb-8 flex gap-4">
+            <div class="flex flex-col items-center rounded-lg bg-slate-100 px-6 py-4">
+              <span class="text-4xl font-bold text-slate-900">{{ countdown.dias }}</span>
+              <span class="text-sm text-slate-600">dies</span>
+            </div>
+            <div class="flex flex-col items-center rounded-lg bg-slate-100 px-6 py-4">
+              <span class="text-4xl font-bold text-slate-900">{{
+                String(countdown.horas).padStart(2, '0')
+              }}</span>
+              <span class="text-sm text-slate-600">hores</span>
+            </div>
+            <div class="flex flex-col items-center rounded-lg bg-slate-100 px-6 py-4">
+              <span class="text-4xl font-bold text-slate-900">{{
+                String(countdown.minutos).padStart(2, '0')
+              }}</span>
+              <span class="text-sm text-slate-600">minuts</span>
+            </div>
+            <div class="flex flex-col items-center rounded-lg bg-slate-100 px-6 py-4">
+              <span class="text-4xl font-bold text-slate-900">{{
+                String(countdown.segundos).padStart(2, '0')
+              }}</span>
+              <span class="text-sm text-slate-600">segons</span>
+            </div>
+          </div>
+
+          <p class="text-sm text-slate-500">
+            Prepara't! Quan s'obrin les inscripcions, aquesta pàgina s'actualitzarà automàticament.
+          </p>
+        </div>
+
+        <!-- Formulario normal -->
+        <form v-else @submit.prevent="enviarInscripcion" class="space-y-8">
           <!-- Mensaje de errores general -->
           <div
             v-if="Object.keys(form.errors).length > 0 && !yaInscrito"

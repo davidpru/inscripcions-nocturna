@@ -30,10 +30,29 @@ class EdicionController extends Controller
     {
         $validated = $request->validate([
             'anio' => 'required|integer|unique:ediciones,anio',
+            'fecha_inicio_inscripciones' => 'nullable|date',
             'fecha_evento' => 'required|date',
             'limite_inscritos' => 'required|integer|min:1',
             'fecha_limite_tarifa_normal' => 'required|date',
             'estado' => 'required|in:abierta,cerrada',
+            // Autobuses (JSON array)
+            'autobuses' => 'nullable|array',
+            'autobuses.*.nombre' => 'required|string|max:100',
+            'autobuses.*.plazas' => 'required|integer|min:1',
+            // Tarifas normales
+            'tarifa_publico_federado_normal' => 'nullable|numeric|min:0',
+            'tarifa_publico_no_federado_normal' => 'nullable|numeric|min:0',
+            'tarifa_socio_federado_normal' => 'nullable|numeric|min:0',
+            'tarifa_socio_no_federado_normal' => 'nullable|numeric|min:0',
+            // Tarifas tardías
+            'tarifa_publico_federado_tardia' => 'nullable|numeric|min:0',
+            'tarifa_publico_no_federado_tardia' => 'nullable|numeric|min:0',
+            'tarifa_socio_federado_tardia' => 'nullable|numeric|min:0',
+            'tarifa_socio_no_federado_tardia' => 'nullable|numeric|min:0',
+            // Extras
+            'precio_autobus_normal' => 'nullable|numeric|min:0',
+            'precio_autobus_tardia' => 'nullable|numeric|min:0',
+            'precio_seguro' => 'nullable|numeric|min:0',
         ]);
 
         Edicion::create($validated);
@@ -44,8 +63,15 @@ class EdicionController extends Controller
 
     public function edit(Edicion $edicion): Response
     {
+        // Contar plazas de autobús vendidas
+        $plazasAutobusVendidas = $edicion->inscripciones()
+            ->where('necesita_autobus', true)
+            ->where('estado_pago', 'pagado')
+            ->count();
+
         return Inertia::render('Admin/Ediciones/Edit', [
             'edicion' => $edicion,
+            'plazasAutobusVendidas' => $plazasAutobusVendidas,
         ]);
     }
 
@@ -53,11 +79,44 @@ class EdicionController extends Controller
     {
         $validated = $request->validate([
             'anio' => 'required|integer|unique:ediciones,anio,' . $edicion->id,
+            'fecha_inicio_inscripciones' => 'nullable|date',
             'fecha_evento' => 'required|date',
             'limite_inscritos' => 'required|integer|min:1',
             'fecha_limite_tarifa_normal' => 'required|date',
             'estado' => 'required|in:abierta,cerrada',
+            // Autobuses (JSON array)
+            'autobuses' => 'nullable|array',
+            'autobuses.*.nombre' => 'required|string|max:100',
+            'autobuses.*.plazas' => 'required|integer|min:1',
+            // Tarifas normales
+            'tarifa_publico_federado_normal' => 'nullable|numeric|min:0',
+            'tarifa_publico_no_federado_normal' => 'nullable|numeric|min:0',
+            'tarifa_socio_federado_normal' => 'nullable|numeric|min:0',
+            'tarifa_socio_no_federado_normal' => 'nullable|numeric|min:0',
+            // Tarifas tardías
+            'tarifa_publico_federado_tardia' => 'nullable|numeric|min:0',
+            'tarifa_publico_no_federado_tardia' => 'nullable|numeric|min:0',
+            'tarifa_socio_federado_tardia' => 'nullable|numeric|min:0',
+            'tarifa_socio_no_federado_tardia' => 'nullable|numeric|min:0',
+            // Extras
+            'precio_autobus_normal' => 'nullable|numeric|min:0',
+            'precio_autobus_tardia' => 'nullable|numeric|min:0',
+            'precio_seguro' => 'nullable|numeric|min:0',
         ]);
+
+        // Verificar que no se reduzcan las plazas por debajo de las vendidas
+        $plazasAutobusVendidas = $edicion->inscripciones()
+            ->where('necesita_autobus', true)
+            ->where('estado_pago', 'pagado')
+            ->count();
+
+        $nuevasPlazas = collect($validated['autobuses'] ?? [])->sum('plazas');
+        
+        if ($nuevasPlazas < $plazasAutobusVendidas) {
+            return back()->withErrors([
+                'autobuses' => "No es pot reduir a {$nuevasPlazas} places. Hi ha {$plazasAutobusVendidas} places d'autobús venudes."
+            ]);
+        }
 
         $edicion->update($validated);
 

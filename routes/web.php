@@ -52,12 +52,14 @@ Route::prefix('pago')->name('redsys.')->group(function () {
 });
 
 // Rutas de administración
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     // Gestión de ediciones
-    Route::resource('ediciones', EdicionController::class);
+    Route::resource('ediciones', EdicionController::class)->parameters([
+        'ediciones' => 'edicion'
+    ]);
     
     // Gestión de inscripciones
     Route::get('inscripciones', [AdminInscripcionController::class, 'index'])->name('inscripciones.index');

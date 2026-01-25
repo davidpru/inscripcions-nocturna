@@ -813,7 +813,7 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                               <p
                                 v-if="
                                   calcularPrecio(editingData[inscripcion.id], false)
-                                    .precio_total !== inscripcion.precio_total
+                                    .precio_total !== Number(inscripcion.precio_total)
                                 "
                                 class="mt-2 text-xs text-amber-600"
                               >
