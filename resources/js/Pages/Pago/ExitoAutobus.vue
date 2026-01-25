@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getParadaLabel } from '@/constants/paradas';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Bus, CheckCircle, MapPin } from 'lucide-vue-next';
 
@@ -30,13 +31,7 @@ defineProps<{
   inscripcion: Inscripcion;
 }>();
 
-function formatParada(parada: string): string {
-  const paradas: Record<string, string> = {
-    tortosa: 'Tortosa - Carrer Carretera TV-3421 (Junt a Rotonda 4 camins)',
-    pauls: 'Paüls - Carrer de la Carretera',
-  };
-  return paradas[parada] || parada;
-}
+// Usamos getParadaLabel importado de @/constants/paradas
 </script>
 
 <template>
@@ -80,7 +75,7 @@ function formatParada(parada: string): string {
               <MapPin class="mt-0.5 h-4 w-4 text-blue-500" />
               <div>
                 <p class="font-medium">Punt de recollida:</p>
-                <p>{{ formatParada(inscripcion.parada_autobus) }}</p>
+                <p>{{ getParadaLabel(inscripcion.parada_autobus) }}</p>
               </div>
             </div>
 

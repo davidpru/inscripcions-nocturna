@@ -3,6 +3,7 @@ import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { PARADAS, getParadaLabel } from '@/constants/paradas';
 import { Link, useForm } from '@inertiajs/vue3';
 import { Bus, CheckCircle, Clock, XCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
@@ -206,7 +207,11 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
           <div>
             <span class="block text-sm text-slate-500">Autobús</span>
             <span class="font-medium">
-              {{ inscripcion.necesita_autobus ? `Sí (${inscripcion.parada_autobus})` : 'No' }}
+              {{
+                inscripcion.necesita_autobus
+                  ? `Sí (${getParadaLabel(inscripcion.parada_autobus)})`
+                  : 'No'
+              }}
             </span>
           </div>
           <div>
@@ -249,28 +254,24 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
                   required
                   class="flex flex-col space-y-3"
                 >
-                  <div class="flex items-start space-x-2">
-                    <RadioGroupItem id="parada-tortosa-det" value="tortosa" class="mt-1" />
+                  <div
+                    v-for="parada in PARADAS"
+                    :key="parada.value"
+                    class="flex items-start space-x-2"
+                  >
+                    <RadioGroupItem
+                      :id="`parada-${parada.value}-det`"
+                      :value="parada.value"
+                      class="mt-1"
+                    />
                     <div class="flex flex-col">
                       <Label
-                        for="parada-tortosa-det"
+                        :for="`parada-${parada.value}-det`"
                         class="cursor-pointer font-normal text-slate-900"
                       >
-                        Salida desde Tortosa
+                        {{ parada.label }}
                       </Label>
-                      <p class="text-sm text-slate-500">Rotonda Quatre Camins</p>
-                    </div>
-                  </div>
-                  <div class="flex items-start space-x-2">
-                    <RadioGroupItem id="parada-pauls-det" value="pauls" class="mt-1" />
-                    <div class="flex flex-col">
-                      <Label
-                        for="parada-pauls-det"
-                        class="cursor-pointer font-normal text-slate-900"
-                      >
-                        Salida desde Paüls
-                      </Label>
-                      <p class="text-sm text-slate-500">Bàscula municipal, entrada de Paüls</p>
+                      <p class="text-sm text-slate-500">{{ parada.descripcion }}</p>
                     </div>
                   </div>
                 </RadioGroup>

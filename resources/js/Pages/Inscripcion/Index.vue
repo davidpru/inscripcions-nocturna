@@ -2,12 +2,13 @@
 import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Field, FieldLegend, FieldSet } from '@/components/ui/field';
+import { Field, FieldDescription, FieldLegend, FieldSet } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
+import { PARADAS } from '@/constants/paradas';
 import { Link, useForm } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
@@ -482,25 +483,23 @@ const enviarInscripcion = () => {
                         :required="form.necesita_autobus"
                         class="flex flex-col space-y-3"
                       >
-                        <div class="flex items-start space-x-2">
-                          <RadioGroupItem id="parada-tortosa" value="tortosa" class="mt-1" />
+                        <div
+                          v-for="parada in PARADAS"
+                          :key="parada.value"
+                          class="flex items-start space-x-2"
+                        >
+                          <RadioGroupItem
+                            :id="`parada-${parada.value}`"
+                            :value="parada.value"
+                            class="mt-1"
+                          />
                           <div class="flex flex-col">
-                            <Label for="parada-tortosa" class="cursor-pointer font-normal"
-                              >Sortida des de Tortosa</Label
+                            <Label
+                              :for="`parada-${parada.value}`"
+                              class="cursor-pointer font-normal"
+                              >{{ parada.label }}</Label
                             >
-                            <p class="text-sm text-slate-500">Rotonda Quatre Camins</p>
-                          </div>
-                        </div>
-                        <div class="flex items-start space-x-2">
-                          <RadioGroupItem id="parada-pauls" value="pauls" class="mt-1" />
-                          <div class="flex flex-col">
-                            <Label for="parada-pauls" class="cursor-pointer font-normal"
-                              >Sortida des de Paüls</Label
-                            >
-
-                            <p class="text-sm text-slate-500">
-                              Bàscula municipal, entrada de Paüls
-                            </p>
+                            <p class="text-sm text-slate-500">{{ parada.descripcion }}</p>
                           </div>
                         </div>
                       </RadioGroup>
@@ -548,6 +547,7 @@ const enviarInscripcion = () => {
                     <NativeSelectOption value="XL">XL</NativeSelectOption>
                     <NativeSelectOption value="XXL">XXL</NativeSelectOption>
                   </NativeSelect>
+                  <FieldDescription> Tallatge normal </FieldDescription>
                   <p v-if="form.errors.talla_camiseta_caro" class="mt-1 text-sm text-red-500">
                     {{ form.errors.talla_camiseta_caro }}
                   </p>
@@ -570,6 +570,7 @@ const enviarInscripcion = () => {
                     <NativeSelectOption value="XL">XL</NativeSelectOption>
                     <NativeSelectOption value="XXL">XXL</NativeSelectOption>
                   </NativeSelect>
+                  <FieldDescription> Recomanem una talla més </FieldDescription>
                   <p v-if="form.errors.talla_camiseta_pauls" class="mt-1 text-sm text-red-500">
                     {{ form.errors.talla_camiseta_pauls }}
                   </p>
@@ -605,20 +606,88 @@ const enviarInscripcion = () => {
               </div>
             </FieldSet>
 
+            <!-- Política de devolución y protección de datos -->
+            <div class="">
+              <h3 class="mb-3 font-semibold text-slate-900">
+                Política de devolució i protecció de dades
+              </h3>
+              <div
+                class="h-48 overflow-y-auto rounded border border-slate-300 bg-slate-50 p-4 text-xs text-slate-700"
+              >
+                <h4 class="mb-1 font-bold text-slate-800">PROTECCIÓ DE DADES:</h4>
+                <p class="mb-1">
+                  <strong>Responsable:</strong> Unió Excursionista de Catalunya - Secció Tortosa
+                  (UEC Tortosa).
+                </p>
+                <p class="mb-1">
+                  <strong>Finalitat:</strong> Gestió de la inscripció a la cursa Nocturna
+                  Fredes-Paüls {{ edicion.anio }}, comunicació d'informació relacionada amb
+                  l'esdeveniment i publicació de resultats i classificacions.
+                </p>
+                <p class="mb-1">
+                  <strong>Legitimació:</strong> Consentiment de l'interessat mitjançant l'acceptació
+                  d'aquest formulari.
+                </p>
+                <p class="mb-1">
+                  <strong>Destinataris:</strong> Les dades no seran cedides a tercers excepte per
+                  obligació legal o per a la gestió de l'assegurança esportiva i serveis necessaris
+                  per a l'organització de l'esdeveniment.
+                </p>
+                <p class="mb-1">
+                  <strong>Drets:</strong> Pots exercir els teus drets d'accés, rectificació,
+                  supressió, portabilitat, limitació i oposició enviant un correu electrònic a
+                  activitats@uectortosa.cat
+                </p>
+                <p class="mb-1">
+                  <strong>Imatges:</strong> Amb la inscripció, autoritzes l'organització a captar i
+                  publicar imatges de l'esdeveniment amb finalitats promocionals i informatives.
+                </p>
+                <h4 class="mt-3 mb-2 font-bold text-slate-800">POLÍTICA DE DEVOLUCIÓ I CANVIS:</h4>
+                <p class="mb-1">
+                  <strong>ANUL·LACIÓ DE LA INSCRIPCIÓ:</strong> Fins el 15 d'abril de 2026 es
+                  retornarà el 100% del total. A partir del 16 d'abril de 2026 no es retornarà cap
+                  inscripció.
+                </p>
+                <p class="mb-1">
+                  <strong>ASSEGURANÇA D'ANUL·LACIÓ:</strong> Si contractes l'assegurança
+                  d'anul·lació (9€), podràs cancel·lar la teva inscripció des del 16 d'abril fins al
+                  10 de maig (sense incloure l'assegurança).
+                </p>
+              </div>
+            </div>
+
             <!-- Aceptación de reglamento -->
-            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div class="rounded-lg border border-slate-200 p-4">
               <Field orientation="horizontal" class="items-start">
                 <Checkbox
                   id="acepta_reglamento"
                   v-model="form.acepta_reglamento"
                   required
+                  class="mt-1.5"
                   :class="{ 'border-red-500': form.errors.acepta_reglamento }"
                 />
                 <div>
-                  <Label for="acepta_reglamento" class="cursor-pointer leading-relaxed">
-                    Accepto el reglament de la cursa, la política de devolucions descrita
-                    anteriorment i també accepto el plec de descàrrec de responsabilitats i aptitud
-                    física per participar a la Nocturna Fredes-Paüls {{ edicion.anio }}. *
+                  <Label
+                    for="acepta_reglamento"
+                    class="cursor-pointer text-sm leading-relaxed text-balance"
+                  >
+                    Accepto el
+                    <a
+                      href="https://nocturna.uectortosa.cat/reglament-i-recomanacions"
+                      target="_blank"
+                      class="text-gray-600 underline hover:text-gray-800"
+                    >
+                      reglament de la cursa i el material obligatori</a
+                    >
+                    i el
+                    <a
+                      href="https://nocturna.uectortosa.cat/responsabilitats"
+                      target="_blank"
+                      class="text-gray-600 underline hover:text-gray-800"
+                    >
+                      plec de descàrrec de responsabilitats i aptitud física</a
+                    >
+                    per participar a la Nocturna Fredes-Paüls {{ edicion.anio }}. *
                   </Label>
                   <p v-if="form.errors.acepta_reglamento" class="mt-1 text-sm text-red-500">
                     {{ form.errors.acepta_reglamento }}

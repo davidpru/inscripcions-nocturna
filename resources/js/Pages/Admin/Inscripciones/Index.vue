@@ -20,9 +20,10 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { PARADAS } from '@/constants/paradas';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { Bus, Check, Eye, Pencil, RotateCcw, Save, Trash2, X } from 'lucide-vue-next';
+import { Bus, Check, Pencil, RotateCcw, Save, Trash2, X } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
 
 interface Participante {
@@ -80,9 +81,47 @@ const props = defineProps<{
 }>();
 
 const edicionSeleccionada = ref(props.filtros.edicion_id || '');
-const editMode = ref<number | null>(null);
-const editingData = reactive<Record<number, any>>({});
 const saving = ref(false);
+const editingData = reactive<Record<number, any>>({});
+
+// Tarifas (igual que en TarifaService.php)
+const TARIFAS = {
+  publico_federado: { normal: 35, tardia: 40 },
+  publico_no_federado: { normal: 40, tardia: 45 },
+  socio_federado: { normal: 30, tardia: 35 },
+  socio_no_federado: { normal: 35, tardia: 40 },
+};
+const AUTOBUS = { normal: 12, tardia: 14 };
+const SEGURO = 9;
+
+// Calcular precio en base a las opciones
+const calcularPrecio = (data: any, esTarifaTardia: boolean) => {
+  const tipoTarifa = esTarifaTardia ? 'tardia' : 'normal';
+
+  // Determinar perfil
+  let perfilClave: string;
+  if (data.es_socio_uec && data.esta_federado) {
+    perfilClave = 'socio_federado';
+  } else if (data.es_socio_uec && !data.esta_federado) {
+    perfilClave = 'socio_no_federado';
+  } else if (!data.es_socio_uec && data.esta_federado) {
+    perfilClave = 'publico_federado';
+  } else {
+    perfilClave = 'publico_no_federado';
+  }
+
+  const tarifaBase = TARIFAS[perfilClave as keyof typeof TARIFAS][tipoTarifa];
+  const precioAutobus = data.necesita_autobus ? AUTOBUS[tipoTarifa] : 0;
+  const precioSeguro = data.seguro_anulacion ? SEGURO : 0;
+
+  return {
+    tarifa_base: tarifaBase,
+    precio_autobus: precioAutobus,
+    precio_seguro: precioSeguro,
+    precio_total: tarifaBase + precioAutobus + precioSeguro,
+    es_tarifa_tardia: esTarifaTardia,
+  };
+};
 
 // Formatear fecha a YYYY-MM-DD para input date (sin problemas de zona horaria)
 const formatDateForInput = (dateString: string): string => {
@@ -108,7 +147,7 @@ const formatDateForDisplay = (dateString: string): string => {
 };
 
 const startEditing = (inscripcion: Inscripcion) => {
-  editMode.value = inscripcion.id;
+  if (editingData[inscripcion.id]) return; // Ya iniciado
   editingData[inscripcion.id] = {
     // Datos del participante
     nombre: inscripcion.participante.nombre,
@@ -136,8 +175,8 @@ const startEditing = (inscripcion: Inscripcion) => {
   };
 };
 
-const cancelEditing = () => {
-  editMode.value = null;
+const cancelEditing = (inscripcionId: number) => {
+  delete editingData[inscripcionId];
 };
 
 const saveChanges = (inscripcion: Inscripcion) => {
@@ -145,7 +184,7 @@ const saveChanges = (inscripcion: Inscripcion) => {
   router.put(`/admin/inscripciones/${inscripcion.id}`, editingData[inscripcion.id], {
     preserveScroll: true,
     onSuccess: () => {
-      editMode.value = null;
+      delete editingData[inscripcion.id];
       saving.value = false;
     },
     onError: () => {
@@ -458,50 +497,43 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                     {{ formatearFecha(inscripcion.created_at) }}
                   </td>
                   <td class="space-x-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                    <Sheet @update:open="(open: boolean) => !open && cancelEditing()">
+                    <Sheet
+                      @update:open="
+                        (open: boolean) => {
+                          if (open) startEditing(inscripcion);
+                          else cancelEditing(inscripcion.id);
+                        }
+                      "
+                    >
                       <SheetTrigger as-child>
                         <Button variant="default" size="sm">
-                          <Eye class="mr-2 h-4 w-4" />
-                          Ver
+                          <Pencil class="mr-2 h-4 w-4" />
+                          Editar
                         </Button>
                       </SheetTrigger>
                       <SheetContent class="w-full overflow-y-auto sm:max-w-xl">
                         <SheetHeader>
                           <div class="flex items-center justify-between">
                             <div>
-                              <SheetTitle>Inscripción #{{ inscripcion.id }}</SheetTitle>
+                              <SheetTitle>Editar Inscripción #{{ inscripcion.id }}</SheetTitle>
                               <SheetDescription>
                                 {{ formatearFecha(inscripcion.created_at) }}
                               </SheetDescription>
                             </div>
                             <div class="flex gap-2">
                               <Button
-                                v-if="editMode !== inscripcion.id"
-                                variant="outline"
+                                variant="default"
                                 size="sm"
-                                @click="startEditing(inscripcion)"
+                                :disabled="saving"
+                                @click="saveChanges(inscripcion)"
                               >
-                                <Pencil class="mr-2 h-4 w-4" />
-                                Editar
+                                <Save class="mr-2 h-4 w-4" />
+                                {{ saving ? 'Guardando...' : 'Guardar' }}
                               </Button>
-                              <template v-else>
-                                <Button
-                                  variant="default"
-                                  size="sm"
-                                  :disabled="saving"
-                                  @click="saveChanges(inscripcion)"
-                                >
-                                  <Save class="mr-2 h-4 w-4" />
-                                  {{ saving ? 'Guardando...' : 'Guardar' }}
-                                </Button>
-                                <Button variant="outline" size="sm" @click="cancelEditing">
-                                  <X class="h-4 w-4" />
-                                </Button>
-                              </template>
                             </div>
                           </div>
                         </SheetHeader>
-                        <div class="mt-6 space-y-6 text-sm">
+                        <div v-if="editingData[inscripcion.id]" class="mt-6 space-y-6 text-sm">
                           <!-- Datos personales -->
                           <div class="space-y-3">
                             <h3 class="font-semibold text-slate-900">Datos Personales</h3>
@@ -509,139 +541,89 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                               <!-- Nombre -->
                               <div>
                                 <Label class="text-xs text-slate-500">Nombre</Label>
-                                <Input
-                                  v-if="editMode === inscripcion.id"
-                                  v-model="editingData[inscripcion.id].nombre"
-                                  class="mt-1"
-                                />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.participante.nombre
-                                }}</span>
+                                <Input v-model="editingData[inscripcion.id].nombre" class="mt-1" />
                               </div>
                               <!-- Apellidos -->
                               <div>
                                 <Label class="text-xs text-slate-500">Apellidos</Label>
                                 <Input
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].apellidos"
                                   class="mt-1"
                                 />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.participante.apellidos
-                                }}</span>
                               </div>
                               <!-- DNI -->
                               <div>
                                 <Label class="text-xs text-slate-500">DNI</Label>
-                                <Input
-                                  v-if="editMode === inscripcion.id"
-                                  v-model="editingData[inscripcion.id].dni"
-                                  class="mt-1"
-                                />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.participante.dni
-                                }}</span>
+                                <Input v-model="editingData[inscripcion.id].dni" class="mt-1" />
                               </div>
                               <!-- Género -->
                               <div>
                                 <Label class="text-xs text-slate-500">Género</Label>
                                 <select
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].genero"
                                   class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                                 >
                                   <option value="masculino">Masculino</option>
                                   <option value="femenino">Femenino</option>
                                 </select>
-                                <span v-else class="block font-medium capitalize">{{
-                                  inscripcion.participante.genero
-                                }}</span>
                               </div>
                               <!-- Email -->
                               <div>
                                 <Label class="text-xs text-slate-500">Email</Label>
                                 <Input
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].email"
                                   type="email"
                                   class="mt-1"
                                 />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.participante.email
-                                }}</span>
                               </div>
                               <!-- Teléfono -->
                               <div>
                                 <Label class="text-xs text-slate-500">Teléfono</Label>
                                 <Input
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].telefono"
                                   class="mt-1"
                                 />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.participante.telefono
-                                }}</span>
                               </div>
                               <!-- Fecha Nacimiento -->
                               <div>
                                 <Label class="text-xs text-slate-500">Fecha Nacimiento</Label>
                                 <Input
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].fecha_nacimiento"
                                   type="date"
                                   class="mt-1"
                                 />
-                                <span v-else class="block font-medium">{{
-                                  formatDateForDisplay(inscripcion.participante.fecha_nacimiento)
-                                }}</span>
                               </div>
                               <!-- Dirección (col-span-2) -->
                               <div class="col-span-2">
                                 <Label class="text-xs text-slate-500">Dirección</Label>
                                 <Input
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].direccion"
                                   class="mt-1"
                                 />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.participante.direccion
-                                }}</span>
                               </div>
                               <!-- Código Postal -->
                               <div>
                                 <Label class="text-xs text-slate-500">Código Postal</Label>
                                 <Input
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].codigo_postal"
                                   class="mt-1"
                                 />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.participante.codigo_postal
-                                }}</span>
                               </div>
                               <!-- Población -->
                               <div>
                                 <Label class="text-xs text-slate-500">Población</Label>
                                 <Input
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].poblacion"
                                   class="mt-1"
                                 />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.participante.poblacion
-                                }}</span>
                               </div>
                               <!-- Provincia -->
                               <div class="col-span-2">
                                 <Label class="text-xs text-slate-500">Provincia</Label>
                                 <Input
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].provincia"
                                   class="mt-1"
                                 />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.participante.provincia
-                                }}</span>
                               </div>
                             </div>
                           </div>
@@ -654,136 +636,100 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                               <div>
                                 <Label class="text-xs text-slate-500">Estado Pago</Label>
                                 <select
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].estado_pago"
                                   class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                                 >
                                   <option value="pendiente">Pendiente</option>
                                   <option value="pagado">Pagado</option>
                                   <option value="cancelado">Cancelado</option>
+                                  <option value="devuelto">Devuelto</option>
                                 </select>
-                                <span
-                                  v-else
-                                  :class="getEstadoPagoBadgeClass(inscripcion.estado_pago)"
-                                  class="mt-1 inline-flex rounded-full px-2 text-xs leading-5 font-semibold"
-                                >
-                                  {{ inscripcion.estado_pago }}
-                                </span>
                               </div>
-                              <!-- Precio Total (solo lectura) -->
+                              <!-- Precio Actual (solo lectura) -->
                               <div>
-                                <Label class="text-xs text-slate-500">Precio Total</Label>
-                                <span class="block font-medium"
+                                <Label class="text-xs text-slate-500">Precio Registrado</Label>
+                                <span class="block font-medium text-slate-500"
                                   >{{ inscripcion.precio_total }}€</span
                                 >
                               </div>
                               <!-- Socio UEC -->
                               <div>
                                 <Label class="text-xs text-slate-500">Socio UEC</Label>
-                                <div v-if="editMode === inscripcion.id" class="mt-1">
+                                <div class="mt-1">
                                   <input
                                     type="checkbox"
                                     v-model="editingData[inscripcion.id].es_socio_uec"
                                     class="h-4 w-4 rounded border-slate-300"
                                   />
                                 </div>
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.es_socio_uec ? 'Sí' : 'No'
-                                }}</span>
                               </div>
                               <!-- Federado -->
                               <div>
                                 <Label class="text-xs text-slate-500">Federado</Label>
-                                <div v-if="editMode === inscripcion.id" class="mt-1">
+                                <div class="mt-1">
                                   <input
                                     type="checkbox"
                                     v-model="editingData[inscripcion.id].esta_federado"
                                     class="h-4 w-4 rounded border-slate-300"
                                   />
                                 </div>
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.esta_federado ? 'Sí' : 'No'
-                                }}</span>
                               </div>
                               <!-- Número Licencia -->
-                              <div
-                                v-if="
-                                  inscripcion.esta_federado ||
-                                  editingData[inscripcion.id]?.esta_federado
-                                "
-                              >
+                              <div v-if="editingData[inscripcion.id]?.esta_federado">
                                 <Label class="text-xs text-slate-500">Nº Licencia</Label>
                                 <Input
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].numero_licencia"
                                   class="mt-1"
                                 />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.numero_licencia || '-'
-                                }}</span>
                               </div>
                               <!-- Club -->
                               <div>
                                 <Label class="text-xs text-slate-500">Club</Label>
-                                <Input
-                                  v-if="editMode === inscripcion.id"
-                                  v-model="editingData[inscripcion.id].club"
-                                  class="mt-1"
-                                />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.club || '-'
-                                }}</span>
+                                <Input v-model="editingData[inscripcion.id].club" class="mt-1" />
                               </div>
                               <!-- Autobús -->
                               <div>
                                 <Label class="text-xs text-slate-500">Necesita Autobús</Label>
-                                <div v-if="editMode === inscripcion.id" class="mt-1">
+                                <div class="mt-1">
                                   <input
                                     type="checkbox"
                                     v-model="editingData[inscripcion.id].necesita_autobus"
                                     class="h-4 w-4 rounded border-slate-300"
                                   />
                                 </div>
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.necesita_autobus ? 'Sí' : 'No'
-                                }}</span>
                               </div>
                               <!-- Parada Autobús -->
-                              <div
-                                v-if="
-                                  inscripcion.necesita_autobus ||
-                                  editingData[inscripcion.id]?.necesita_autobus
-                                "
-                              >
+                              <div v-if="editingData[inscripcion.id]?.necesita_autobus">
                                 <Label class="text-xs text-slate-500">Parada Autobús</Label>
-                                <Input
-                                  v-if="editMode === inscripcion.id"
+                                <select
                                   v-model="editingData[inscripcion.id].parada_autobus"
-                                  class="mt-1"
-                                />
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.parada_autobus || '-'
-                                }}</span>
+                                  class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                                >
+                                  <option value="">Selecciona parada...</option>
+                                  <option
+                                    v-for="parada in PARADAS"
+                                    :key="parada.value"
+                                    :value="parada.value"
+                                  >
+                                    {{ parada.label }} ({{ parada.descripcion }})
+                                  </option>
+                                </select>
                               </div>
                               <!-- Seguro Anulación -->
                               <div>
                                 <Label class="text-xs text-slate-500">Seguro Anulación</Label>
-                                <div v-if="editMode === inscripcion.id" class="mt-1">
+                                <div class="mt-1">
                                   <input
                                     type="checkbox"
                                     v-model="editingData[inscripcion.id].seguro_anulacion"
                                     class="h-4 w-4 rounded border-slate-300"
                                   />
                                 </div>
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.seguro_anulacion ? 'Sí' : 'No'
-                                }}</span>
                               </div>
                               <!-- Camiseta Caro -->
                               <div>
                                 <Label class="text-xs text-slate-500">Camiseta Caro</Label>
                                 <select
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].talla_camiseta_caro"
                                   class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                                 >
@@ -794,15 +740,11 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                                   <option value="XL">XL</option>
                                   <option value="XXL">XXL</option>
                                 </select>
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.talla_camiseta_caro
-                                }}</span>
                               </div>
                               <!-- Camiseta Paüls -->
                               <div>
                                 <Label class="text-xs text-slate-500">Camiseta Paüls</Label>
                                 <select
-                                  v-if="editMode === inscripcion.id"
                                   v-model="editingData[inscripcion.id].talla_camiseta_pauls"
                                   class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                                 >
@@ -813,10 +755,74 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                                   <option value="XL">XL</option>
                                   <option value="XXL">XXL</option>
                                 </select>
-                                <span v-else class="block font-medium">{{
-                                  inscripcion.talla_camiseta_pauls
-                                }}</span>
                               </div>
+                            </div>
+                          </div>
+
+                          <!-- Resumen de Precio Calculado -->
+                          <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                            <h3 class="mb-3 font-semibold text-slate-900">
+                              Resum del Preu (segons opcions)
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                              <div class="flex justify-between text-slate-700">
+                                <span>Inscripció:</span>
+                                <span
+                                  >{{
+                                    calcularPrecio(editingData[inscripcion.id], false).tarifa_base
+                                  }}€</span
+                                >
+                              </div>
+                              <div
+                                v-if="editingData[inscripcion.id]?.necesita_autobus"
+                                class="flex justify-between text-slate-700"
+                              >
+                                <span>Autobús:</span>
+                                <span
+                                  >{{
+                                    calcularPrecio(editingData[inscripcion.id], false)
+                                      .precio_autobus
+                                  }}€</span
+                                >
+                              </div>
+                              <div
+                                v-if="editingData[inscripcion.id]?.seguro_anulacion"
+                                class="flex justify-between text-slate-700"
+                              >
+                                <span>Assegurança:</span>
+                                <span
+                                  >{{
+                                    calcularPrecio(editingData[inscripcion.id], false)
+                                      .precio_seguro
+                                  }}€</span
+                                >
+                              </div>
+                              <div class="mt-2 border-t border-blue-300 pt-2">
+                                <div
+                                  class="flex justify-between text-base font-bold text-slate-900"
+                                >
+                                  <span>TOTAL CALCULAT:</span>
+                                  <span
+                                    >{{
+                                      calcularPrecio(editingData[inscripcion.id], false)
+                                        .precio_total
+                                    }}€</span
+                                  >
+                                </div>
+                              </div>
+                              <p
+                                v-if="
+                                  calcularPrecio(editingData[inscripcion.id], false)
+                                    .precio_total !== inscripcion.precio_total
+                                "
+                                class="mt-2 text-xs text-amber-600"
+                              >
+                                * El preu calculat ({{
+                                  calcularPrecio(editingData[inscripcion.id], false).precio_total
+                                }}€) és diferent del preu registrat ({{
+                                  inscripcion.precio_total
+                                }}€)
+                              </p>
                             </div>
                           </div>
                         </div>
