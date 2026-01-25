@@ -72,7 +72,7 @@ const form = useForm({
   seguro_anulacion: false,
   talla_camiseta_caro: '',
   talla_camiseta_pauls: '',
-  es_celiaco: '',
+  es_celiaco: 'no',
   acepta_reglamento: false,
 });
 
@@ -245,7 +245,7 @@ const enviarInscripcion = () => {
       </div>
 
       <!-- Formulario de inscripción -->
-      <div class="mb-20 rounded-lg bg-white p-8 shadow-lg">
+      <main class="mb-20 rounded-lg bg-white p-8 shadow-lg">
         <Link href="/">
           <Button variant="ghost" class="mb-4"> ← Tornar </Button>
         </Link>
@@ -758,7 +758,14 @@ const enviarInscripcion = () => {
             </div>
           </div>
         </form>
-      </div>
+      </main>
+      <section>
+        <div class="mb-10 flex items-center justify-center gap-4 mix-blend-multiply grayscale">
+          <img src="@/assets/logos/logo-suport-gencat.png" alt="Logo Gencat" class="h-6.5" />
+          <img src="@/assets/logos/logo-suport-pnports.png" alt="Logo PNPorts" class="h-6" />
+          <img src="@/assets/logos/logo-suport-tinenca.jpg" alt="Logo Tinença" class="h-8" />
+        </div>
+      </section>
     </div>
   </div>
 </template>
