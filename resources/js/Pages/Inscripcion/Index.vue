@@ -323,13 +323,11 @@ const enviarInscripcion = () => {
                   </h3>
                   <div class="mt-2 text-sm text-green-700">
                     <p class="mb-4">El DNI indicat ja té una inscripció activa.</p>
-                    <Button
-                      variant="default"
-                      size="lg"
-                      @click="router.get('/inscripcion/consulta')"
-                    >
-                      Comprovar la meva inscripció
-                    </Button>
+                    <Link href="/inscripcion/consulta">
+                      <Button variant="default" size="lg">
+                        Comprovar la meva inscripció
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>
