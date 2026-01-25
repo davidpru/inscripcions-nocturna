@@ -3,7 +3,7 @@
 
 :root {
   --background: #ffffff;
-  --background: #c8c8c8;
+  /* --background: #c8c8c8; */
   --foreground: #020817;
   --gradient-pink-cream: radial-gradient(
     circle at center,
@@ -33,6 +33,7 @@
 }
 
 @theme inline {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -79,13 +80,7 @@
 }
 
 body {
-  background: var(--color-background);
-  background: var(--gradient-pink-cream);
-  background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
-  background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
-  background-image: linear-gradient(to top, #a8edea 0%, #fed6e3 100%);
-  background-image: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
-  background-image: linear-gradient(-20deg, #e9defa 0%, #fbfcdb 100%);
+  background-image: linear-gradient(to top, #f3e7e9 0%, #e3eeff 99%, #a8edea 100%);
 }
 
 * {

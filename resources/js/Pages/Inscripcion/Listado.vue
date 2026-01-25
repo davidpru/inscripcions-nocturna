@@ -86,7 +86,7 @@ const inscritosFiltrados = computed(() => {
             v-model="busqueda"
             type="text"
             placeholder="Cercar per nom, cognoms, població o club..."
-            class="pl-10"
+            class="bg-white! pl-10"
           />
         </div>
         <p v-if="busqueda" class="mt-2 text-sm text-slate-500">

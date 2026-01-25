@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { Link, router, useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
 import { onMounted, ref, watch } from 'vue';
@@ -324,9 +324,7 @@ const enviarInscripcion = () => {
                   <div class="mt-2 text-sm text-green-700">
                     <p class="mb-4">El DNI indicat ja té una inscripció activa.</p>
                     <Link href="/inscripcion/consulta">
-                      <Button variant="default" size="lg">
-                        Comprovar la meva inscripció
-                      </Button>
+                      <Button variant="default" size="lg"> Comprovar la meva inscripció </Button>
                     </Link>
                   </div>
                 </div>
