@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { PARADAS } from '@/constants/paradas';
+import { PARADAS, getParadaShortLabel } from '@/constants/paradas';
 import { Link, useForm } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
@@ -101,6 +101,9 @@ onMounted(() => {
       console.error('Error parsing participante data:', e);
     }
   }
+
+  // Calcular precio inicial al cargar la página
+  calcularPrecio();
 });
 
 // Búsqueda automática de DNI con debounce
@@ -242,7 +245,7 @@ const enviarInscripcion = () => {
       </div>
 
       <!-- Formulario de inscripción -->
-      <div class="rounded-lg bg-white p-8 shadow-lg">
+      <div class="mb-20 rounded-lg bg-white p-8 shadow-lg">
         <Link href="/">
           <Button variant="ghost" class="mb-4"> ← Tornar </Button>
         </Link>
@@ -477,7 +480,10 @@ const enviarInscripcion = () => {
 
                   <div v-if="form.necesita_autobus" class="mt-4 ml-6">
                     <Field>
-                      <Label>Parada d'Autobús *</Label>
+                      <Label class="mb-0">Parada d'Autobús *</Label>
+                      <p class="text-xs text-slate-600">
+                        Podeu canviar-la fins a 2 dies abans de l'esdeveniment.
+                      </p>
                       <RadioGroup
                         v-model="form.parada_autobus"
                         :required="form.necesita_autobus"
@@ -616,8 +622,8 @@ const enviarInscripcion = () => {
               >
                 <h4 class="mb-1 font-bold text-slate-800">PROTECCIÓ DE DADES:</h4>
                 <p class="mb-1">
-                  <strong>Responsable:</strong> Unió Excursionista de Catalunya - Secció Tortosa
-                  (UEC Tortosa).
+                  <strong>Responsable:</strong> Unió Excursionista de Catalunya de Tortosa (UEC
+                  Tortosa).
                 </p>
                 <p class="mb-1">
                   <strong>Finalitat:</strong> Gestió de la inscripció a la cursa Nocturna
@@ -698,23 +704,23 @@ const enviarInscripcion = () => {
 
             <!-- Resumen de Precio -->
             <div v-if="precioCalculado" class="rounded-lg bg-slate-50 p-6">
-              <h3 class="mb-4 text-xl font-semibold text-slate-900">Resum del Preu</h3>
-              <div class="space-y-2">
+              <h3 class="text-md mb-4 font-semibold text-slate-900">Resum de la teva inscripció</h3>
+              <div class="space-y-2 text-sm">
                 <div class="flex justify-between text-slate-700">
-                  <span>Inscripció:</span>
+                  <span>Inscripció ({{ precioCalculado.nombre_tarifa }}):</span>
                   <span>{{ precioCalculado.tarifa_base }}€</span>
                 </div>
                 <div v-if="form.necesita_autobus" class="flex justify-between text-slate-700">
-                  <span>Autobús:</span>
+                  <span>Autobús ({{ getParadaShortLabel(form.parada_autobus) }}):</span>
                   <span>{{ precioCalculado.precio_autobus }}€</span>
                 </div>
                 <div v-if="form.seguro_anulacion" class="flex justify-between text-slate-700">
-                  <span>Assegurança:</span>
+                  <span>Assegurança d'anul·lació:</span>
                   <span>{{ precioCalculado.precio_seguro }}€</span>
                 </div>
                 <div class="mt-2 border-t border-slate-300 pt-2">
-                  <div class="flex justify-between text-lg font-bold text-slate-900">
-                    <span>TOTAL:</span>
+                  <div class="text-md flex justify-between font-bold text-slate-900">
+                    <span>Total</span>
                     <span>{{ precioCalculado.precio_total }}€</span>
                   </div>
                 </div>
@@ -725,12 +731,12 @@ const enviarInscripcion = () => {
             </div>
 
             <!-- Botón Submit -->
-            <div class="flex justify-center pt-6">
+            <div class="flex flex-col pt-6 text-center">
               <Button
                 type="submit"
                 :disabled="form.processing || yaInscrito"
                 size="xl"
-                class="w-full bg-red-500 px-12 text-lg"
+                class="w-full bg-red-500 px-12 py-8 text-lg"
                 :class="{ 'cursor-not-allowed opacity-50': yaInscrito }"
               >
                 {{
@@ -741,6 +747,14 @@ const enviarInscripcion = () => {
                       : 'Confirmar Inscripció'
                 }}
               </Button>
+
+              <div class="mt-4 text-xs text-balance md:text-sm">
+                Seràs redirigit a la passarel·la de pagament segura Redsys del Banc Sabadell
+              </div>
+              <div class="mt-4 flex justify-center gap-4">
+                <img src="@/assets/logos/logo-redsys-simple.svg" alt="Logo Redsys" class="h-6.5" />
+                <img src="@/assets/logos/logo-sabadell.svg" alt="Logo Sabadell" class="h-5" />
+              </div>
             </div>
           </div>
         </form>

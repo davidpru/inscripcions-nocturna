@@ -762,7 +762,7 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                           <!-- Resumen de Precio Calculado -->
                           <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
                             <h3 class="mb-3 font-semibold text-slate-900">
-                              Resum del Preu (segons opcions)
+                              Resum de l'inscripció (segons opcions)
                             </h3>
                             <div class="space-y-2 text-sm">
                               <div class="flex justify-between text-slate-700">

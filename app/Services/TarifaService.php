@@ -38,8 +38,12 @@ class TarifaService
 
         $precioTotal = $tarifaBase + $precioAutobus + $precioSeguro;
 
+        // Nombre descriptivo de la tarifa
+        $nombreTarifa = $this->obtenerNombreTarifa($esSocioUEC, $estaFederado);
+
         return [
             'tarifa_base' => $tarifaBase,
+            'nombre_tarifa' => $nombreTarifa,
             'precio_autobus' => $precioAutobus,
             'precio_seguro' => $precioSeguro,
             'precio_total' => $precioTotal,
@@ -57,6 +61,19 @@ class TarifaService
             return 'publico_federado';
         } else {
             return 'publico_no_federado';
+        }
+    }
+
+    private function obtenerNombreTarifa(bool $esSocioUEC, bool $estaFederado): string
+    {
+        if ($esSocioUEC && $estaFederado) {
+            return 'Soci UEC + Federat';
+        } elseif ($esSocioUEC && !$estaFederado) {
+            return 'Soci UEC';
+        } elseif (!$esSocioUEC && $estaFederado) {
+            return 'Federat';
+        } else {
+            return 'General';
         }
     }
 }
