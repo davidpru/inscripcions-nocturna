@@ -42,8 +42,9 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd ~/www
+            git config pull.rebase false
             git pull origin main
-            composer install --no-dev --optimize-autoloader
+            php -d disable_functions= composer.phar install --no-dev --optimize-autoloader
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
