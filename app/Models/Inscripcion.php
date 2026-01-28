@@ -39,7 +39,7 @@ class Inscripcion extends Model
         'necesita_autobus' => 'boolean',
         'seguro_anulacion' => 'boolean',
         'es_celiaco' => 'boolean',
-        'tarifa_aplicada' => 'decimal:2',
+        'tarifa_aplicada' => 'string',
         'precio_total' => 'decimal:2',
         'importe_devolucion' => 'decimal:2',
         'fecha_pago' => 'datetime',

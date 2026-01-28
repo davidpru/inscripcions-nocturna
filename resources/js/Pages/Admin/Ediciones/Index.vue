@@ -26,9 +26,7 @@ const formatearFecha = (fecha: string) => {
 };
 
 const getEstadoBadgeClass = (estado: string) => {
-  return estado === 'abierta'
-    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+  return estado === 'abierta' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
 };
 </script>
 
@@ -37,16 +35,12 @@ const getEstadoBadgeClass = (estado: string) => {
     <Head title="Gestión de Ediciones" />
 
     <div class="px-4 py-8">
-      <div class="mx-auto max-w-6xl">
+      <div class="mx-auto max-w-7xl">
         <!-- Header -->
         <div class="mb-8 flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">
-              Gestión de Ediciones
-            </h1>
-            <p class="mt-1 text-slate-600 dark:text-slate-400">
-              Administra las ediciones de la Nocturna Fredes Paüls
-            </p>
+            <h1 class="text-3xl font-bold text-slate-900">Gestión de Ediciones</h1>
+            <p class="mt-1 text-slate-600">Administra las ediciones de la Nocturna Fredes Paüls</p>
           </div>
           <Link href="/admin/ediciones/create">
             <Button>Nueva Edición</Button>
@@ -54,63 +48,61 @@ const getEstadoBadgeClass = (estado: string) => {
         </div>
 
         <!-- Lista de Ediciones -->
-        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-slate-800">
-          <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead class="bg-slate-50 dark:bg-slate-700">
+        <div class="overflow-hidden rounded-lg bg-white shadow">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
               <tr>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Año
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Fecha Evento
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Inscritos
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Fecha Límite
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Estado
                 </th>
                 <th
-                  class="px-6 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-300"
+                  class="px-6 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Acciones
                 </th>
               </tr>
             </thead>
-            <tbody
-              class="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-800"
-            >
+            <tbody class="divide-y divide-slate-200 bg-white">
               <tr v-for="edicion in ediciones" :key="edicion.id">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-slate-900 dark:text-slate-100">
+                  <div class="text-sm font-medium text-slate-900">
                     {{ edicion.anio }}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-slate-900 dark:text-slate-100">
+                  <div class="text-sm text-slate-900">
                     {{ formatearFecha(edicion.fecha_evento) }}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-slate-900 dark:text-slate-100">
+                  <div class="text-sm text-slate-900">
                     {{ edicion.inscripciones_count }} / {{ edicion.limite_inscritos }}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-slate-900 dark:text-slate-100">
+                  <div class="text-sm text-slate-900">
                     {{ formatearFecha(edicion.fecha_limite_tarifa_normal) }}
                   </div>
                 </td>
@@ -135,7 +127,7 @@ const getEstadoBadgeClass = (estado: string) => {
           </table>
 
           <div v-if="ediciones.length === 0" class="py-12 text-center">
-            <p class="text-slate-500 dark:text-slate-400">No hay ediciones creadas</p>
+            <p class="text-slate-500">No hay ediciones creadas</p>
             <Link href="/admin/ediciones/create" class="mt-4 inline-block">
               <Button>Crear Primera Edición</Button>
             </Link>

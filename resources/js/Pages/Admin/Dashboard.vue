@@ -37,8 +37,8 @@ const formatCurrency = (amount: number) => {
       <div class="mx-auto max-w-7xl">
         <!-- Header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Dashboard</h1>
-          <p class="mt-1 text-slate-600 dark:text-slate-400">
+          <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
+          <p class="mt-1 text-slate-600">
             Panel de administración de la Nocturna Fredes Paüls
           </p>
         </div>
@@ -46,16 +46,16 @@ const formatCurrency = (amount: number) => {
         <!-- Stats Grid -->
         <div class="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <!-- Total Inscripciones -->
-          <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
+          <div class="rounded-lg bg-white p-6 shadow">
             <div class="flex items-center">
-              <div class="rounded-full bg-blue-100 p-3 dark:bg-blue-900">
-                <ClipboardList class="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div class="rounded-full bg-blue-100 p-3">
+                <ClipboardList class="h-6 w-6 text-blue-600" />
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
+                <p class="text-sm font-medium text-slate-500">
                   Total Inscripciones
                 </p>
-                <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                <p class="text-2xl font-bold text-slate-900">
                   {{ stats.totalInscripciones }}
                 </p>
               </div>
@@ -63,14 +63,14 @@ const formatCurrency = (amount: number) => {
           </div>
 
           <!-- Pagadas -->
-          <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
+          <div class="rounded-lg bg-white p-6 shadow">
             <div class="flex items-center">
-              <div class="rounded-full bg-green-100 p-3 dark:bg-green-900">
-                <TrendingUp class="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div class="rounded-full bg-green-100 p-3">
+                <TrendingUp class="h-6 w-6 text-green-600" />
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Pagadas</p>
-                <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                <p class="text-sm font-medium text-slate-500">Pagadas</p>
+                <p class="text-2xl font-bold text-slate-900">
                   {{ stats.inscripcionesPagadas }}
                 </p>
               </div>
@@ -78,14 +78,14 @@ const formatCurrency = (amount: number) => {
           </div>
 
           <!-- Pendientes -->
-          <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
+          <div class="rounded-lg bg-white p-6 shadow">
             <div class="flex items-center">
-              <div class="rounded-full bg-amber-100 p-3 dark:bg-amber-900">
-                <Users class="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              <div class="rounded-full bg-amber-100 p-3">
+                <Users class="h-6 w-6 text-amber-600" />
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Pendientes</p>
-                <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                <p class="text-sm font-medium text-slate-500">Pendientes</p>
+                <p class="text-2xl font-bold text-slate-900">
                   {{ stats.inscripcionesPendientes }}
                 </p>
               </div>
@@ -93,14 +93,14 @@ const formatCurrency = (amount: number) => {
           </div>
 
           <!-- Total Recaudado -->
-          <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
+          <div class="rounded-lg bg-white p-6 shadow">
             <div class="flex items-center">
-              <div class="rounded-full bg-purple-100 p-3 dark:bg-purple-900">
-                <Euro class="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <div class="rounded-full bg-purple-100 p-3">
+                <Euro class="h-6 w-6 text-purple-600" />
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Recaudado</p>
-                <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                <p class="text-sm font-medium text-slate-500">Recaudado</p>
+                <p class="text-2xl font-bold text-slate-900">
                   {{ formatCurrency(stats.totalRecaudado) }}
                 </p>
               </div>
@@ -110,23 +110,23 @@ const formatCurrency = (amount: number) => {
 
         <!-- Edición Actual -->
         <div v-if="stats.edicionActual" class="mb-8">
-          <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
+          <div class="rounded-lg bg-white p-6 shadow">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                <h2 class="text-lg font-semibold text-slate-900">
                   Edición {{ stats.edicionActual.anio }}
                 </h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400">
+                <p class="text-sm text-slate-500">
                   {{ stats.edicionActual.inscritos }} / {{ stats.edicionActual.limite }} inscritos
                 </p>
               </div>
               <div class="text-right">
-                <div class="mb-2 text-2xl font-bold text-slate-900 dark:text-slate-100">
+                <div class="mb-2 text-2xl font-bold text-slate-900">
                   {{
                     Math.round((stats.edicionActual.inscritos / stats.edicionActual.limite) * 100)
                   }}%
                 </div>
-                <div class="h-2 w-48 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                <div class="h-2 w-48 overflow-hidden rounded-full bg-slate-200">
                   <div
                     class="h-full rounded-full bg-red-600 transition-all"
                     :style="{
@@ -140,8 +140,8 @@ const formatCurrency = (amount: number) => {
         </div>
 
         <!-- Quick Actions -->
-        <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
-          <h2 class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
+        <div class="rounded-lg bg-white p-6 shadow">
+          <h2 class="mb-4 text-lg font-semibold text-slate-900">
             Acciones Rápidas
           </h2>
           <div class="flex flex-wrap gap-4">

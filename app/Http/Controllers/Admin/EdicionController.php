@@ -69,9 +69,19 @@ class EdicionController extends Controller
             ->where('estado_pago', 'pagado')
             ->count();
 
+        // Contar plazas por parada
+        $plazasPorParada = $edicion->inscripciones()
+            ->where('necesita_autobus', true)
+            ->where('estado_pago', 'pagado')
+            ->selectRaw('parada_autobus, COUNT(*) as total')
+            ->groupBy('parada_autobus')
+            ->pluck('total', 'parada_autobus')
+            ->toArray();
+
         return Inertia::render('Admin/Ediciones/Edit', [
             'edicion' => $edicion,
             'plazasAutobusVendidas' => $plazasAutobusVendidas,
+            'plazasPorParada' => $plazasPorParada,
         ]);
     }
 

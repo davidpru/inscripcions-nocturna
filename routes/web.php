@@ -63,6 +63,7 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     
     // Gestión de inscripciones
     Route::get('inscripciones', [AdminInscripcionController::class, 'index'])->name('inscripciones.index');
+    Route::post('inscripciones', [AdminInscripcionController::class, 'store'])->name('inscripciones.store');
     Route::get('inscripciones/{inscripcion}', [AdminInscripcionController::class, 'show'])->name('inscripciones.show');
     Route::get('inscripciones/{inscripcion}/edit', [AdminInscripcionController::class, 'edit'])->name('inscripciones.edit');
     Route::put('inscripciones/{inscripcion}', [AdminInscripcionController::class, 'update'])->name('inscripciones.update');

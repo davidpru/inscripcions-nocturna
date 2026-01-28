@@ -281,7 +281,7 @@ class InscripcionController extends Controller
                 'talla_camiseta_caro' => $validated['talla_camiseta_caro'],
                 'talla_camiseta_pauls' => $validated['talla_camiseta_pauls'],
                 'es_celiaco' => $validated['es_celiaco'] === 'si',
-                'tarifa_aplicada' => $precio['tarifa_base'],
+                'tarifa_aplicada' => $precio['nombre_tarifa'],
                 'precio_total' => $precio['precio_total'],
                 'estado_pago' => 'pendiente',
             ];

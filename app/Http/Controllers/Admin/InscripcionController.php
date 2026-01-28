@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Inscripcion;
 use App\Models\Edicion;
+use App\Models\Participante;
+use App\Services\TarifaService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -49,6 +51,105 @@ class InscripcionController extends Controller
         ]);
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            // Datos del participante
+            'dni' => 'required|string|max:20',
+            'nombre' => 'required|string|max:255',
+            'apellidos' => 'required|string|max:255',
+            'genero' => 'required|in:masculino,femenino',
+            'fecha_nacimiento' => 'required|date',
+            'telefono' => 'required|string|max:20',
+            'email' => 'required|email|max:255',
+            'direccion' => 'required|string|max:255',
+            'codigo_postal' => 'required|string|max:10',
+            'poblacion' => 'required|string|max:100',
+            'provincia' => 'required|string|max:100',
+            // Datos de la inscripción
+            'edicion_id' => 'required|exists:ediciones,id',
+            'es_socio_uec' => 'boolean',
+            'esta_federado' => 'boolean',
+            'numero_licencia' => 'nullable|string|max:50',
+            'club' => 'nullable|string|max:100',
+            'necesita_autobus' => 'boolean',
+            'parada_autobus' => 'nullable|string|max:100',
+            'seguro_anulacion' => 'boolean',
+            'talla_camiseta_caro' => 'required|string|max:10',
+            'talla_camiseta_pauls' => 'required|string|max:10',
+            'es_celiaco' => 'nullable|string|in:si,no',
+            'estado_pago' => 'required|in:pendiente,pagado,invitado',
+        ]);
+
+        // Buscar o crear participante
+        $participante = Participante::updateOrCreate(
+            ['dni' => strtoupper($validated['dni'])],
+            [
+                'nombre' => $validated['nombre'],
+                'apellidos' => $validated['apellidos'],
+                'genero' => $validated['genero'],
+                'fecha_nacimiento' => $validated['fecha_nacimiento'],
+                'telefono' => $validated['telefono'],
+                'email' => $validated['email'],
+                'direccion' => $validated['direccion'],
+                'codigo_postal' => $validated['codigo_postal'],
+                'poblacion' => $validated['poblacion'],
+                'provincia' => $validated['provincia'],
+            ]
+        );
+
+        // Verificar si ya está inscrito en esta edición
+        $yaInscrito = Inscripcion::where('participante_id', $participante->id)
+            ->where('edicion_id', $validated['edicion_id'])
+            ->exists();
+
+        if ($yaInscrito) {
+            return back()->withErrors(['dni' => 'Este participante ya está inscrito en esta edición.']);
+        }
+
+        // Obtener edición para calcular precio
+        $edicion = Edicion::findOrFail($validated['edicion_id']);
+
+        // Calcular precio (0 si es invitado)
+        if ($validated['estado_pago'] === 'invitado') {
+            $precioTotal = 0;
+            $tarifaAplicada = 'Invitado';
+        } else {
+            $tarifaService = new TarifaService();
+            $resultadoCalculo = $tarifaService->calcularPrecio(
+                $edicion,
+                $validated['es_socio_uec'] ?? false,
+                $validated['esta_federado'] ?? false,
+                $validated['necesita_autobus'] ?? false,
+                $validated['seguro_anulacion'] ?? false
+            );
+            $precioTotal = $resultadoCalculo['precio_total'];
+            $tarifaAplicada = $resultadoCalculo['nombre_tarifa'];
+        }
+
+        // Crear inscripción
+        $inscripcion = Inscripcion::create([
+            'participante_id' => $participante->id,
+            'edicion_id' => $validated['edicion_id'],
+            'es_socio_uec' => $validated['es_socio_uec'] ?? false,
+            'esta_federado' => $validated['esta_federado'] ?? false,
+            'numero_licencia' => $validated['numero_licencia'],
+            'club' => $validated['club'],
+            'necesita_autobus' => $validated['necesita_autobus'] ?? false,
+            'parada_autobus' => $validated['parada_autobus'],
+            'seguro_anulacion' => $validated['seguro_anulacion'] ?? false,
+            'talla_camiseta_caro' => $validated['talla_camiseta_caro'],
+            'talla_camiseta_pauls' => $validated['talla_camiseta_pauls'],
+            'es_celiaco' => ($validated['es_celiaco'] ?? 'no') === 'si',
+            'precio_total' => $precioTotal,
+            'tarifa_aplicada' => $tarifaAplicada,
+            'estado_pago' => $validated['estado_pago'],
+            'fecha_pago' => in_array($validated['estado_pago'], ['pagado', 'invitado']) ? now() : null,
+        ]);
+
+        return back()->with('success', 'Inscripció creada correctament');
+    }
+
     public function update(Request $request, Inscripcion $inscripcion)
     {
         $validated = $request->validate([
@@ -65,7 +166,7 @@ class InscripcionController extends Controller
             'genero' => 'required|in:masculino,femenino',
             'fecha_nacimiento' => 'required|date',
             // Datos de la inscripción
-            'estado_pago' => 'required|in:pendiente,pagado,cancelado',
+            'estado_pago' => 'required|in:pendiente,pagado,cancelado,invitado',
             'es_socio_uec' => 'boolean',
             'esta_federado' => 'boolean',
             'numero_licencia' => 'nullable|string|max:50',
@@ -92,6 +193,23 @@ class InscripcionController extends Controller
             'fecha_nacimiento' => $validated['fecha_nacimiento'],
         ]);
 
+        // Recalcular precio y tarifa si no es invitado
+        if ($validated['estado_pago'] === 'invitado') {
+            $precioTotal = 0;
+            $tarifaAplicada = 'Invitado';
+        } else {
+            $tarifaService = new TarifaService();
+            $resultadoCalculo = $tarifaService->calcularPrecio(
+                $inscripcion->edicion,
+                $validated['es_socio_uec'] ?? false,
+                $validated['esta_federado'] ?? false,
+                $validated['necesita_autobus'] ?? false,
+                $validated['seguro_anulacion'] ?? false
+            );
+            $precioTotal = $resultadoCalculo['precio_total'];
+            $tarifaAplicada = $resultadoCalculo['nombre_tarifa'];
+        }
+
         // Actualizar inscripción
         $inscripcion->update([
             'estado_pago' => $validated['estado_pago'],
@@ -104,6 +222,8 @@ class InscripcionController extends Controller
             'seguro_anulacion' => $validated['seguro_anulacion'] ?? false,
             'talla_camiseta_caro' => $validated['talla_camiseta_caro'],
             'talla_camiseta_pauls' => $validated['talla_camiseta_pauls'],
+            'precio_total' => $precioTotal,
+            'tarifa_aplicada' => $tarifaAplicada,
         ]);
 
         return back()->with('success', 'Inscripción actualizada con éxito');
