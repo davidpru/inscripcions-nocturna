@@ -44,9 +44,9 @@ jobs:
             cd ~/www
             git config pull.rebase false
             git pull origin main
-            php -d disable_functions= composer.phar install --no-dev --optimize-autoloader
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            php artisan storage:link
+            ~/.bin/php -d disable_functions= composer.phar install --no-dev --optimize-autoloader
+            ~/.bin/php artisan migrate --force
+            ~/.bin/php artisan config:cache
+            ~/.bin/php artisan route:cache
+            ~/.bin/php artisan view:cache
+            ~/.bin/php artisan storage:link
