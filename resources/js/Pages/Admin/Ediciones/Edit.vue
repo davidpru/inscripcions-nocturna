@@ -54,6 +54,7 @@ const form = useForm({
   limite_inscritos: props.edicion.limite_inscritos ?? '',
   fecha_limite_tarifa_normal: props.edicion.fecha_limite_tarifa_normal ?? '',
   estado: props.edicion.estado ?? 'abierta',
+  activa: props.edicion.activa ?? false,
   autobuses: props.edicion.autobuses?.length ? props.edicion.autobuses : defaultAutobuses,
   tarifa_publico_federado_normal: props.edicion.tarifa_publico_federado_normal ?? 35,
   tarifa_publico_no_federado_normal: props.edicion.tarifa_publico_no_federado_normal ?? 40,
@@ -251,6 +252,22 @@ const calcularAsientosOcupados = computed(() => {
                           <option value="cerrada">Tancada</option>
                         </select>
                       </div>
+                    </div>
+
+                    <div>
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input
+                          v-model="form.activa"
+                          type="checkbox"
+                          class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary dark:border-slate-600"
+                        />
+                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Edició activa (visible a la pàgina principal)
+                        </span>
+                      </label>
+                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Només pot haver una edició activa alhora
+                      </p>
                     </div>
 
                     <div>

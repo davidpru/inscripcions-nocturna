@@ -9,6 +9,7 @@ const form = useForm({
   limite_inscritos: 650,
   fecha_limite_tarifa_normal: '',
   estado: 'abierta' as 'abierta' | 'cerrada',
+  activa: true,
 });
 
 const enviarFormulario = () => {
@@ -112,6 +113,22 @@ const enviarFormulario = () => {
               </select>
               <p v-if="form.errors.estado" class="mt-1 text-sm text-red-600">
                 {{ form.errors.estado }}
+              </p>
+            </div>
+
+            <div>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  v-model="form.activa"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary dark:border-slate-600"
+                />
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Edición activa (visible en la página principal)
+                </span>
+              </label>
+              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Solo puede haber una edición activa a la vez
               </p>
             </div>
 
