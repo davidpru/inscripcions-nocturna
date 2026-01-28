@@ -9,10 +9,6 @@ const mobileMenuOpen = ref(false);
 const page = usePage();
 const currentPath = computed(() => page.url);
 
-const isActive = (path: string) => {
-  return currentPath.value.startsWith(path);
-};
-
 const navItems = [
   { name: 'Dashboard', href: '/admin', icon: Home, exact: true },
   { name: 'Inscripciones', href: '/admin/inscripciones', icon: ClipboardList },
