@@ -19,6 +19,7 @@ const props = defineProps<{
   edicion: Edicion | null;
   hayEdicion: boolean;
   inscripcionesAbiertas: boolean;
+  isTestMode?: boolean;
 }>();
 
 const dni = ref('');
@@ -104,6 +105,19 @@ onUnmounted(() => {
 
   <div class="min-h-screen px-4 py-12">
     <div class="mx-auto max-w-6xl">
+      <!-- Banner de modo prueba -->
+      <div
+        v-if="isTestMode"
+        class="mb-6 rounded-lg border-2 border-orange-500 bg-orange-50 p-4 text-center"
+      >
+        <p class="font-semibold text-orange-900">
+          🔧 MODE PROVA ACTIVAT - Només visible per a IPs autoritzades
+        </p>
+        <p class="mt-1 text-sm text-orange-700">
+          Les inscripcions encara no estan obertes per al públic
+        </p>
+      </div>
+
       <!-- Sin edición activa -->
       <div v-if="!hayEdicion" class="py-12 text-center">
         <Card class="mx-auto max-w-md">

@@ -12,10 +12,20 @@ use App\Models\Edicion;
 // Página de inicio
 Route::get('/', function () {
     $edicion = Edicion::where('activa', true)->first();
+    
+    // Verificar si la IP está en la lista de IPs de prueba (admins)
+    $isTestIp = in_array(request()->ip(), config('admin.test_ips', []));
+    
+    // Si es IP de prueba, forzar inscripciones abiertas
+    $inscripcionesAbiertas = $edicion 
+        ? ($isTestIp ? true : $edicion->inscripcionesAbiertas()) 
+        : false;
+    
     return Inertia::render('Home', [
         'edicion' => $edicion,
         'hayEdicion' => $edicion !== null,
-        'inscripcionesAbiertas' => $edicion ? $edicion->inscripcionesAbiertas() : false
+        'inscripcionesAbiertas' => $inscripcionesAbiertas,
+        'isTestMode' => $isTestIp && $edicion && !$edicion->inscripcionesAbiertas()
     ]);
 })->name('home');
 
