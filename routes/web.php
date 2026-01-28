@@ -13,7 +13,8 @@ use App\Models\Edicion;
 Route::get('/', function () {
     $edicion = Edicion::where('activa', true)->first();
     return Inertia::render('Home', [
-        'edicion' => $edicion
+        'edicion' => $edicion,
+        'hayEdicion' => $edicion !== null
     ]);
 })->name('home');
 

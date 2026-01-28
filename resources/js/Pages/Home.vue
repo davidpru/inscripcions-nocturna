@@ -15,7 +15,8 @@ interface Edicion {
 }
 
 defineProps<{
-  edicion: Edicion;
+  edicion: Edicion | null;
+  hayEdicion: boolean;
 }>();
 
 const dni = ref('');
@@ -55,13 +56,27 @@ const iniciarInscripcion = async () => {
 
   <div class="min-h-screen px-4 py-12">
     <div class="mx-auto max-w-6xl">
-      <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-slate-90 mb-2 text-4xl font-bold">
-          Nocturna Fredes-Paüls {{ edicion.anio }}
-        </h1>
-        <p class="text-foreground text-lg">Selecciona una opció</p>
+      <!-- Sin edición activa -->
+      <div v-if="!hayEdicion" class="text-center py-12">
+        <Card class="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle class="text-2xl">No hi ha inscripcions obertes</CardTitle>
+            <CardDescription>
+              Actualment no hi ha cap edició activa. Torna més endavant.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
+
+      <!-- Con edición activa -->
+      <div v-else>
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-slate-90 mb-2 text-4xl font-bold">
+            Nocturna Fredes-Paüls {{ edicion?.anio }}
+          </h1>
+          <p class="text-foreground text-lg">Selecciona una opció</p>
+        </div>
 
       <!-- Selección -->
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -114,6 +129,7 @@ const iniciarInscripcion = async () => {
             </CardContent>
           </Card>
         </div>
+      </div>
       </div>
     </div>
   </div>
