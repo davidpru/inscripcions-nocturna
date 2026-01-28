@@ -184,10 +184,8 @@ const calcularAsientosOcupados = computed(() => {
     <div class="px-4 py-8">
       <div class="mx-auto max-w-7xl">
         <div class="mb-6">
-          <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">
-            Editar Edició {{ edicion.anio }}
-          </h1>
-          <p class="mt-1 text-slate-600 dark:text-slate-400">Modifica les dades de l'edició</p>
+          <h1 class="text-3xl font-bold text-slate-900">Editar Edició {{ edicion.anio }}</h1>
+          <p class="mt-1 text-slate-600">les dades de l'edició</p>
         </div>
 
         <form @submit.prevent="enviarFormulario">
@@ -214,23 +212,17 @@ const calcularAsientosOcupados = computed(() => {
             <TabsContent value="edicio">
               <div class="grid gap-6 lg:grid-cols-2">
                 <!-- Columna 1: Dades de l'Edició -->
-                <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
-                  <h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
-                    Dades de l'Edició
-                  </h3>
+                <div class="rounded-lg bg-white p-6 shadow">
+                  <h3 class="mb-4 text-lg font-semibold text-slate-900">Dades de l'Edició</h3>
                   <div class="space-y-4">
                     <div class="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
-                          Any *
-                        </label>
+                        <label class="mb-2 block text-sm font-medium text-slate-700"> Any * </label>
                         <input
                           v-model.number="form.anio"
                           type="number"
                           required
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                         <p v-if="form.errors.anio" class="mt-1 text-sm text-red-600">
                           {{ form.errors.anio }}
@@ -238,15 +230,13 @@ const calcularAsientosOcupados = computed(() => {
                       </div>
 
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Estat *
                         </label>
                         <select
                           v-model="form.estado"
                           required
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         >
                           <option value="abierta">Oberta</option>
                           <option value="cerrada">Tancada</option>
@@ -255,76 +245,68 @@ const calcularAsientosOcupados = computed(() => {
                     </div>
 
                     <div>
-                      <label class="flex items-center gap-2 cursor-pointer">
+                      <label class="flex cursor-pointer items-center gap-2">
                         <input
                           v-model="form.activa"
                           type="checkbox"
-                          class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary dark:border-slate-600"
+                          class="text-primary focus:ring-primary h-4 w-4 rounded border-slate-300"
                         />
-                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span class="text-sm font-medium text-slate-700">
                           Edició activa (visible a la pàgina principal)
                         </span>
                       </label>
-                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      <p class="mt-1 text-xs text-slate-500">
                         Només pot haver una edició activa alhora
                       </p>
                     </div>
 
                     <div>
-                      <label
-                        class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                      >
+                      <label class="mb-2 block text-sm font-medium text-slate-700">
                         Data i Hora d'Inici d'Inscripcions
                       </label>
                       <input
                         v-model="form.fecha_inicio_inscripciones"
                         type="datetime-local"
-                        class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                        class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                       />
                       <p class="mt-1 text-xs text-slate-500">Deixar buit = obertes immediatament</p>
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Data de l'Esdeveniment *
                         </label>
                         <input
                           v-model="form.fecha_evento"
                           type="date"
                           required
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
 
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Límit d'Inscrits *
                         </label>
                         <input
                           v-model.number="form.limite_inscritos"
                           type="number"
                           required
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label
-                        class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                      >
+                      <label class="mb-2 block text-sm font-medium text-slate-700">
                         Data Límit Tarifa Normal *
                       </label>
                       <input
                         v-model="form.fecha_limite_tarifa_normal"
                         type="date"
                         required
-                        class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                        class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                       />
                       <p class="mt-1 text-xs text-slate-500">Després s'aplicarà tarifa tardana</p>
                     </div>
@@ -334,15 +316,11 @@ const calcularAsientosOcupados = computed(() => {
                 <!-- Columna 2: Tarifes i Serveis -->
                 <div class="space-y-6">
                   <!-- Tarifes Normals -->
-                  <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
-                    <h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
-                      Tarifes Normals (€)
-                    </h3>
+                  <div class="rounded-lg bg-white p-6 shadow">
+                    <h3 class="mb-4 text-lg font-semibold text-slate-900">Tarifes Normals (€)</h3>
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Públic Federat
                         </label>
                         <input
@@ -350,13 +328,11 @@ const calcularAsientosOcupados = computed(() => {
                           type="number"
                           step="0.01"
                           min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Públic No Federat
                         </label>
                         <input
@@ -364,13 +340,11 @@ const calcularAsientosOcupados = computed(() => {
                           type="number"
                           step="0.01"
                           min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Soci UEC Federat
                         </label>
                         <input
@@ -378,13 +352,11 @@ const calcularAsientosOcupados = computed(() => {
                           type="number"
                           step="0.01"
                           min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Soci UEC No Federat
                         </label>
                         <input
@@ -392,22 +364,18 @@ const calcularAsientosOcupados = computed(() => {
                           type="number"
                           step="0.01"
                           min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                     </div>
                   </div>
 
                   <!-- Tarifes Tardanes -->
-                  <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
-                    <h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
-                      Tarifes Tardanes (€)
-                    </h3>
+                  <div class="rounded-lg bg-white p-6 shadow">
+                    <h3 class="mb-4 text-lg font-semibold text-slate-900">Tarifes Tardanes (€)</h3>
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Públic Federat
                         </label>
                         <input
@@ -415,13 +383,11 @@ const calcularAsientosOcupados = computed(() => {
                           type="number"
                           step="0.01"
                           min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Públic No Federat
                         </label>
                         <input
@@ -429,13 +395,11 @@ const calcularAsientosOcupados = computed(() => {
                           type="number"
                           step="0.01"
                           min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Soci UEC Federat
                         </label>
                         <input
@@ -443,13 +407,11 @@ const calcularAsientosOcupados = computed(() => {
                           type="number"
                           step="0.01"
                           min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Soci UEC No Federat
                         </label>
                         <input
@@ -457,22 +419,20 @@ const calcularAsientosOcupados = computed(() => {
                           type="number"
                           step="0.01"
                           min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                     </div>
                   </div>
 
                   <!-- Serveis Addicionals -->
-                  <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
-                    <h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  <div class="rounded-lg bg-white p-6 shadow">
+                    <h3 class="mb-4 text-lg font-semibold text-slate-900">
                       Serveis Addicionals (€)
                     </h3>
                     <div class="grid grid-cols-3 gap-4">
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Autobús Normal
                         </label>
                         <input
@@ -480,13 +440,11 @@ const calcularAsientosOcupados = computed(() => {
                           type="number"
                           step="0.01"
                           min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Autobús Tardà
                         </label>
                         <input
@@ -494,13 +452,11 @@ const calcularAsientosOcupados = computed(() => {
                           type="number"
                           step="0.01"
                           min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                       <div>
-                        <label
-                          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
                           Assegurança
                         </label>
                         <input
@@ -508,7 +464,7 @@ const calcularAsientosOcupados = computed(() => {
                           type="number"
                           step="0.01"
                           min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
                     </div>
@@ -522,15 +478,15 @@ const calcularAsientosOcupados = computed(() => {
               <div class="grid gap-6 lg:grid-cols-2">
                 <!-- Columna 1: Configuració -->
                 <div class="space-y-4">
-                  <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
-                    <h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  <div class="rounded-lg bg-white p-6 shadow">
+                    <h3 class="mb-4 text-lg font-semibold text-slate-900">
                       Configuració d'Autobusos
                     </h3>
 
                     <!-- Info de plazas vendidas -->
                     <div
                       v-if="plazasAutobusVendidas > 0"
-                      class="mb-4 rounded-md bg-amber-50 p-3 text-sm text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                      class="mb-4 rounded-md bg-amber-50 p-3 text-sm text-amber-700"
                     >
                       <strong>⚠️ Atenció:</strong> Hi ha
                       <strong>{{ plazasAutobusVendidas }}</strong> places d'autobús ja venudes. No
@@ -540,7 +496,7 @@ const calcularAsientosOcupados = computed(() => {
                     <!-- Error message -->
                     <div
                       v-if="errorAutobus || form.errors.autobuses"
-                      class="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                      class="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700"
                     >
                       {{ errorAutobus || form.errors.autobuses }}
                     </div>
@@ -550,10 +506,10 @@ const calcularAsientosOcupados = computed(() => {
                       <div
                         v-for="(bus, index) in form.autobuses"
                         :key="index"
-                        class="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-600 dark:bg-slate-700/50"
+                        class="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3"
                       >
                         <div
-                          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-medium text-slate-600 dark:bg-slate-600 dark:text-slate-300"
+                          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-medium text-slate-600"
                         >
                           {{ index + 1 }}
                         </div>
@@ -562,7 +518,7 @@ const calcularAsientosOcupados = computed(() => {
                             v-model="bus.nombre"
                             type="text"
                             placeholder="Nom de l'autobús"
-                            class="w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                            class="w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900"
                           />
                         </div>
                         <div class="w-24">
@@ -571,23 +527,25 @@ const calcularAsientosOcupados = computed(() => {
                             type="number"
                             min="1"
                             placeholder="Places"
-                            class="w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                            class="w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900"
                           />
                         </div>
                         <div class="w-28">
                           <select
                             v-model="bus.parada"
-                            class="w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                            class="w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900"
                           >
                             <option value="pauls">Paüls</option>
                             <option value="tortosa">Tortosa</option>
                           </select>
                         </div>
-                        <span class="text-sm text-slate-500 dark:text-slate-400">places</span>
+                        <span class="text-sm text-slate-500">{{
+                          bus.parada === 'pauls' ? 'Paüls' : 'Tortosa'
+                        }}</span>
                         <button
                           type="button"
                           @click="eliminarAutobus(index)"
-                          class="rounded p-1 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30"
+                          class="rounded p-1 text-red-500 hover:bg-red-100"
                           title="Eliminar autobús"
                         >
                           <svg
@@ -608,43 +566,37 @@ const calcularAsientosOcupados = computed(() => {
 
                     <!-- Añadir nuevo autobús -->
                     <div
-                      class="flex items-end gap-3 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50/50 p-4 dark:border-slate-600 dark:bg-slate-700/30"
+                      class="flex items-end gap-3 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50/50 p-4"
                     >
                       <div class="flex-1">
-                        <label
-                          class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
-                        >
+                        <label class="mb-1 block text-xs font-medium text-slate-600">
                           Nom (opcional)
                         </label>
                         <input
                           v-model="nuevoAutobus.nombre"
                           type="text"
                           :placeholder="`Autobús ${form.autobuses.length + 1}`"
-                          class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900"
                         />
                       </div>
                       <div class="w-24">
-                        <label
-                          class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
-                        >
+                        <label class="mb-1 block text-xs font-medium text-slate-600">
                           Places
                         </label>
                         <input
                           v-model.number="nuevoAutobus.plazas"
                           type="number"
                           min="1"
-                          class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900"
                         />
                       </div>
                       <div class="w-28">
-                        <label
-                          class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400"
-                        >
+                        <label class="mb-1 block text-xs font-medium text-slate-600">
                           Parada
                         </label>
                         <select
                           v-model="nuevoAutobus.parada"
-                          class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900"
                         >
                           <option value="pauls">Paüls</option>
                           <option value="tortosa">Tortosa</option>
@@ -669,8 +621,8 @@ const calcularAsientosOcupados = computed(() => {
                   </div>
 
                   <!-- Total plazas -->
-                  <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/30">
-                    <div class="flex items-center justify-between text-blue-700 dark:text-blue-300">
+                  <div class="rounded-lg bg-blue-50 p-4">
+                    <div class="flex items-center justify-between text-blue-700">
                       <div class="flex items-center gap-2">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -690,34 +642,30 @@ const calcularAsientosOcupados = computed(() => {
                     </div>
                     <div class="mt-3 grid grid-cols-3 gap-4 text-center">
                       <div>
-                        <p class="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                        <p class="text-2xl font-bold text-blue-700">
                           {{ form.autobuses.length }}
                         </p>
-                        <p class="text-xs text-blue-600 dark:text-blue-400">Autobusos</p>
+                        <p class="text-xs text-blue-600">Autobusos</p>
                       </div>
                       <div>
-                        <p class="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                        <p class="text-2xl font-bold text-blue-700">
                           {{ totalPlazas }}
                         </p>
-                        <p class="text-xs text-blue-600 dark:text-blue-400">Places Totals</p>
+                        <p class="text-xs text-blue-600">Totals</p>
                       </div>
                       <div>
                         <p
                           class="text-2xl font-bold"
-                          :class="
-                            plazasDisponibles >= 0
-                              ? 'text-green-600 dark:text-green-400'
-                              : 'text-red-600 dark:text-red-400'
-                          "
+                          :class="plazasDisponibles >= 0 ? 'text-green-600' : 'text-red-600'"
                         >
                           {{ plazasDisponibles }}
                         </p>
-                        <p class="text-xs text-blue-600 dark:text-blue-400">Disponibles</p>
+                        <p class="text-xs text-blue-600">Disponibles</p>
                       </div>
                     </div>
                     <p
                       v-if="plazasAutobusVendidas > 0"
-                      class="mt-3 text-center text-sm text-blue-600 dark:text-blue-400"
+                      class="mt-3 text-center text-sm text-blue-600"
                     >
                       ({{ plazasAutobusVendidas }} places ja venudes)
                     </p>
@@ -725,15 +673,13 @@ const calcularAsientosOcupados = computed(() => {
                 </div>
 
                 <!-- Columna 2: Visualització d'Autobusos -->
-                <div class="rounded-lg bg-white p-6 shadow dark:bg-slate-800">
-                  <h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
+                <div class="rounded-lg bg-white p-6 shadow">
+                  <h3 class="mb-4 text-lg font-semibold text-slate-900">
                     Visualització d'Ocupació
                   </h3>
 
                   <!-- Leyenda -->
-                  <div
-                    class="mb-6 flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400"
-                  >
+                  <div class="mb-6 flex items-center gap-4 text-xs text-slate-600">
                     <div class="flex items-center gap-1.5">
                       <div class="h-3 w-3 rounded bg-red-500"></div>
                       <span>Ocupat</span>
@@ -763,11 +709,11 @@ const calcularAsientosOcupados = computed(() => {
                     <div
                       v-for="(autobusInfo, busIndex) in calcularAsientosOcupados"
                       :key="busIndex"
-                      class="rounded-lg border border-slate-200 p-4 dark:border-slate-600"
+                      class="rounded-lg border border-slate-200 p-4"
                     >
                       <div class="mb-3 flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                          <h4 class="font-medium text-slate-900 dark:text-slate-100">
+                          <h4 class="font-medium text-slate-900">
                             {{ autobusInfo.nombre }}
                           </h4>
                           <Badge
@@ -781,8 +727,8 @@ const calcularAsientosOcupados = computed(() => {
                             {{ autobusInfo.parada === 'pauls' ? 'Paüls' : 'Tortosa' }}
                           </Badge>
                         </div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">
-                          <span class="font-semibold text-red-600 dark:text-red-400">
+                        <div class="text-sm text-slate-600">
+                          <span class="font-semibold text-red-600">
                             {{ autobusInfo.ocupados }}
                           </span>
                           /
@@ -804,8 +750,8 @@ const calcularAsientosOcupados = computed(() => {
                               :class="
                                 (row - 1) * 4 + 1 <= autobusInfo.total
                                   ? (row - 1) * 4 + 1 <= autobusInfo.ocupados
-                                    ? 'bg-red-500 dark:bg-red-600'
-                                    : 'border-2 border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-700/50'
+                                    ? 'bg-red-500'
+                                    : 'border-2 border-slate-300 bg-slate-50'
                                   : 'invisible'
                               "
                               :title="
@@ -823,8 +769,8 @@ const calcularAsientosOcupados = computed(() => {
                               :class="
                                 (row - 1) * 4 + 2 <= autobusInfo.total
                                   ? (row - 1) * 4 + 2 <= autobusInfo.ocupados
-                                    ? 'bg-red-500 dark:bg-red-600'
-                                    : 'border-2 border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-700/50'
+                                    ? 'bg-red-500'
+                                    : 'border-2 border-slate-300 bg-slate-50'
                                   : 'invisible'
                               "
                               :title="
@@ -845,8 +791,8 @@ const calcularAsientosOcupados = computed(() => {
                               :class="
                                 (row - 1) * 4 + 3 <= autobusInfo.total
                                   ? (row - 1) * 4 + 3 <= autobusInfo.ocupados
-                                    ? 'bg-red-500 dark:bg-red-600'
-                                    : 'border-2 border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-700/50'
+                                    ? 'bg-red-500'
+                                    : 'border-2 border-slate-300 bg-slate-50'
                                   : 'invisible'
                               "
                               :title="
@@ -864,8 +810,8 @@ const calcularAsientosOcupados = computed(() => {
                               :class="
                                 (row - 1) * 4 + 4 <= autobusInfo.total
                                   ? (row - 1) * 4 + 4 <= autobusInfo.ocupados
-                                    ? 'bg-red-500 dark:bg-red-600'
-                                    : 'border-2 border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-700/50'
+                                    ? 'bg-red-500'
+                                    : 'border-2 border-slate-300 bg-slate-50'
                                   : 'invisible'
                               "
                               :title="

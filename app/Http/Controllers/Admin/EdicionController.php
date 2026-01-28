@@ -35,6 +35,7 @@ class EdicionController extends Controller
             'limite_inscritos' => 'required|integer|min:1',
             'fecha_limite_tarifa_normal' => 'required|date',
             'estado' => 'required|in:abierta,cerrada',
+            'activa' => 'boolean',
             // Autobuses (JSON array)
             'autobuses' => 'nullable|array',
             'autobuses.*.nombre' => 'required|string|max:100',
@@ -54,6 +55,11 @@ class EdicionController extends Controller
             'precio_autobus_tardia' => 'nullable|numeric|min:0',
             'precio_seguro' => 'nullable|numeric|min:0',
         ]);
+
+        // Si se activa esta edición, desactivar todas las demás
+        if ($validated['activa'] ?? false) {
+            Edicion::where('activa', true)->update(['activa' => false]);
+        }
 
         Edicion::create($validated);
 
@@ -94,6 +100,7 @@ class EdicionController extends Controller
             'limite_inscritos' => 'required|integer|min:1',
             'fecha_limite_tarifa_normal' => 'required|date',
             'estado' => 'required|in:abierta,cerrada',
+            'activa' => 'boolean',
             // Autobuses (JSON array)
             'autobuses' => 'nullable|array',
             'autobuses.*.nombre' => 'required|string|max:100',
@@ -126,6 +133,13 @@ class EdicionController extends Controller
             return back()->withErrors([
                 'autobuses' => "No es pot reduir a {$nuevasPlazas} places. Hi ha {$plazasAutobusVendidas} places d'autobús venudes."
             ]);
+        }
+
+        // Si se activa esta edición, desactivar todas las demás
+        if ($validated['activa'] ?? false) {
+            Edicion::where('activa', true)
+                ->where('id', '!=', $edicion->id)
+                ->update(['activa' => false]);
         }
 
         $edicion->update($validated);

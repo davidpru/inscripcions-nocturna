@@ -30,7 +30,7 @@ const isActiveItem = (item: (typeof navItems)[0]) => {
       <div class="flex h-16 items-center justify-between">
         <!-- Logo y navegación desktop -->
         <div class="flex items-center">
-          <Link href="/admin" class="flex-shrink-0">
+          <Link href="/admin" class="shrink-0">
             <span class="text-xl font-bold text-red-600 dark:text-red-500"> Nocturna Admin </span>
           </Link>
 

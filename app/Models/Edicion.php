@@ -39,6 +39,7 @@ class Edicion extends Model
         'fecha_inicio_inscripciones' => 'datetime:Y-m-d\\TH:i',
         'fecha_evento' => 'date:Y-m-d',
         'fecha_limite_tarifa_normal' => 'date:Y-m-d',
+        'activa' => 'boolean',
         'autobuses' => 'array',
         'tarifa_publico_federado_normal' => 'float',
         'tarifa_publico_no_federado_normal' => 'float',

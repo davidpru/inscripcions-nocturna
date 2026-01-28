@@ -14,7 +14,8 @@ Route::get('/', function () {
     $edicion = Edicion::where('activa', true)->first();
     return Inertia::render('Home', [
         'edicion' => $edicion,
-        'hayEdicion' => $edicion !== null
+        'hayEdicion' => $edicion !== null,
+        'inscripcionesAbiertas' => $edicion ? $edicion->inscripcionesAbiertas() : false
     ]);
 })->name('home');
 

@@ -117,11 +117,11 @@ const enviarFormulario = () => {
             </div>
 
             <div>
-              <label class="flex items-center gap-2 cursor-pointer">
+              <label class="flex cursor-pointer items-center gap-2">
                 <input
                   v-model="form.activa"
                   type="checkbox"
-                  class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary dark:border-slate-600"
+                  class="text-primary focus:ring-primary h-4 w-4 rounded border-slate-300 dark:border-slate-600"
                 />
                 <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Edición activa (visible en la página principal)
