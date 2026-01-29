@@ -66,6 +66,11 @@ const form = useForm({
 const openCreateDialog = () => {
   editingCupon.value = null;
   form.reset();
+  // Establecer valores por defecto después del reset
+  form.activo = true;
+  form.incluye_autobus = false;
+  form.incluye_federativa = false;
+  form.usos_maximos = 1;
   // Preseleccionar edición activa si existe
   const edicionActiva = props.ediciones.find((e) => e.anio === new Date().getFullYear());
   if (edicionActiva) {
@@ -381,9 +386,9 @@ const getUsosClass = (cupon: Cupon) => {
                   <Checkbox
                     id="incluye_autobus"
                     :checked="form.incluye_autobus"
-                    @update:checked="form.incluye_autobus = $event"
+                    @update:checked="(val: boolean) => (form.incluye_autobus = val)"
                   />
-                  <Label for="incluye_autobus" class="flex items-center gap-2 font-normal">
+                  <Label for="incluye_autobus" class="flex items-center gap-2 font-normal cursor-pointer">
                     <Bus class="h-4 w-4 text-blue-600" />
                     Servicio de autobús
                   </Label>
@@ -393,9 +398,9 @@ const getUsosClass = (cupon: Cupon) => {
                   <Checkbox
                     id="incluye_federativa"
                     :checked="form.incluye_federativa"
-                    @update:checked="form.incluye_federativa = $event"
+                    @update:checked="(val: boolean) => (form.incluye_federativa = val)"
                   />
-                  <Label for="incluye_federativa" class="flex items-center gap-2 font-normal">
+                  <Label for="incluye_federativa" class="flex items-center gap-2 font-normal cursor-pointer">
                     <Shield class="h-4 w-4 text-purple-600" />
                     Licencia federativa
                   </Label>
@@ -411,9 +416,9 @@ const getUsosClass = (cupon: Cupon) => {
                 <Checkbox
                   id="activo"
                   :checked="form.activo"
-                  @update:checked="form.activo = $event"
+                  @update:checked="(val: boolean) => (form.activo = val)"
                 />
-                <Label for="activo" class="font-normal">Cupón activo</Label>
+                <Label for="activo" class="font-normal cursor-pointer">Cupón activo</Label>
               </div>
 
               <DialogFooter>
