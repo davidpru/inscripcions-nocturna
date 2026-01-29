@@ -52,6 +52,17 @@ interface Participante {
 interface Edicion {
   id: number;
   anio: number;
+  tarifa_socio_federado_normal: number;
+  tarifa_socio_federado_tardia: number;
+  tarifa_socio_no_federado_normal: number;
+  tarifa_socio_no_federado_tardia: number;
+  tarifa_publico_federado_normal: number;
+  tarifa_publico_federado_tardia: number;
+  tarifa_publico_no_federado_normal: number;
+  tarifa_publico_no_federado_tardia: number;
+  precio_autobus_normal: number;
+  precio_autobus_tardia: number;
+  precio_seguro: number;
 }
 
 interface Inscripcion {
@@ -232,35 +243,34 @@ watch(
   }
 );
 
-// Tarifas (igual que en TarifaService.php)
-const TARIFAS = {
-  publico_federado: { normal: 35, tardia: 40 },
-  publico_no_federado: { normal: 40, tardia: 45 },
-  socio_federado: { normal: 30, tardia: 35 },
-  socio_no_federado: { normal: 35, tardia: 40 },
+// Obtener la edición actual seleccionada
+const getEdicionActual = () => {
+  const edicionId = edicionSeleccionada.value || props.filtros.edicion_id || props.ediciones[0]?.id;
+  return props.ediciones.find(e => e.id === Number(edicionId));
 };
-const AUTOBUS = { normal: 12, tardia: 14 };
-const SEGURO = 9;
 
-// Calcular precio en base a las opciones
+// Calcular precio en base a las opciones (usando tarifas de la edición)
 const calcularPrecio = (data: any, esTarifaTardia: boolean) => {
-  const tipoTarifa = esTarifaTardia ? 'tardia' : 'normal';
-
-  // Determinar perfil
-  let perfilClave: string;
-  if (data.es_socio_uec && data.esta_federado) {
-    perfilClave = 'socio_federado';
-  } else if (data.es_socio_uec && !data.esta_federado) {
-    perfilClave = 'socio_no_federado';
-  } else if (!data.es_socio_uec && data.esta_federado) {
-    perfilClave = 'publico_federado';
-  } else {
-    perfilClave = 'publico_no_federado';
+  const edicion = getEdicionActual();
+  if (!edicion) {
+    return { tarifa_base: 0, precio_autobus: 0, precio_seguro: 0, precio_total: 0, es_tarifa_tardia: esTarifaTardia };
   }
 
-  const tarifaBase = TARIFAS[perfilClave as keyof typeof TARIFAS][tipoTarifa];
-  const precioAutobus = data.necesita_autobus ? AUTOBUS[tipoTarifa] : 0;
-  const precioSeguro = data.seguro_anulacion ? SEGURO : 0;
+  let tarifaBase: number;
+  if (data.es_socio_uec && data.esta_federado) {
+    tarifaBase = esTarifaTardia ? edicion.tarifa_socio_federado_tardia : edicion.tarifa_socio_federado_normal;
+  } else if (data.es_socio_uec && !data.esta_federado) {
+    tarifaBase = esTarifaTardia ? edicion.tarifa_socio_no_federado_tardia : edicion.tarifa_socio_no_federado_normal;
+  } else if (!data.es_socio_uec && data.esta_federado) {
+    tarifaBase = esTarifaTardia ? edicion.tarifa_publico_federado_tardia : edicion.tarifa_publico_federado_normal;
+  } else {
+    tarifaBase = esTarifaTardia ? edicion.tarifa_publico_no_federado_tardia : edicion.tarifa_publico_no_federado_normal;
+  }
+
+  const precioAutobus = data.necesita_autobus 
+    ? (esTarifaTardia ? edicion.precio_autobus_tardia : edicion.precio_autobus_normal) 
+    : 0;
+  const precioSeguro = data.seguro_anulacion ? edicion.precio_seguro : 0;
 
   return {
     tarifa_base: tarifaBase,
