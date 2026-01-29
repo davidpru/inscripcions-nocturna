@@ -27,7 +27,7 @@ const buscando = ref(false);
 const error = ref('');
 
 // Countdown para inscripciones
-const timeRemaining = ref({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+const timeRemaining = ref({ difference: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
 const countdownInterval = ref<number | null>(null);
 
 const calculateTimeRemaining = (targetDate: string) => {
@@ -35,15 +35,12 @@ const calculateTimeRemaining = (targetDate: string) => {
   const target = new Date(targetDate).getTime();
   const difference = target - now;
 
-  if (difference <= 0) {
-    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-  }
-
   return {
-    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-    minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-    seconds: Math.floor((difference % (1000 * 60)) / 1000),
+    difference,
+    days: difference > 0 ? Math.floor(difference / (1000 * 60 * 60 * 24)) : 0,
+    hours: difference > 0 ? Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) : 0,
+    minutes: difference > 0 ? Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)) : 0,
+    seconds: difference > 0 ? Math.floor((difference % (1000 * 60)) / 1000) : 0,
   };
 };
 
@@ -80,13 +77,11 @@ onMounted(() => {
     timeRemaining.value = calculateTimeRemaining(props.edicion.fecha_inicio_inscripciones);
     countdownInterval.value = window.setInterval(() => {
       timeRemaining.value = calculateTimeRemaining(props.edicion!.fecha_inicio_inscripciones!);
-      // Si el countdown llega a 0, recargar la página
-      if (
-        timeRemaining.value.days === 0 &&
-        timeRemaining.value.hours === 0 &&
-        timeRemaining.value.minutes === 0 &&
-        timeRemaining.value.seconds === 0
-      ) {
+      // Si el countdown llega a 0 (pero no es negativo), recargar la página una sola vez
+      if (timeRemaining.value.difference <= 0) {
+        if (countdownInterval.value) {
+          clearInterval(countdownInterval.value);
+        }
         window.location.reload();
       }
     }, 1000);
