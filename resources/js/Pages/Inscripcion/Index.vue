@@ -908,8 +908,7 @@ const enviarInscripcion = () => {
               <p v-if="errorCupon" class="mt-2 text-sm text-red-500">{{ errorCupon }}</p>
               
               <p v-if="cuponValidado && precioCalculado?.descuento_cupon" class="mt-2 text-xs text-green-600">
-                Descompte de {{ precioCalculado.descuento_cupon }}€ aplicat
-                <span v-if="cuponValidado.incluye_autobus"> (inclou autobús)</span>
+                Descompte de {{ precioCalculado.descuento_cupon }}€ (llicència federativa<span v-if="cuponValidado.incluye_autobus"> + autobús</span>)
               </p>
             </div>
 

@@ -64,22 +64,31 @@ class Cupon extends Model
 
     /**
      * Calcular el descuento que aplica el cupón
-     * El cupón cubre la tarifa base (para no federados) - no descuenta bus ni seguro
+     * El cupón cubre la diferencia entre la tarifa de no federado y federado
+     * (es decir, el coste de la licencia federativa)
      */
     public function calcularDescuento(Edicion $edicion, bool $esSocioUEC): float
     {
         $esTarifaTardia = $edicion->esTarifaTardia();
 
-        // El cupón aplica la tarifa de no federado
+        // Calcular diferencia entre tarifa no federado y federado
         if ($esSocioUEC) {
-            return $esTarifaTardia 
+            $tarifaNoFederado = $esTarifaTardia 
                 ? (float) $edicion->tarifa_socio_no_federado_tardia 
                 : (float) $edicion->tarifa_socio_no_federado_normal;
+            $tarifaFederado = $esTarifaTardia 
+                ? (float) $edicion->tarifa_socio_federado_tardia 
+                : (float) $edicion->tarifa_socio_federado_normal;
         } else {
-            return $esTarifaTardia 
+            $tarifaNoFederado = $esTarifaTardia 
                 ? (float) $edicion->tarifa_publico_no_federado_tardia 
                 : (float) $edicion->tarifa_publico_no_federado_normal;
+            $tarifaFederado = $esTarifaTardia 
+                ? (float) $edicion->tarifa_publico_federado_tardia 
+                : (float) $edicion->tarifa_publico_federado_normal;
         }
+
+        return $tarifaNoFederado - $tarifaFederado;
     }
 
     /**

@@ -211,9 +211,9 @@ class InscripcionController extends Controller
 
             if ($cupon && $cupon->estaDisponible()) {
                 // El cupón solo aplica si el usuario NO está federado
-                // Cubre la tarifa base (no federado)
+                // Descuenta la diferencia entre tarifa no federado y federado (coste licencia)
                 if (!$request->esta_federado) {
-                    $descuentoCupon = $precio['tarifa_base'];
+                    $descuentoCupon = $cupon->calcularDescuento($edicion, $request->es_socio_uec);
                     
                     // Si incluye autobús, añadir el precio del autobús al descuento
                     if ($cupon->incluye_autobus && $request->necesita_autobus) {

@@ -367,7 +367,7 @@ const getUsosClass = (cupon: Cupon) => {
                 <p class="text-sm font-medium text-slate-700">El cupón descuenta:</p>
 
                 <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
-                  <li>Tarifa de inscripción (no federados)</li>
+                  <li>Coste de la licencia federativa (diferencia entre tarifa no federado y federado)</li>
                 </ul>
 
                 <div class="flex items-center space-x-2 pt-2">
