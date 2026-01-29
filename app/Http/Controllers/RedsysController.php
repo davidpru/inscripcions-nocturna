@@ -303,6 +303,9 @@ class RedsysController extends Controller
                     'precio_total' => $inscripcion->precio_total + ($inscripcion->edicion->precio_autobus ?? 12),
                 ]);
 
+                // Refrescar el modelo para obtener los valores actualizados
+                $inscripcion->refresh();
+
                 Log::info('Redsys success: Bus payment successful', ['inscripcion_id' => $inscripcion->id]);
 
                 return Inertia::render('Pago/ExitoAutobus', [

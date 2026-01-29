@@ -55,7 +55,7 @@ defineProps<{
             <span class="font-medium">#{{ inscripcion.id }}</span>
           </div>
           <div class="flex justify-between border-b pb-2">
-            <span class="text-slate-600">Participante</span>
+            <span class="text-slate-600">Participant</span>
             <span class="font-medium">
               {{ inscripcion.participante.nombre }} {{ inscripcion.participante.apellidos }}
             </span>
