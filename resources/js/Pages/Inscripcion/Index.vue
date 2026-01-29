@@ -99,7 +99,6 @@ const cuponValidado = ref<{
   id: number;
   codigo: string;
   incluye_autobus: boolean;
-  incluye_federativa: boolean;
   descuento: number;
 } | null>(null);
 const validandoCupon = ref(false);
@@ -279,9 +278,6 @@ const validarCupon = async () => {
       if (response.data.cupon.incluye_autobus && !form.necesita_autobus) {
         form.necesita_autobus = true;
       }
-      
-      // Si el cupón incluye federativa, marcarla (el usuario no paga pero se marca como federado)
-      // Nota: el usuario aún debe proporcionar número de licencia si está federado
       
       calcularPrecio();
     } else {
@@ -911,20 +907,10 @@ const enviarInscripcion = () => {
               
               <p v-if="errorCupon" class="mt-2 text-sm text-red-500">{{ errorCupon }}</p>
               
-              <div v-if="cuponValidado" class="mt-2 text-xs text-slate-500">
-                <span v-if="cuponValidado.incluye_autobus && cuponValidado.incluye_federativa">
-                  Inclou inscripció + autobús + federativa
-                </span>
-                <span v-else-if="cuponValidado.incluye_autobus">
-                  Inclou inscripció + autobús
-                </span>
-                <span v-else-if="cuponValidado.incluye_federativa">
-                  Inclou inscripció + federativa
-                </span>
-                <span v-else>
-                  Inclou inscripció
-                </span>
-              </div>
+              <p v-if="cuponValidado && precioCalculado?.descuento_cupon" class="mt-2 text-xs text-green-600">
+                Descompte de {{ precioCalculado.descuento_cupon }}€ aplicat
+                <span v-if="cuponValidado.incluye_autobus"> (inclou autobús)</span>
+              </p>
             </div>
 
             <!-- Resumen de Precio -->

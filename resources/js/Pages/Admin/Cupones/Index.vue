@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { Bus, Pencil, Plus, RotateCcw, Shield, Ticket, Trash2 } from 'lucide-vue-next';
+import { Bus, Pencil, Plus, RotateCcw, Ticket, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface Edicion {
@@ -37,7 +37,6 @@ interface Cupon {
   usos_maximos: number;
   usos_actuales: number;
   incluye_autobus: boolean;
-  incluye_federativa: boolean;
   activo: boolean;
   fecha_expiracion: string | null;
 }
@@ -58,7 +57,6 @@ const form = useForm({
   edicion_id: '',
   usos_maximos: 1,
   incluye_autobus: false,
-  incluye_federativa: false,
   activo: true,
   fecha_expiracion: '',
 });
@@ -69,7 +67,6 @@ const openCreateDialog = () => {
   // Establecer valores por defecto después del reset
   form.activo = true;
   form.incluye_autobus = false;
-  form.incluye_federativa = false;
   form.usos_maximos = 1;
   // Preseleccionar edición activa si existe
   const edicionActiva = props.ediciones.find((e) => e.anio === new Date().getFullYear());
@@ -88,7 +85,6 @@ const openEditDialog = (cupon: Cupon) => {
   form.edicion_id = String(cupon.edicion_id);
   form.usos_maximos = cupon.usos_maximos;
   form.incluye_autobus = cupon.incluye_autobus;
-  form.incluye_federativa = cupon.incluye_federativa;
   form.activo = cupon.activo;
   form.fecha_expiracion = cupon.fecha_expiracion || '';
   showDialog.value = true;
@@ -235,25 +231,13 @@ const getUsosClass = (cupon: Cupon) => {
                 </td>
                 <td class="whitespace-nowrap px-6 py-4">
                   <div class="flex gap-2">
+                    <span class="text-xs text-slate-600">Inscripción</span>
                     <span
                       v-if="cupon.incluye_autobus"
                       class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-700"
                     >
                       <Bus class="h-3 w-3" />
-                      Bus
-                    </span>
-                    <span
-                      v-if="cupon.incluye_federativa"
-                      class="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-1 text-xs text-purple-700"
-                    >
-                      <Shield class="h-3 w-3" />
-                      Federativa
-                    </span>
-                    <span
-                      v-if="!cupon.incluye_autobus && !cupon.incluye_federativa"
-                      class="text-xs text-slate-400"
-                    >
-                      Solo inscripción
+                      + Bus
                     </span>
                   </div>
                 </td>
@@ -380,9 +364,13 @@ const getUsosClass = (cupon: Cupon) => {
               </div>
 
               <div class="space-y-3 rounded-lg border p-4">
-                <p class="text-sm font-medium text-slate-700">El cupón incluye:</p>
+                <p class="text-sm font-medium text-slate-700">El cupón descuenta:</p>
 
-                <div class="flex items-center space-x-2">
+                <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                  <li>Tarifa de inscripción (no federados)</li>
+                </ul>
+
+                <div class="flex items-center space-x-2 pt-2">
                   <Checkbox
                     id="incluye_autobus"
                     :model-value="form.incluye_autobus"
@@ -390,25 +378,12 @@ const getUsosClass = (cupon: Cupon) => {
                   />
                   <Label for="incluye_autobus" class="flex items-center gap-2 font-normal cursor-pointer">
                     <Bus class="h-4 w-4 text-blue-600" />
-                    Servicio de autobús
-                  </Label>
-                </div>
-
-                <div class="flex items-center space-x-2">
-                  <Checkbox
-                    id="incluye_federativa"
-                    :model-value="form.incluye_federativa"
-                    @update:model-value="(val) => (form.incluye_federativa = val === true)"
-                  />
-                  <Label for="incluye_federativa" class="flex items-center gap-2 font-normal cursor-pointer">
-                    <Shield class="h-4 w-4 text-purple-600" />
-                    Licencia federativa
+                    También incluye autobús
                   </Label>
                 </div>
 
                 <p class="text-xs text-slate-500">
-                  El cupón cubre la inscripción para participantes NO federados. No descuenta bus ni
-                  seguro de anulación.
+                  El cupón solo funciona para participantes NO federados. No descuenta el seguro de anulación.
                 </p>
               </div>
 
