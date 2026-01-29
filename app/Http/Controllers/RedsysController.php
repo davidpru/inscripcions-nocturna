@@ -122,8 +122,11 @@ class RedsysController extends Controller
             environment: config('redsys.environment') === 'production' ? Environment::Production : Environment::Test
         );
 
-        // Precio del autobús en céntimos
-        $precioAutobus = $inscripcion->edicion->precio_autobus ?? 12;
+        // Precio del autobús en céntimos (usar tarifa tardía o normal según fecha)
+        $esTarifaTardia = $inscripcion->edicion->esTarifaTardia();
+        $precioAutobus = $esTarifaTardia 
+            ? ($inscripcion->edicion->precio_autobus_tardia ?? 14)
+            : ($inscripcion->edicion->precio_autobus_normal ?? 12);
         $amountInCents = (int)($precioAutobus * 100);
 
         $requestParams = new RequestParameters(
@@ -192,7 +195,7 @@ class RedsysController extends Controller
             if ($esAutobus) {
                 // Extraer ID de inscripción del merchantData
                 $inscripcionId = str_replace('BUS_', '', $params->merchantData);
-                $inscripcion = Inscripcion::find($inscripcionId);
+                $inscripcion = Inscripcion::with('edicion')->find($inscripcionId);
                 
                 if (!$inscripcion) {
                     Log::error('Redsys notification: Inscripcion not found for bus payment', ['merchantData' => $params->merchantData]);
@@ -201,13 +204,19 @@ class RedsysController extends Controller
 
                 // Solo procesar si no tiene ya el autobús (evita duplicados)
                 if (!$inscripcion->necesita_autobus) {
+                    // Calcular precio autobús según tarifa normal o tardía
+                    $esTarifaTardia = $inscripcion->edicion->esTarifaTardia();
+                    $precioAutobus = $esTarifaTardia 
+                        ? ($inscripcion->edicion->precio_autobus_tardia ?? 14)
+                        : ($inscripcion->edicion->precio_autobus_normal ?? 12);
+
                     $inscripcion->update([
                         'necesita_autobus' => true,
                         'parada_autobus' => $inscripcion->parada_autobus_pendiente,
                         'parada_autobus_pendiente' => null,
-                        'precio_total' => $inscripcion->precio_total + ($inscripcion->edicion->precio_autobus ?? 12),
+                        'precio_total' => $inscripcion->precio_total + $precioAutobus,
                     ]);
-                    Log::info('Redsys notification: Bus payment successful', ['inscripcion_id' => $inscripcion->id]);
+                    Log::info('Redsys notification: Bus payment successful', ['inscripcion_id' => $inscripcion->id, 'precio_autobus' => $precioAutobus]);
                 } else {
                     Log::info('Redsys notification: Bus already activated, skipping', ['inscripcion_id' => $inscripcion->id]);
                 }
@@ -293,7 +302,7 @@ class RedsysController extends Controller
             if ($esAutobus) {
                 // Extraer ID de inscripción del merchantData
                 $inscripcionId = str_replace('BUS_', '', $params->merchantData);
-                $inscripcion = Inscripcion::find($inscripcionId);
+                $inscripcion = Inscripcion::with('edicion')->find($inscripcionId);
                 
                 if (!$inscripcion) {
                     Log::error('Redsys success: Inscripcion not found for bus payment', ['merchantData' => $params->merchantData]);
@@ -302,15 +311,21 @@ class RedsysController extends Controller
 
                 // Solo procesar si no tiene ya el autobús (evita duplicados al recargar)
                 if (!$inscripcion->necesita_autobus) {
+                    // Calcular precio autobús según tarifa normal o tardía
+                    $esTarifaTardia = $inscripcion->edicion->esTarifaTardia();
+                    $precioAutobus = $esTarifaTardia 
+                        ? ($inscripcion->edicion->precio_autobus_tardia ?? 14)
+                        : ($inscripcion->edicion->precio_autobus_normal ?? 12);
+
                     $inscripcion->update([
                         'necesita_autobus' => true,
                         'parada_autobus' => $inscripcion->parada_autobus_pendiente,
                         'parada_autobus_pendiente' => null,
                         'numero_pedido_autobus' => null,
-                        'precio_total' => $inscripcion->precio_total + ($inscripcion->edicion->precio_autobus ?? 12),
+                        'precio_total' => $inscripcion->precio_total + $precioAutobus,
                     ]);
                     $inscripcion->refresh();
-                    Log::info('Redsys success: Bus payment successful', ['inscripcion_id' => $inscripcion->id]);
+                    Log::info('Redsys success: Bus payment successful', ['inscripcion_id' => $inscripcion->id, 'precio_autobus' => $precioAutobus]);
                 } else {
                     Log::info('Redsys success: Bus already activated, skipping', ['inscripcion_id' => $inscripcion->id]);
                 }

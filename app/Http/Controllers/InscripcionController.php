@@ -121,17 +121,23 @@ class InscripcionController extends Controller
              return back()->withErrors(['dni' => 'No tienes ninguna inscripción para la edición actual.']);
         }
 
+        // Calcular precio autobús según tarifa normal o tardía
+        $esTarifaTardia = $edicionActiva->esTarifaTardia();
+        $precioAutobus = $esTarifaTardia 
+            ? ($edicionActiva->precio_autobus_tardia ?? 14)
+            : ($edicionActiva->precio_autobus_normal ?? 12);
+
         // Mostrar siempre la vista de detalle de inscripción
         return Inertia::render('Inscripcion/Detalle', [
             'inscripcion' => $inscripcion->load(['participante', 'edicion']),
-            'precioAutobus' => $edicionActiva->precio_autobus ?? 12,
+            'precioAutobus' => $precioAutobus,
         ]);
     }
 
     public function contratarAutobus(Request $request, Inscripcion $inscripcion)
     {
         $request->validate([
-            'parada_autobus' => 'required|in:tortosa,roquetes,pauls',
+            'parada_autobus' => 'required|in:tortosa,pauls',
         ]);
 
         // Verificar que la inscripción está pagada y no tiene autobús
@@ -154,7 +160,7 @@ class InscripcionController extends Controller
     public function cambiarParada(Request $request, Inscripcion $inscripcion)
     {
         $request->validate([
-            'parada_autobus' => 'required|in:tortosa,roquetes,pauls',
+            'parada_autobus' => 'required|in:tortosa,pauls',
         ]);
 
         // Verificar que la inscripción está pagada y tiene autobús
