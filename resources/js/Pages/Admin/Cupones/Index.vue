@@ -385,8 +385,8 @@ const getUsosClass = (cupon: Cupon) => {
                 <div class="flex items-center space-x-2">
                   <Checkbox
                     id="incluye_autobus"
-                    :checked="form.incluye_autobus"
-                    @update:checked="(val: boolean) => (form.incluye_autobus = val)"
+                    :model-value="form.incluye_autobus"
+                    @update:model-value="(val) => (form.incluye_autobus = val === true)"
                   />
                   <Label for="incluye_autobus" class="flex items-center gap-2 font-normal cursor-pointer">
                     <Bus class="h-4 w-4 text-blue-600" />
@@ -397,8 +397,8 @@ const getUsosClass = (cupon: Cupon) => {
                 <div class="flex items-center space-x-2">
                   <Checkbox
                     id="incluye_federativa"
-                    :checked="form.incluye_federativa"
-                    @update:checked="(val: boolean) => (form.incluye_federativa = val)"
+                    :model-value="form.incluye_federativa"
+                    @update:model-value="(val) => (form.incluye_federativa = val === true)"
                   />
                   <Label for="incluye_federativa" class="flex items-center gap-2 font-normal cursor-pointer">
                     <Shield class="h-4 w-4 text-purple-600" />
@@ -415,8 +415,8 @@ const getUsosClass = (cupon: Cupon) => {
               <div class="flex items-center space-x-2">
                 <Checkbox
                   id="activo"
-                  :checked="form.activo"
-                  @update:checked="(val: boolean) => (form.activo = val)"
+                  :model-value="form.activo"
+                  @update:model-value="(val) => (form.activo = val === true)"
                 />
                 <Label for="activo" class="font-normal cursor-pointer">Cupón activo</Label>
               </div>
