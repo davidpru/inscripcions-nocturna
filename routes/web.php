@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InscripcionController;
+use App\Http\Controllers\InscripcionPdfController;
 use App\Http\Controllers\RedsysController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EdicionController;
@@ -52,6 +53,8 @@ Route::prefix('inscripcion')->group(function () {
     Route::get('/confirmacion/{inscripcion}', [InscripcionController::class, 'confirmacion'])->name('inscripcion.confirmacion');
     Route::post('/{inscripcion}/contratar-autobus', [InscripcionController::class, 'contratarAutobus'])->name('inscripcion.contratar-autobus');
     Route::post('/{inscripcion}/cambiar-parada', [InscripcionController::class, 'cambiarParada'])->name('inscripcion.cambiar-parada');
+    Route::get('/{inscripcion}/pdf', [InscripcionPdfController::class, 'descargar'])->name('inscripcion.pdf');
+    Route::get('/{inscripcion}/verificar', [InscripcionPdfController::class, 'verificar'])->name('inscripcion.verificar');
 });
 
 // Rutas de pago con Redsys

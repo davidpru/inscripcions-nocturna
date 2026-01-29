@@ -26,12 +26,25 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PARADAS } from '@/constants/paradas';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
-import { Bus, Check, Pencil, RotateCcw, Save, Trash2, UserPlus, X } from 'lucide-vue-next';
+import {
+  Bus,
+  Check,
+  Download,
+  Eye,
+  Pencil,
+  QrCode,
+  RotateCcw,
+  Save,
+  Trash2,
+  UserPlus,
+  X,
+} from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
 
 interface Participante {
@@ -684,12 +697,154 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                         <SheetHeader>
                           <div class="flex items-center justify-between">
                             <div>
-                              <SheetTitle>Editar Inscripción #{{ inscripcion.id }}</SheetTitle>
+                              <SheetTitle>Inscripción #{{ inscripcion.id }}</SheetTitle>
                               <SheetDescription>
                                 {{ formatearFecha(inscripcion.created_at) }}
                               </SheetDescription>
                             </div>
-                            <div class="flex gap-2">
+                          </div>
+                        </SheetHeader>
+
+                        <Tabs default-value="resumen" class="mt-6">
+                          <TabsList class="grid w-full grid-cols-2">
+                            <TabsTrigger value="resumen" class="gap-2">
+                              <Eye class="h-4 w-4" />
+                              Resum
+                            </TabsTrigger>
+                            <TabsTrigger value="editar" class="gap-2">
+                              <Pencil class="h-4 w-4" />
+                              Editar
+                            </TabsTrigger>
+                          </TabsList>
+
+                          <!-- Tab Resumen -->
+                          <TabsContent value="resumen" class="mt-4 space-y-6">
+                            <!-- QR Code -->
+                            <div
+                              v-if="inscripcion.estado_pago === 'pagado'"
+                              class="flex flex-col items-center rounded-lg border bg-white p-6"
+                            >
+                              <QrCode class="mb-2 h-32 w-32 text-slate-300" />
+                              <p class="text-sm text-slate-500">Codi QR de verificació</p>
+                              <a
+                                :href="`/inscripcion/${inscripcion.id}/pdf`"
+                                class="mt-4"
+                              >
+                                <Button variant="outline" size="sm" class="gap-2">
+                                  <Download class="h-4 w-4" />
+                                  Descarregar PDF amb QR
+                                </Button>
+                              </a>
+                            </div>
+
+                            <!-- Datos del participante -->
+                            <div class="rounded-lg border bg-slate-50 p-4">
+                              <h3 class="mb-3 font-semibold text-slate-900">Participant</h3>
+                              <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                  <span class="text-slate-500">Nom:</span>
+                                  <span class="ml-2 font-medium">{{ inscripcion.participante.nombre }} {{ inscripcion.participante.apellidos }}</span>
+                                </div>
+                                <div>
+                                  <span class="text-slate-500">DNI:</span>
+                                  <span class="ml-2 font-medium">{{ inscripcion.participante.dni }}</span>
+                                </div>
+                                <div>
+                                  <span class="text-slate-500">Email:</span>
+                                  <span class="ml-2 font-medium">{{ inscripcion.participante.email }}</span>
+                                </div>
+                                <div>
+                                  <span class="text-slate-500">Telèfon:</span>
+                                  <span class="ml-2 font-medium">{{ inscripcion.participante.telefono }}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Estado y Pago -->
+                            <div class="rounded-lg border bg-slate-50 p-4">
+                              <h3 class="mb-3 font-semibold text-slate-900">Estat i Pagament</h3>
+                              <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                  <span class="text-slate-500">Estat:</span>
+                                  <span
+                                    :class="{
+                                      'bg-green-100 text-green-800': inscripcion.estado_pago === 'pagado',
+                                      'bg-amber-100 text-amber-800': inscripcion.estado_pago === 'pendiente',
+                                      'bg-red-100 text-red-800': inscripcion.estado_pago === 'cancelado',
+                                      'bg-blue-100 text-blue-800': inscripcion.estado_pago === 'invitado',
+                                    }"
+                                    class="ml-2 rounded-full px-2 py-0.5 text-xs font-semibold"
+                                  >
+                                    {{ inscripcion.estado_pago.toUpperCase() }}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span class="text-slate-500">Total:</span>
+                                  <span class="ml-2 text-lg font-bold text-slate-900">{{ inscripcion.precio_total }}€</span>
+                                </div>
+                                <div v-if="inscripcion.numero_pedido">
+                                  <span class="text-slate-500">Nº Pedido:</span>
+                                  <span class="ml-2 font-mono text-xs">{{ inscripcion.numero_pedido }}</span>
+                                </div>
+                                <div v-if="inscripcion.fecha_pago">
+                                  <span class="text-slate-500">Data pagament:</span>
+                                  <span class="ml-2">{{ formatearFecha(inscripcion.fecha_pago) }}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Opciones contratadas -->
+                            <div class="rounded-lg border bg-slate-50 p-4">
+                              <h3 class="mb-3 font-semibold text-slate-900">Opcions</h3>
+                              <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div class="flex items-center gap-2">
+                                  <span :class="inscripcion.es_socio_uec ? 'text-green-600' : 'text-slate-400'">
+                                    {{ inscripcion.es_socio_uec ? '✓' : '✗' }}
+                                  </span>
+                                  <span>Soci UEC</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                  <span :class="inscripcion.esta_federado ? 'text-green-600' : 'text-slate-400'">
+                                    {{ inscripcion.esta_federado ? '✓' : '✗' }}
+                                  </span>
+                                  <span>Federat</span>
+                                  <span v-if="inscripcion.numero_licencia" class="text-xs text-slate-500">({{ inscripcion.numero_licencia }})</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                  <span :class="inscripcion.necesita_autobus ? 'text-green-600' : 'text-slate-400'">
+                                    {{ inscripcion.necesita_autobus ? '✓' : '✗' }}
+                                  </span>
+                                  <span>Autobús</span>
+                                  <span v-if="inscripcion.parada_autobus" class="text-xs text-slate-500">({{ inscripcion.parada_autobus }})</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                  <span :class="inscripcion.seguro_anulacion ? 'text-green-600' : 'text-slate-400'">
+                                    {{ inscripcion.seguro_anulacion ? '✓' : '✗' }}
+                                  </span>
+                                  <span>Assegurança</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Tallas -->
+                            <div class="rounded-lg border bg-slate-50 p-4">
+                              <h3 class="mb-3 font-semibold text-slate-900">Samarretes</h3>
+                              <div class="flex justify-around text-center">
+                                <div>
+                                  <span class="text-xs text-slate-500">Caro</span>
+                                  <div class="text-lg font-bold">{{ inscripcion.talla_camiseta_caro?.toUpperCase() }}</div>
+                                </div>
+                                <div>
+                                  <span class="text-xs text-slate-500">Paüls</span>
+                                  <div class="text-lg font-bold">{{ inscripcion.talla_camiseta_pauls?.toUpperCase() }}</div>
+                                </div>
+                              </div>
+                            </div>
+                          </TabsContent>
+
+                          <!-- Tab Editar -->
+                          <TabsContent value="editar" class="mt-4">
+                            <div class="mb-4 flex justify-end">
                               <Button
                                 variant="default"
                                 size="sm"
@@ -700,9 +855,7 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                                 {{ saving ? 'Guardando...' : 'Guardar' }}
                               </Button>
                             </div>
-                          </div>
-                        </SheetHeader>
-                        <div v-if="editingData[inscripcion.id]" class="mt-6 space-y-6 text-sm">
+                            <div v-if="editingData[inscripcion.id]" class="space-y-6 text-sm">
                           <!-- Datos personales -->
                           <div class="space-y-3">
                             <h3 class="font-semibold text-slate-900">Datos Personales</h3>
@@ -1029,6 +1182,8 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                             </div>
                           </div>
                         </div>
+                          </TabsContent>
+                        </Tabs>
                       </SheetContent>
                     </Sheet>
 

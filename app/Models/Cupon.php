@@ -64,31 +64,36 @@ class Cupon extends Model
 
     /**
      * Calcular el descuento que aplica el cupón
-     * El cupón cubre la diferencia entre la tarifa de no federado y federado
-     * (es decir, el coste de la licencia federativa)
+     * - Si NO federado: descuenta la tarifa federado (paga solo 5€ de licencia)
+     * - Si YA federado: descuenta toda la inscripción (paga 0€)
      */
-    public function calcularDescuento(Edicion $edicion, bool $esSocioUEC): float
+    public function calcularDescuento(Edicion $edicion, bool $esSocioUEC, bool $estaFederado = false): float
     {
         $esTarifaTardia = $edicion->esTarifaTardia();
 
-        // Calcular diferencia entre tarifa no federado y federado
+        // Si ya está federado, descuenta toda su tarifa (inscripción gratis)
+        if ($estaFederado) {
+            if ($esSocioUEC) {
+                return $esTarifaTardia 
+                    ? (float) $edicion->tarifa_socio_federado_tardia 
+                    : (float) $edicion->tarifa_socio_federado_normal;
+            } else {
+                return $esTarifaTardia 
+                    ? (float) $edicion->tarifa_publico_federado_tardia 
+                    : (float) $edicion->tarifa_publico_federado_normal;
+            }
+        }
+
+        // Si NO está federado, descuenta la tarifa federado (queda solo 5€ de licencia)
         if ($esSocioUEC) {
-            $tarifaNoFederado = $esTarifaTardia 
-                ? (float) $edicion->tarifa_socio_no_federado_tardia 
-                : (float) $edicion->tarifa_socio_no_federado_normal;
-            $tarifaFederado = $esTarifaTardia 
+            return $esTarifaTardia 
                 ? (float) $edicion->tarifa_socio_federado_tardia 
                 : (float) $edicion->tarifa_socio_federado_normal;
         } else {
-            $tarifaNoFederado = $esTarifaTardia 
-                ? (float) $edicion->tarifa_publico_no_federado_tardia 
-                : (float) $edicion->tarifa_publico_no_federado_normal;
-            $tarifaFederado = $esTarifaTardia 
+            return $esTarifaTardia 
                 ? (float) $edicion->tarifa_publico_federado_tardia 
                 : (float) $edicion->tarifa_publico_federado_normal;
         }
-
-        return $tarifaNoFederado - $tarifaFederado;
     }
 
     /**

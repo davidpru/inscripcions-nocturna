@@ -268,6 +268,7 @@ const validarCupon = async () => {
       codigo: codigoCupon.value.toUpperCase(),
       edicion_id: form.edicion_id,
       es_socio_uec: form.es_socio_uec,
+      esta_federado: form.esta_federado,
     });
 
     if (response.data.valido) {
@@ -594,9 +595,22 @@ const enviarInscripcion = () => {
                 Informació esportiva
               </FieldLegend>
               <div class="space-y-4">
-                <Field orientation="horizontal">
-                  <Checkbox id="socio_uec" v-model="form.es_socio_uec" />
-                  <Label for="socio_uec">Ets soci de la UEC Tortosa?</Label>
+                <Field>
+                  <Label>Ets soci de la UEC Tortosa? *</Label>
+                  <RadioGroup
+                    :model-value="form.es_socio_uec ? 'si' : 'no'"
+                    class="mt-2 flex space-x-6"
+                    @update:model-value="(val: string) => (form.es_socio_uec = val === 'si')"
+                  >
+                    <div class="flex items-center space-x-2">
+                      <RadioGroupItem id="socio-no" value="no" />
+                      <Label for="socio-no" class="cursor-pointer font-normal">No</Label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <RadioGroupItem id="socio-si" value="si" />
+                      <Label for="socio-si" class="cursor-pointer font-normal">Sí</Label>
+                    </div>
+                  </RadioGroup>
                 </Field>
 
                 <Field class="">
@@ -606,9 +620,22 @@ const enviarInscripcion = () => {
 
                 <Separator class="my-4" />
 
-                <Field orientation="horizontal">
-                  <Checkbox id="federado" v-model="form.esta_federado" />
-                  <Label for="federado">Estàs federat?</Label>
+                <Field>
+                  <Label>Estàs federat? *</Label>
+                  <RadioGroup
+                    :model-value="form.esta_federado ? 'si' : 'no'"
+                    class="mt-2 flex space-x-6"
+                    @update:model-value="(val: string) => (form.esta_federado = val === 'si')"
+                  >
+                    <div class="flex items-center space-x-2">
+                      <RadioGroupItem id="federado-no" value="no" />
+                      <Label for="federado-no" class="cursor-pointer font-normal">No</Label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <RadioGroupItem id="federado-si" value="si" />
+                      <Label for="federado-si" class="cursor-pointer font-normal">Sí</Label>
+                    </div>
+                  </RadioGroup>
                 </Field>
 
                 <Field v-if="form.esta_federado">
@@ -623,7 +650,6 @@ const enviarInscripcion = () => {
                 </Field>
               </div>
             </FieldSet>
-
             <!-- Servicios Adicionales -->
             <FieldSet>
               <FieldLegend
@@ -942,8 +968,17 @@ const enviarInscripcion = () => {
               <h3 class="text-md mb-4 font-semibold text-slate-900">Resum de la teva inscripció</h3>
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between text-slate-700">
-                  <span>Inscripció ({{ precioCalculado.nombre_tarifa }}):</span>
+                  <span>
+                    Inscripció ({{ precioCalculado.nombre_tarifa }}<span v-if="!form.esta_federado">, inclou federativa</span>):
+                  </span>
                   <span>{{ precioCalculado.tarifa_base }}€</span>
+                </div>
+                <div
+                  v-if="precioCalculado.descuento_cupon > 0"
+                  class="flex justify-between text-green-600"
+                >
+                  <span>Descompte cupó ({{ cuponValidado?.codigo }}):</span>
+                  <span>-{{ precioCalculado.descuento_cupon }}€</span>
                 </div>
                 <div v-if="form.necesita_autobus" class="flex justify-between text-slate-700">
                   <span>Autobús ({{ getParadaShortLabel(form.parada_autobus) }}):</span>
@@ -952,13 +987,6 @@ const enviarInscripcion = () => {
                 <div v-if="form.seguro_anulacion" class="flex justify-between text-slate-700">
                   <span>Assegurança d'anul·lació:</span>
                   <span>{{ precioCalculado.precio_seguro }}€</span>
-                </div>
-                <div
-                  v-if="precioCalculado.descuento_cupon > 0"
-                  class="flex justify-between text-green-600"
-                >
-                  <span>Descompte cupó ({{ cuponValidado?.codigo }}):</span>
-                  <span>-{{ precioCalculado.descuento_cupon }}€</span>
                 </div>
                 <div class="mt-2 border-t border-slate-300 pt-2">
                   <div class="text-md flex justify-between font-bold text-slate-900">

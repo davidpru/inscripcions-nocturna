@@ -210,15 +210,14 @@ class InscripcionController extends Controller
                 ->first();
 
             if ($cupon && $cupon->estaDisponible()) {
-                // El cupón solo aplica si el usuario NO está federado
-                // Descuenta la diferencia entre tarifa no federado y federado (coste licencia)
-                if (!$request->esta_federado) {
-                    $descuentoCupon = $cupon->calcularDescuento($edicion, $request->es_socio_uec);
-                    
-                    // Si incluye autobús, añadir el precio del autobús al descuento
-                    if ($cupon->incluye_autobus && $request->necesita_autobus) {
-                        $descuentoCupon += $precio['precio_autobus'];
-                    }
+                // Calcular descuento del cupón
+                // - Si NO federado: descuenta inscripción (queda solo 5€ licencia)
+                // - Si YA federado: descuenta toda la inscripción (0€)
+                $descuentoCupon = $cupon->calcularDescuento($edicion, $request->es_socio_uec, $request->esta_federado);
+                
+                // Si incluye autobús, añadir el precio del autobús al descuento
+                if ($cupon->incluye_autobus && $request->necesita_autobus) {
+                    $descuentoCupon += $precio['precio_autobus'];
                 }
             }
         }
@@ -235,6 +234,7 @@ class InscripcionController extends Controller
             'codigo' => 'required|string|max:50',
             'edicion_id' => 'required|exists:ediciones,id',
             'es_socio_uec' => 'required|boolean',
+            'esta_federado' => 'required|boolean',
         ]);
 
         $codigo = strtoupper($request->codigo);
@@ -273,7 +273,7 @@ class InscripcionController extends Controller
         }
 
         // Calcular el descuento que aplica
-        $descuento = $cupon->calcularDescuento($edicion, $request->es_socio_uec);
+        $descuento = $cupon->calcularDescuento($edicion, $request->es_socio_uec, $request->esta_federado);
 
         return response()->json([
             'valido' => true,
@@ -320,6 +320,9 @@ class InscripcionController extends Controller
                 'es_celiaco' => 'required|in:si,no',
                 'acepta_reglamento' => 'required|accepted',
                 'codigo_cupon' => 'nullable|string|max:50',
+            ], [
+                'numero_licencia.required_if' => 'El número de llicència és obligatori si estàs federat.',
+                'parada_autobus.required_if' => 'Has de seleccionar una parada d\'autobús.',
             ]);
 
             \Illuminate\Support\Facades\Log::info('Validación correcta');
