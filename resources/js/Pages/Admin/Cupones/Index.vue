@@ -37,6 +37,7 @@ interface Cupon {
   usos_maximos: number;
   usos_actuales: number;
   incluye_autobus: boolean;
+  incluye_federativa: boolean;
   activo: boolean;
   fecha_expiracion: string | null;
 }
@@ -57,6 +58,7 @@ const form = useForm({
   edicion_id: '',
   usos_maximos: 1,
   incluye_autobus: false,
+  incluye_federativa: true,
   activo: true,
   fecha_expiracion: '',
 });
@@ -67,6 +69,7 @@ const openCreateDialog = () => {
   // Establecer valores por defecto después del reset
   form.activo = true;
   form.incluye_autobus = false;
+  form.incluye_federativa = true;
   form.usos_maximos = 1;
   // Preseleccionar edición activa si existe
   const edicionActiva = props.ediciones.find((e) => e.anio === new Date().getFullYear());
@@ -85,6 +88,7 @@ const openEditDialog = (cupon: Cupon) => {
   form.edicion_id = String(cupon.edicion_id);
   form.usos_maximos = cupon.usos_maximos;
   form.incluye_autobus = cupon.incluye_autobus;
+  form.incluye_federativa = cupon.incluye_federativa;
   form.activo = cupon.activo;
   form.fecha_expiracion = cupon.fecha_expiracion || '';
   showDialog.value = true;
