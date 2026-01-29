@@ -273,12 +273,12 @@ const validarCupon = async () => {
     if (response.data.valido) {
       cuponValidado.value = response.data.cupon;
       form.codigo_cupon = response.data.cupon.codigo;
-      
+
       // Si el cupón incluye autobús, activarlo automáticamente
       if (response.data.cupon.incluye_autobus && !form.necesita_autobus) {
         form.necesita_autobus = true;
       }
-      
+
       calcularPrecio();
     } else {
       errorCupon.value = response.data.mensaje || 'Cupón no válido';
@@ -871,7 +871,7 @@ const enviarInscripcion = () => {
             <!-- Campo de Cupón de Descuento -->
             <div class="rounded-lg border border-slate-200 bg-white p-4">
               <h3 class="mb-3 text-sm font-semibold text-slate-900">Tens un cupó de descompte?</h3>
-              
+
               <div v-if="!cuponValidado" class="flex gap-2">
                 <Input
                   v-model="codigoCupon"
@@ -880,35 +880,60 @@ const enviarInscripcion = () => {
                   :class="{ 'border-red-500': errorCupon }"
                   @keyup.enter="validarCupon"
                 />
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   :disabled="validandoCupon || !codigoCupon"
                   @click="validarCupon"
                 >
                   {{ validandoCupon ? 'Validant...' : 'Aplicar' }}
                 </Button>
               </div>
-              
+
               <div v-else class="flex items-center justify-between rounded-lg bg-green-50 p-3">
                 <div class="flex items-center gap-2">
-                  <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    class="h-5 w-5 text-green-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   <div>
-                    <span class="font-mono font-semibold text-green-700">{{ cuponValidado.codigo }}</span>
+                    <span class="font-mono font-semibold text-green-700">{{
+                      cuponValidado.codigo
+                    }}</span>
                     <span class="ml-2 text-sm text-green-600">aplicat!</span>
                   </div>
                 </div>
-                <Button type="button" variant="ghost" size="sm" class="text-red-600 hover:text-red-700" @click="quitarCupon">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  class="text-red-600 hover:text-red-700"
+                  @click="quitarCupon"
+                >
                   Treure
                 </Button>
               </div>
-              
+
               <p v-if="errorCupon" class="mt-2 text-sm text-red-500">{{ errorCupon }}</p>
-              
-              <p v-if="cuponValidado && precioCalculado?.descuento_cupon" class="mt-2 text-xs text-green-600">
-                Descompte de {{ precioCalculado.descuento_cupon }}€ (llicència federativa<span v-if="cuponValidado.incluye_autobus"> + autobús</span>)
+
+              <p
+                v-if="cuponValidado && precioCalculado?.descuento_cupon"
+                class="mt-2 text-xs text-green-600"
+              >
+                Descompte de {{ precioCalculado.descuento_cupon }}€ (llicència federativa<span
+                  v-if="cuponValidado.incluye_autobus"
+                >
+                  + autobús</span
+                >)
               </p>
             </div>
 
@@ -928,7 +953,10 @@ const enviarInscripcion = () => {
                   <span>Assegurança d'anul·lació:</span>
                   <span>{{ precioCalculado.precio_seguro }}€</span>
                 </div>
-                <div v-if="precioCalculado.descuento_cupon > 0" class="flex justify-between text-green-600">
+                <div
+                  v-if="precioCalculado.descuento_cupon > 0"
+                  class="flex justify-between text-green-600"
+                >
                   <span>Descompte cupó ({{ cuponValidado?.codigo }}):</span>
                   <span>-{{ precioCalculado.descuento_cupon }}€</span>
                 </div>

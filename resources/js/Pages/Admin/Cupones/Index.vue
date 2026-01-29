@@ -174,37 +174,37 @@ const getUsosClass = (cupon: Cupon) => {
             <thead class="bg-slate-50">
               <tr>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500"
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Código
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500"
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Edición
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500"
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Usos
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500"
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Incluye
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500"
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Expira
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500"
+                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Estado
                 </th>
                 <th
-                  class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500"
+                  class="px-6 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Acciones
                 </th>
@@ -212,7 +212,7 @@ const getUsosClass = (cupon: Cupon) => {
             </thead>
             <tbody class="divide-y divide-slate-200 bg-white">
               <tr v-for="cupon in cupones" :key="cupon.id">
-                <td class="whitespace-nowrap px-6 py-4">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center gap-2">
                     <Ticket class="h-4 w-4 text-slate-400" />
                     <span class="font-mono font-semibold text-slate-900">{{ cupon.codigo }}</span>
@@ -221,15 +221,15 @@ const getUsosClass = (cupon: Cupon) => {
                     {{ cupon.descripcion }}
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-6 py-4">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-slate-900">{{ cupon.edicion.anio }}</div>
                 </td>
-                <td class="whitespace-nowrap px-6 py-4">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <div :class="getUsosClass(cupon)" class="text-sm">
                     {{ cupon.usos_actuales }} / {{ cupon.usos_maximos }}
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-6 py-4">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex gap-2">
                     <span class="text-xs text-slate-600">Inscripción</span>
                     <span
@@ -241,24 +241,29 @@ const getUsosClass = (cupon: Cupon) => {
                     </span>
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-6 py-4">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-slate-900">
                     {{ formatearFecha(cupon.fecha_expiracion) }}
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-6 py-4">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <span
                     :class="
                       cupon.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     "
-                    class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
+                    class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold"
                   >
                     {{ cupon.activo ? 'Activo' : 'Inactivo' }}
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                   <div class="flex justify-end gap-2">
-                    <Button variant="ghost" size="sm" @click="resetUsos(cupon)" title="Resetear usos">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      @click="resetUsos(cupon)"
+                      title="Resetear usos"
+                    >
                       <RotateCcw class="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="sm" @click="openEditDialog(cupon)">
@@ -294,9 +299,7 @@ const getUsosClass = (cupon: Cupon) => {
               </DialogTitle>
               <DialogDescription>
                 {{
-                  editingCupon
-                    ? 'Modifica los datos del cupón'
-                    : 'Crea un nuevo cupón de descuento'
+                  editingCupon ? 'Modifica los datos del cupón' : 'Crea un nuevo cupón de descuento'
                 }}
               </DialogDescription>
             </DialogHeader>
@@ -366,8 +369,10 @@ const getUsosClass = (cupon: Cupon) => {
               <div class="space-y-3 rounded-lg border p-4">
                 <p class="text-sm font-medium text-slate-700">El cupón descuenta:</p>
 
-                <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
-                  <li>Coste de la licencia federativa (diferencia entre tarifa no federado y federado)</li>
+                <ul class="list-disc space-y-1 pl-4 text-sm text-slate-600">
+                  <li>
+                    Coste de la licencia federativa (diferencia entre tarifa no federado y federado)
+                  </li>
                 </ul>
 
                 <div class="flex items-center space-x-2 pt-2">
@@ -376,14 +381,18 @@ const getUsosClass = (cupon: Cupon) => {
                     :model-value="form.incluye_autobus"
                     @update:model-value="(val) => (form.incluye_autobus = val === true)"
                   />
-                  <Label for="incluye_autobus" class="flex items-center gap-2 font-normal cursor-pointer">
+                  <Label
+                    for="incluye_autobus"
+                    class="flex cursor-pointer items-center gap-2 font-normal"
+                  >
                     <Bus class="h-4 w-4 text-blue-600" />
                     También incluye autobús
                   </Label>
                 </div>
 
                 <p class="text-xs text-slate-500">
-                  El cupón solo funciona para participantes NO federados. No descuenta el seguro de anulación.
+                  El cupón solo funciona para participantes NO federados. No descuenta el seguro de
+                  anulación.
                 </p>
               </div>
 
@@ -393,7 +402,7 @@ const getUsosClass = (cupon: Cupon) => {
                   :model-value="form.activo"
                   @update:model-value="(val) => (form.activo = val === true)"
                 />
-                <Label for="activo" class="font-normal cursor-pointer">Cupón activo</Label>
+                <Label for="activo" class="cursor-pointer font-normal">Cupón activo</Label>
               </div>
 
               <DialogFooter>
