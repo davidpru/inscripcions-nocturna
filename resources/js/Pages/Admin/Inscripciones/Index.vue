@@ -70,6 +70,9 @@ interface Inscripcion {
   talla_camiseta_pauls: string;
   club: string | null;
   numero_licencia: string | null;
+  numero_pedido: string | null;
+  numero_autorizacion: string | null;
+  fecha_pago: string | null;
 }
 
 interface Paginacion {
@@ -793,6 +796,26 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                                   >{{ inscripcion.precio_total }}€</span
                                 >
                               </div>
+
+                              <!-- Datos de pago Redsys -->
+                              <div v-if="inscripcion.numero_pedido" class="col-span-2 border-t pt-3 mt-2">
+                                <Label class="text-xs text-slate-500 font-semibold">Datos de Pago Redsys</Label>
+                                <div class="grid grid-cols-3 gap-2 mt-2 text-sm">
+                                  <div>
+                                    <span class="text-xs text-slate-400">Nº Pedido:</span>
+                                    <span class="block font-mono text-slate-700">{{ inscripcion.numero_pedido }}</span>
+                                  </div>
+                                  <div>
+                                    <span class="text-xs text-slate-400">Cód. Auth:</span>
+                                    <span class="block font-mono text-slate-700">{{ inscripcion.numero_autorizacion || '-' }}</span>
+                                  </div>
+                                  <div>
+                                    <span class="text-xs text-slate-400">Fecha Pago:</span>
+                                    <span class="block text-slate-700">{{ inscripcion.fecha_pago ? formatearFecha(inscripcion.fecha_pago) : '-' }}</span>
+                                  </div>
+                                </div>
+                              </div>
+
                               <!-- Socio UEC -->
                               <div>
                                 <Label class="text-xs text-slate-500">Socio UEC</Label>
