@@ -5,6 +5,7 @@ use App\Http\Controllers\RedsysController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EdicionController;
 use App\Http\Controllers\Admin\InscripcionController as AdminInscripcionController;
+use App\Http\Controllers\Admin\CuponController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\Edicion;
@@ -46,6 +47,7 @@ Route::prefix('inscripcion')->group(function () {
     Route::post('/buscar-participante', [InscripcionController::class, 'buscarParticipante'])->name('inscripcion.buscar');
     Route::post('/buscar-inscripcion', [InscripcionController::class, 'buscarInscripcion'])->name('inscripcion.buscar-inscripcion');
     Route::post('/calcular-precio', [InscripcionController::class, 'calcularPrecio'])->name('inscripcion.calcular-precio');
+    Route::post('/validar-cupon', [InscripcionController::class, 'validarCupon'])->name('inscripcion.validar-cupon');
     Route::post('/', [InscripcionController::class, 'store'])->name('inscripcion.store');
     Route::get('/confirmacion/{inscripcion}', [InscripcionController::class, 'confirmacion'])->name('inscripcion.confirmacion');
     Route::post('/{inscripcion}/contratar-autobus', [InscripcionController::class, 'contratarAutobus'])->name('inscripcion.contratar-autobus');
@@ -83,4 +85,11 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     Route::post('inscripciones/exportar', [AdminInscripcionController::class, 'exportar'])->name('inscripciones.exportar');
     Route::post('inscripciones/{inscripcion}/devolucion', [RedsysController::class, 'procesarDevolucion'])->name('inscripciones.devolucion');
     Route::post('inscripciones/{inscripcion}/devolucion-manual', [RedsysController::class, 'devolucionManual'])->name('inscripciones.devolucion-manual');
+
+    // Gestión de cupones
+    Route::get('cupones', [CuponController::class, 'index'])->name('cupones.index');
+    Route::post('cupones', [CuponController::class, 'store'])->name('cupones.store');
+    Route::put('cupones/{cupon}', [CuponController::class, 'update'])->name('cupones.update');
+    Route::delete('cupones/{cupon}', [CuponController::class, 'destroy'])->name('cupones.destroy');
+    Route::post('cupones/{cupon}/reset-usos', [CuponController::class, 'resetUsos'])->name('cupones.reset-usos');
 });

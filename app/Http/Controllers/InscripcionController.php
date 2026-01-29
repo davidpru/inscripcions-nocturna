@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cupon;
 use App\Models\Edicion;
 use App\Models\Participante;
 use App\Models\Inscripcion;
@@ -188,6 +189,7 @@ class InscripcionController extends Controller
             'esta_federado' => 'required|boolean',
             'necesita_autobus' => 'required|boolean',
             'seguro_anulacion' => 'required|boolean',
+            'codigo_cupon' => 'nullable|string|max:50',
         ]);
 
         $edicion = Edicion::findOrFail($request->edicion_id);
@@ -200,7 +202,89 @@ class InscripcionController extends Controller
             $request->seguro_anulacion
         );
 
+        // Si hay cupón, calcular descuento
+        $descuentoCupon = 0;
+        if ($request->codigo_cupon) {
+            $cupon = Cupon::where('codigo', strtoupper($request->codigo_cupon))
+                ->where('edicion_id', $edicion->id)
+                ->first();
+
+            if ($cupon && $cupon->estaDisponible()) {
+                // El cupón solo aplica si el usuario NO está federado
+                // Cubre la tarifa base (no federado)
+                if (!$request->esta_federado) {
+                    $descuentoCupon = $precio['tarifa_base'];
+                    
+                    // Si incluye autobús, añadir el precio del autobús al descuento
+                    if ($cupon->incluye_autobus && $request->necesita_autobus) {
+                        $descuentoCupon += $precio['precio_autobus'];
+                    }
+                }
+            }
+        }
+
+        $precio['descuento_cupon'] = $descuentoCupon;
+        $precio['precio_total'] = max(0, $precio['precio_total'] - $descuentoCupon);
+
         return response()->json($precio);
+    }
+
+    public function validarCupon(Request $request)
+    {
+        $request->validate([
+            'codigo' => 'required|string|max:50',
+            'edicion_id' => 'required|exists:ediciones,id',
+            'es_socio_uec' => 'required|boolean',
+        ]);
+
+        $codigo = strtoupper($request->codigo);
+        $edicion = Edicion::findOrFail($request->edicion_id);
+
+        $cupon = Cupon::where('codigo', $codigo)
+            ->where('edicion_id', $edicion->id)
+            ->first();
+
+        if (!$cupon) {
+            return response()->json([
+                'valido' => false,
+                'mensaje' => 'Cupó no trobat',
+            ]);
+        }
+
+        if (!$cupon->activo) {
+            return response()->json([
+                'valido' => false,
+                'mensaje' => 'Aquest cupó no està actiu',
+            ]);
+        }
+
+        if ($cupon->usos_actuales >= $cupon->usos_maximos) {
+            return response()->json([
+                'valido' => false,
+                'mensaje' => 'Aquest cupó ja ha estat utilitzat',
+            ]);
+        }
+
+        if ($cupon->fecha_expiracion && now()->isAfter($cupon->fecha_expiracion)) {
+            return response()->json([
+                'valido' => false,
+                'mensaje' => 'Aquest cupó ha caducat',
+            ]);
+        }
+
+        // Calcular el descuento que aplica
+        $descuento = $cupon->calcularDescuento($edicion, $request->es_socio_uec);
+
+        return response()->json([
+            'valido' => true,
+            'cupon' => [
+                'id' => $cupon->id,
+                'codigo' => $cupon->codigo,
+                'incluye_autobus' => $cupon->incluye_autobus,
+                'incluye_federativa' => $cupon->incluye_federativa,
+                'descuento' => $descuento,
+            ],
+        ]);
     }
 
     public function store(Request $request)
@@ -235,6 +319,7 @@ class InscripcionController extends Controller
                 'talla_camiseta_pauls' => 'required|string|max:10',
                 'es_celiaco' => 'required|in:si,no',
                 'acepta_reglamento' => 'required|accepted',
+                'codigo_cupon' => 'nullable|string|max:50',
             ]);
 
             \Illuminate\Support\Facades\Log::info('Validación correcta');
@@ -276,6 +361,32 @@ class InscripcionController extends Controller
                 $validated['seguro_anulacion']
             );
 
+            // Procesar cupón si existe
+            $cuponId = null;
+            $descuentoCupon = 0;
+            if (!empty($validated['codigo_cupon'])) {
+                $cupon = Cupon::where('codigo', strtoupper($validated['codigo_cupon']))
+                    ->where('edicion_id', $edicion->id)
+                    ->first();
+
+                if ($cupon && $cupon->estaDisponible()) {
+                    // El cupón solo aplica si el usuario NO está federado
+                    if (!$validated['esta_federado']) {
+                        $descuentoCupon = $precio['tarifa_base'];
+                        
+                        // Si incluye autobús, añadir el precio del autobús al descuento
+                        if ($cupon->incluye_autobus && $validated['necesita_autobus']) {
+                            $descuentoCupon += $precio['precio_autobus'];
+                        }
+                        
+                        $cuponId = $cupon->id;
+                        $cupon->incrementarUso();
+                    }
+                }
+            }
+
+            $precioFinal = max(0, $precio['precio_total'] - $descuentoCupon);
+
             $datosInscripcion = [
                 'es_socio_uec' => $validated['es_socio_uec'],
                 'esta_federado' => $validated['esta_federado'],
@@ -288,7 +399,9 @@ class InscripcionController extends Controller
                 'talla_camiseta_pauls' => $validated['talla_camiseta_pauls'],
                 'es_celiaco' => $validated['es_celiaco'] === 'si',
                 'tarifa_aplicada' => $precio['nombre_tarifa'],
-                'precio_total' => $precio['precio_total'],
+                'precio_total' => $precioFinal,
+                'cupon_id' => $cuponId,
+                'descuento_cupon' => $descuentoCupon,
                 'estado_pago' => 'pendiente',
             ];
 

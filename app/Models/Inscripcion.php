@@ -12,6 +12,7 @@ class Inscripcion extends Model
     protected $fillable = [
         'participante_id',
         'edicion_id',
+        'cupon_id',
         'es_socio_uec',
         'esta_federado',
         'numero_licencia',
@@ -25,6 +26,7 @@ class Inscripcion extends Model
         'es_celiaco',
         'tarifa_aplicada',
         'precio_total',
+        'descuento_cupon',
         'estado_pago',
         'numero_pedido',
         'numero_autorizacion',
@@ -41,6 +43,7 @@ class Inscripcion extends Model
         'es_celiaco' => 'boolean',
         'tarifa_aplicada' => 'string',
         'precio_total' => 'decimal:2',
+        'descuento_cupon' => 'decimal:2',
         'importe_devolucion' => 'decimal:2',
         'fecha_pago' => 'datetime',
         'fecha_devolucion' => 'datetime',
@@ -54,5 +57,10 @@ class Inscripcion extends Model
     public function edicion(): BelongsTo
     {
         return $this->belongsTo(Edicion::class);
+    }
+
+    public function cupon(): BelongsTo
+    {
+        return $this->belongsTo(Cupon::class);
     }
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Calendar, ClipboardList, Home, Menu, X } from 'lucide-vue-next';
+import { Calendar, ClipboardList, Home, Menu, Ticket, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const mobileMenuOpen = ref(false);
@@ -13,7 +13,7 @@ const navItems = [
   { name: 'Dashboard', href: '/admin', icon: Home, exact: true },
   { name: 'Inscripciones', href: '/admin/inscripciones', icon: ClipboardList },
   { name: 'Ediciones', href: '/admin/ediciones', icon: Calendar },
-  // { name: 'Participantes', href: '/admin/participantes', icon: Users },
+  { name: 'Cupones', href: '/admin/cupones', icon: Ticket },
 ];
 
 const isActiveItem = (item: (typeof navItems)[0]) => {

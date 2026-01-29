@@ -246,29 +246,45 @@ watch(
 // Obtener la edición actual seleccionada
 const getEdicionActual = () => {
   const edicionId = edicionSeleccionada.value || props.filtros.edicion_id || props.ediciones[0]?.id;
-  return props.ediciones.find(e => e.id === Number(edicionId));
+  return props.ediciones.find((e) => e.id === Number(edicionId));
 };
 
 // Calcular precio en base a las opciones (usando tarifas de la edición)
 const calcularPrecio = (data: any, esTarifaTardia: boolean) => {
   const edicion = getEdicionActual();
   if (!edicion) {
-    return { tarifa_base: 0, precio_autobus: 0, precio_seguro: 0, precio_total: 0, es_tarifa_tardia: esTarifaTardia };
+    return {
+      tarifa_base: 0,
+      precio_autobus: 0,
+      precio_seguro: 0,
+      precio_total: 0,
+      es_tarifa_tardia: esTarifaTardia,
+    };
   }
 
   let tarifaBase: number;
   if (data.es_socio_uec && data.esta_federado) {
-    tarifaBase = esTarifaTardia ? edicion.tarifa_socio_federado_tardia : edicion.tarifa_socio_federado_normal;
+    tarifaBase = esTarifaTardia
+      ? edicion.tarifa_socio_federado_tardia
+      : edicion.tarifa_socio_federado_normal;
   } else if (data.es_socio_uec && !data.esta_federado) {
-    tarifaBase = esTarifaTardia ? edicion.tarifa_socio_no_federado_tardia : edicion.tarifa_socio_no_federado_normal;
+    tarifaBase = esTarifaTardia
+      ? edicion.tarifa_socio_no_federado_tardia
+      : edicion.tarifa_socio_no_federado_normal;
   } else if (!data.es_socio_uec && data.esta_federado) {
-    tarifaBase = esTarifaTardia ? edicion.tarifa_publico_federado_tardia : edicion.tarifa_publico_federado_normal;
+    tarifaBase = esTarifaTardia
+      ? edicion.tarifa_publico_federado_tardia
+      : edicion.tarifa_publico_federado_normal;
   } else {
-    tarifaBase = esTarifaTardia ? edicion.tarifa_publico_no_federado_tardia : edicion.tarifa_publico_no_federado_normal;
+    tarifaBase = esTarifaTardia
+      ? edicion.tarifa_publico_no_federado_tardia
+      : edicion.tarifa_publico_no_federado_normal;
   }
 
-  const precioAutobus = data.necesita_autobus 
-    ? (esTarifaTardia ? edicion.precio_autobus_tardia : edicion.precio_autobus_normal) 
+  const precioAutobus = data.necesita_autobus
+    ? esTarifaTardia
+      ? edicion.precio_autobus_tardia
+      : edicion.precio_autobus_normal
     : 0;
   const precioSeguro = data.seguro_anulacion ? edicion.precio_seguro : 0;
 
@@ -808,20 +824,33 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                               </div>
 
                               <!-- Datos de pago Redsys -->
-                              <div v-if="inscripcion.numero_pedido" class="col-span-2 border-t pt-3 mt-2">
-                                <Label class="text-xs text-slate-500 font-semibold">Datos de Pago Redsys</Label>
-                                <div class="grid grid-cols-3 gap-2 mt-2 text-sm">
+                              <div
+                                v-if="inscripcion.numero_pedido"
+                                class="col-span-2 mt-2 border-t pt-3"
+                              >
+                                <Label class="text-xs font-semibold text-slate-500"
+                                  >Datos de Pago Redsys</Label
+                                >
+                                <div class="mt-2 grid grid-cols-3 gap-2 text-sm">
                                   <div>
                                     <span class="text-xs text-slate-400">Nº Pedido:</span>
-                                    <span class="block font-mono text-slate-700">{{ inscripcion.numero_pedido }}</span>
+                                    <span class="block font-mono text-slate-700">{{
+                                      inscripcion.numero_pedido
+                                    }}</span>
                                   </div>
                                   <div>
                                     <span class="text-xs text-slate-400">Cód. Auth:</span>
-                                    <span class="block font-mono text-slate-700">{{ inscripcion.numero_autorizacion || '-' }}</span>
+                                    <span class="block font-mono text-slate-700">{{
+                                      inscripcion.numero_autorizacion || '-'
+                                    }}</span>
                                   </div>
                                   <div>
                                     <span class="text-xs text-slate-400">Fecha Pago:</span>
-                                    <span class="block text-slate-700">{{ inscripcion.fecha_pago ? formatearFecha(inscripcion.fecha_pago) : '-' }}</span>
+                                    <span class="block text-slate-700">{{
+                                      inscripcion.fecha_pago
+                                        ? formatearFecha(inscripcion.fecha_pago)
+                                        : '-'
+                                    }}</span>
                                   </div>
                                 </div>
                               </div>
