@@ -199,15 +199,18 @@ class RedsysController extends Controller
                     return response('Inscripcion not found', 404);
                 }
 
-                // Activar el autobús
-                $inscripcion->update([
-                    'necesita_autobus' => true,
-                    'parada_autobus' => $inscripcion->parada_autobus_pendiente,
-                    'parada_autobus_pendiente' => null,
-                    'precio_total' => $inscripcion->precio_total + ($inscripcion->edicion->precio_autobus ?? 12),
-                ]);
-
-                Log::info('Redsys notification: Bus payment successful', ['inscripcion_id' => $inscripcion->id]);
+                // Solo procesar si no tiene ya el autobús (evita duplicados)
+                if (!$inscripcion->necesita_autobus) {
+                    $inscripcion->update([
+                        'necesita_autobus' => true,
+                        'parada_autobus' => $inscripcion->parada_autobus_pendiente,
+                        'parada_autobus_pendiente' => null,
+                        'precio_total' => $inscripcion->precio_total + ($inscripcion->edicion->precio_autobus ?? 12),
+                    ]);
+                    Log::info('Redsys notification: Bus payment successful', ['inscripcion_id' => $inscripcion->id]);
+                } else {
+                    Log::info('Redsys notification: Bus already activated, skipping', ['inscripcion_id' => $inscripcion->id]);
+                }
 
                 return response('OK');
             }
@@ -226,17 +229,20 @@ class RedsysController extends Controller
                 return response('Inscripcion not found', 404);
             }
 
-            // Pago exitoso
-            $inscripcion->update([
-                'estado_pago' => 'pagado',
-                'numero_autorizacion' => $params->responseAuthorisationCode,
-                'fecha_pago' => now(),
-            ]);
-
-            Log::info('Redsys notification: Payment successful', [
-                'inscripcion_id' => $inscripcion->id,
-                'amount' => $params->amount,
-            ]);
+            // Solo procesar si no está ya pagado (evita duplicados)
+            if ($inscripcion->estado_pago !== 'pagado') {
+                $inscripcion->update([
+                    'estado_pago' => 'pagado',
+                    'numero_autorizacion' => $params->responseAuthorisationCode,
+                    'fecha_pago' => now(),
+                ]);
+                Log::info('Redsys notification: Payment successful', [
+                    'inscripcion_id' => $inscripcion->id,
+                    'amount' => $params->amount,
+                ]);
+            } else {
+                Log::info('Redsys notification: Already paid, skipping', ['inscripcion_id' => $inscripcion->id]);
+            }
 
             return response('OK', 200);
         } catch (\Creagia\Redsys\Exceptions\DeniedRedsysPaymentResponseException $e) {
@@ -294,19 +300,20 @@ class RedsysController extends Controller
                     return redirect()->route('home')->with('error', 'Inscripción no encontrada');
                 }
 
-                // Activar el autobús
-                $inscripcion->update([
-                    'necesita_autobus' => true,
-                    'parada_autobus' => $inscripcion->parada_autobus_pendiente,
-                    'parada_autobus_pendiente' => null,
-                    'numero_pedido_autobus' => null, // Limpiar
-                    'precio_total' => $inscripcion->precio_total + ($inscripcion->edicion->precio_autobus ?? 12),
-                ]);
-
-                // Refrescar el modelo para obtener los valores actualizados
-                $inscripcion->refresh();
-
-                Log::info('Redsys success: Bus payment successful', ['inscripcion_id' => $inscripcion->id]);
+                // Solo procesar si no tiene ya el autobús (evita duplicados al recargar)
+                if (!$inscripcion->necesita_autobus) {
+                    $inscripcion->update([
+                        'necesita_autobus' => true,
+                        'parada_autobus' => $inscripcion->parada_autobus_pendiente,
+                        'parada_autobus_pendiente' => null,
+                        'numero_pedido_autobus' => null,
+                        'precio_total' => $inscripcion->precio_total + ($inscripcion->edicion->precio_autobus ?? 12),
+                    ]);
+                    $inscripcion->refresh();
+                    Log::info('Redsys success: Bus payment successful', ['inscripcion_id' => $inscripcion->id]);
+                } else {
+                    Log::info('Redsys success: Bus already activated, skipping', ['inscripcion_id' => $inscripcion->id]);
+                }
 
                 return Inertia::render('Pago/ExitoAutobus', [
                     'inscripcion' => $inscripcion->load(['participante', 'edicion']),
@@ -326,12 +333,14 @@ class RedsysController extends Controller
                 return redirect()->route('home')->with('error', 'Inscripción no encontrada');
             }
 
-            // Asegurar que guardamos la transacción aunque el webhook se retrase
-            $inscripcion->update([
-                'estado_pago' => 'pagado',
-                'numero_autorizacion' => $params->responseAuthorisationCode,
-                'fecha_pago' => now(),
-            ]);
+            // Solo procesar si no está ya pagado (evita duplicados al recargar)
+            if ($inscripcion->estado_pago !== 'pagado') {
+                $inscripcion->update([
+                    'estado_pago' => 'pagado',
+                    'numero_autorizacion' => $params->responseAuthorisationCode,
+                    'fecha_pago' => now(),
+                ]);
+            }
 
             return Inertia::render('Pago/Exito', [
                 'inscripcion' => $inscripcion->load(['participante', 'edicion']),
