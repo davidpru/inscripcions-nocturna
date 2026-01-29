@@ -72,19 +72,23 @@ const iniciarInscripcion = async () => {
 };
 
 onMounted(() => {
-  // Iniciar countdown si hay fecha de inicio de inscripciones
-  if (props.edicion?.fecha_inicio_inscripciones) {
-    timeRemaining.value = calculateTimeRemaining(props.edicion.fecha_inicio_inscripciones);
-    countdownInterval.value = window.setInterval(() => {
-      timeRemaining.value = calculateTimeRemaining(props.edicion!.fecha_inicio_inscripciones!);
-      // Si el countdown llega a 0 (pero no es negativo), recargar la página una sola vez
-      if (timeRemaining.value.difference <= 0) {
-        if (countdownInterval.value) {
-          clearInterval(countdownInterval.value);
+  // Iniciar countdown solo si las inscripciones NO están abiertas y hay fecha futura
+  if (!props.inscripcionesAbiertas && props.edicion?.fecha_inicio_inscripciones) {
+    const initial = calculateTimeRemaining(props.edicion.fecha_inicio_inscripciones);
+    // Solo iniciar countdown si la fecha está en el futuro
+    if (initial.difference > 0) {
+      timeRemaining.value = initial;
+      countdownInterval.value = window.setInterval(() => {
+        timeRemaining.value = calculateTimeRemaining(props.edicion!.fecha_inicio_inscripciones!);
+        // Si el countdown llega a 0, recargar la página una sola vez
+        if (timeRemaining.value.difference <= 0) {
+          if (countdownInterval.value) {
+            clearInterval(countdownInterval.value);
+          }
+          window.location.reload();
         }
-        window.location.reload();
-      }
-    }, 1000);
+      }, 1000);
+    }
   }
 });
 

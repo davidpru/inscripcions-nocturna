@@ -18,6 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin.auth' => \App\Http\Middleware\AdminBasicAuth::class,
         ]);
+
+        // Excluir la ruta de notificación de Redsys del CSRF
+        $middleware->validateCsrfTokens(except: [
+            'pago/notification',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
