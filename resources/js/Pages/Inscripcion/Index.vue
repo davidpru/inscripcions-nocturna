@@ -475,7 +475,7 @@ const enviarInscripcion = () => {
               </div>
             </div>
             <p v-if="participanteEncontrado && !yaInscrito" class="mt-2 text-sm text-green-600">
-              ✓ Participant trobat. Verifica que les teves dades siguin correctes.
+              ✓ Participant trobat. <strong>Verifica que les teves dades siguin correctes.</strong>
             </p>
 
             <div v-if="yaInscrito" class="mt-4 rounded-md border border-green-200 bg-green-50 p-4">
@@ -896,14 +896,14 @@ const enviarInscripcion = () => {
             </div>
 
             <!-- Campo de Cupón de Descuento -->
-            <div class="rounded-lg border border-slate-200 bg-white p-4">
-              <h3 class="mb-3 text-sm font-semibold text-slate-900">Tens un cupó de descompte?</h3>
+            <div class="">
+              <h3 class="mb-3 text-xs font-normal text-slate-900">Tens un cupó de descompte?</h3>
 
-              <div v-if="!cuponValidado" class="flex gap-2">
+              <div v-if="!cuponValidado" class="flex max-w-sm gap-2">
                 <Input
                   v-model="codigoCupon"
                   placeholder="Introdueix el codi"
-                  class="flex-1 uppercase"
+                  class="flex-1"
                   :class="{ 'border-red-500': errorCupon }"
                   @keyup.enter="validarCupon"
                 />

@@ -19,6 +19,8 @@ class Participante extends Model
         'codigo_postal',
         'poblacion',
         'provincia',
+        'club',
+        'numero_licencia',
     ];
 
     protected $casts = [
