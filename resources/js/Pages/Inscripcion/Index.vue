@@ -969,7 +969,8 @@ const enviarInscripcion = () => {
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between text-slate-700">
                   <span>
-                    Inscripció ({{ precioCalculado.nombre_tarifa }}<span v-if="!form.esta_federado">, inclou federativa</span>):
+                    Inscripció ({{ precioCalculado.nombre_tarifa
+                    }}<span v-if="!form.esta_federado">, inclou federativa</span>):
                   </span>
                   <span>{{ precioCalculado.tarifa_base }}€</span>
                 </div>

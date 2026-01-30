@@ -46,11 +46,11 @@ defineProps<{
 <template>
   <Head :title="`Verificació Inscripció #${inscripcion.id}`" />
 
-  <div class="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 py-12">
+  <div class="min-h-screen bg-linear-to-b from-slate-100 to-slate-200 py-12">
     <div class="mx-auto max-w-2xl px-4">
       <div class="overflow-hidden rounded-2xl bg-white shadow-xl">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-8 text-center text-white">
+        <div class="bg-linear-to-r from-red-600 to-red-700 px-6 py-8 text-center text-white">
           <CheckCircle class="mx-auto mb-4 h-16 w-16" />
           <h1 class="text-2xl font-bold">Inscripció Verificada</h1>
           <p class="mt-2 text-red-100">Nocturna del Caro {{ edicion.anio }}</p>

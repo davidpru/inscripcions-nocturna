@@ -45,9 +45,7 @@ const descargarPdf = () => {
 <template>
   <Head title="Confirmación de Inscripción" />
 
-  <div
-    class="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-4 py-12 dark:from-green-900 dark:to-green-800"
-  >
+  <div class="min-h-screen px-4 py-12">
     <div class="mx-auto max-w-2xl">
       <!-- Success Header -->
       <div class="mb-8 text-center">
@@ -63,53 +61,45 @@ const descargarPdf = () => {
             />
           </svg>
         </div>
-        <h1 class="mb-2 text-4xl font-bold text-slate-900 dark:text-slate-100">
-          ¡Inscripción Confirmada!
-        </h1>
-        <p class="text-lg text-slate-600 dark:text-slate-400">
-          Tu inscripción se ha registrado correctamente
-        </p>
+        <h1 class="mb-2 text-4xl font-bold text-slate-900">¡Inscripción Confirmada!</h1>
+        <p class="text-lg text-slate-600">Tu inscripción se ha registrado correctamente</p>
       </div>
 
       <!-- Información de la Inscripción -->
-      <div class="space-y-6 rounded-lg bg-white p-8 shadow-lg dark:bg-slate-800">
+      <div class="space-y-6 rounded-lg bg-white p-8 shadow-lg">
         <div>
-          <h2 class="mb-4 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-            Detalles de la Inscripción
-          </h2>
+          <h2 class="mb-4 text-2xl font-semibold text-slate-900">Detalles de la Inscripción</h2>
 
           <div class="space-y-3">
-            <div class="flex justify-between border-b border-slate-200 py-2 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Número de Inscripción:</span>
-              <span class="font-semibold text-slate-900 dark:text-slate-100"
-                >#{{ inscripcion.id }}</span
-              >
+            <div class="flex justify-between border-b border-slate-200 py-2">
+              <span class="text-slate-600">Número de Inscripción:</span>
+              <span class="font-semibold text-slate-900">#{{ inscripcion.id }}</span>
             </div>
 
-            <div class="flex justify-between border-b border-slate-200 py-2 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Evento:</span>
-              <span class="font-semibold text-slate-900 dark:text-slate-100">
+            <div class="flex justify-between border-b border-slate-200 py-2">
+              <span class="text-slate-600">Evento:</span>
+              <span class="font-semibold text-slate-900">
                 Nocturna Fredes Paüls {{ inscripcion.edicion.anio }}
               </span>
             </div>
 
-            <div class="flex justify-between border-b border-slate-200 py-2 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Participante:</span>
-              <span class="font-semibold text-slate-900 dark:text-slate-100">
+            <div class="flex justify-between border-b border-slate-200 py-2">
+              <span class="text-slate-600">Participante:</span>
+              <span class="font-semibold text-slate-900">
                 {{ inscripcion.participante.nombre }} {{ inscripcion.participante.apellidos }}
               </span>
             </div>
 
-            <div class="flex justify-between border-b border-slate-200 py-2 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">DNI:</span>
-              <span class="font-semibold text-slate-900 dark:text-slate-100">
+            <div class="flex justify-between border-b border-slate-200 py-2">
+              <span class="text-slate-600">DNI:</span>
+              <span class="font-semibold text-slate-900">
                 {{ inscripcion.participante.dni }}
               </span>
             </div>
 
-            <div class="flex justify-between border-b border-slate-200 py-2 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Email:</span>
-              <span class="font-semibold text-slate-900 dark:text-slate-100">
+            <div class="flex justify-between border-b border-slate-200 py-2">
+              <span class="text-slate-600">Email:</span>
+              <span class="font-semibold text-slate-900">
                 {{ inscripcion.participante.email }}
               </span>
             </div>
@@ -118,14 +108,9 @@ const descargarPdf = () => {
 
         <!-- Servicios Contratados -->
         <div>
-          <h3 class="mb-3 text-xl font-semibold text-slate-900 dark:text-slate-100">
-            Servicios Contratados
-          </h3>
+          <h3 class="mb-3 text-xl font-semibold text-slate-900">Servicios Contratados</h3>
           <div class="space-y-2">
-            <div
-              v-if="inscripcion.necesita_autobus"
-              class="flex items-center text-slate-700 dark:text-slate-300"
-            >
+            <div v-if="inscripcion.necesita_autobus" class="flex items-center text-slate-700">
               <svg
                 class="mr-2 h-5 w-5 text-green-500"
                 fill="none"
@@ -141,10 +126,7 @@ const descargarPdf = () => {
               </svg>
               Autobús Paüls-Fredes
             </div>
-            <div
-              v-if="inscripcion.seguro_anulacion"
-              class="flex items-center text-slate-700 dark:text-slate-300"
-            >
+            <div v-if="inscripcion.seguro_anulacion" class="flex items-center text-slate-700">
               <svg
                 class="mr-2 h-5 w-5 text-green-500"
                 fill="none"
@@ -165,19 +147,17 @@ const descargarPdf = () => {
 
         <!-- Tallas -->
         <div>
-          <h3 class="mb-3 text-xl font-semibold text-slate-900 dark:text-slate-100">
-            Tallas de Camisetas
-          </h3>
+          <h3 class="mb-3 text-xl font-semibold text-slate-900">Tallas de Camisetas</h3>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <p class="text-sm text-slate-600 dark:text-slate-400">Camiseta Caro</p>
-              <p class="font-semibold text-slate-900 dark:text-slate-100">
+              <p class="text-sm text-slate-600">Camiseta Caro</p>
+              <p class="font-semibold text-slate-900">
                 {{ inscripcion.talla_camiseta_caro }}
               </p>
             </div>
             <div>
-              <p class="text-sm text-slate-600 dark:text-slate-400">Camiseta Paüls</p>
-              <p class="font-semibold text-slate-900 dark:text-slate-100">
+              <p class="text-sm text-slate-600">Camiseta Paüls</p>
+              <p class="font-semibold text-slate-900">
                 {{ inscripcion.talla_camiseta_pauls }}
               </p>
             </div>
@@ -185,26 +165,20 @@ const descargarPdf = () => {
         </div>
 
         <!-- Precio Total -->
-        <div class="rounded-lg bg-slate-50 p-6 dark:bg-slate-700">
+        <div class="rounded-lg bg-slate-50 p-6">
           <div class="flex items-center justify-between">
-            <span class="text-xl font-semibold text-slate-900 dark:text-slate-100"
-              >Total a Pagar:</span
-            >
-            <span class="text-3xl font-bold text-green-600 dark:text-green-400">
-              {{ inscripcion.precio_total }}€
-            </span>
+            <span class="text-xl font-semibold text-slate-900">Total a Pagar:</span>
+            <span class="text-3xl font-bold text-green-600"> {{ inscripcion.precio_total }}€ </span>
           </div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          <p class="mt-2 text-sm text-slate-600">
             Estado: <span class="font-semibold">{{ inscripcion.estado_pago.toUpperCase() }}</span>
           </p>
         </div>
 
         <!-- Información Adicional -->
-        <div
-          class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-900"
-        >
-          <h3 class="mb-2 font-semibold text-blue-900 dark:text-blue-100">Próximos Pasos</h3>
-          <ul class="space-y-1 text-sm text-blue-800 dark:text-blue-200">
+        <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <h3 class="mb-2 font-semibold text-blue-900">Próximos Pasos</h3>
+          <ul class="space-y-1 text-sm text-blue-800">
             <li>• Recibirás un email de confirmación en {{ inscripcion.participante.email }}</li>
             <li>• En breve te enviaremos los detalles para realizar el pago</li>
             <li>• Guarda tu número de inscripción: #{{ inscripcion.id }}</li>

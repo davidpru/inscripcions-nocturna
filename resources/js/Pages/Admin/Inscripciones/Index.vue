@@ -97,6 +97,8 @@ interface Inscripcion {
   numero_pedido: string | null;
   numero_autorizacion: string | null;
   fecha_pago: string | null;
+  cupon_id: number | null;
+  descuento_cupon: number | null;
 }
 
 interface Paginacion {
@@ -263,13 +265,14 @@ const getEdicionActual = () => {
 };
 
 // Calcular precio en base a las opciones (usando tarifas de la edición)
-const calcularPrecio = (data: any, esTarifaTardia: boolean) => {
+const calcularPrecio = (data: any, esTarifaTardia: boolean, descuentoCupon: number | null = 0) => {
   const edicion = getEdicionActual();
   if (!edicion) {
     return {
       tarifa_base: 0,
       precio_autobus: 0,
       precio_seguro: 0,
+      descuento_cupon: 0,
       precio_total: 0,
       es_tarifa_tardia: esTarifaTardia,
     };
@@ -300,12 +303,14 @@ const calcularPrecio = (data: any, esTarifaTardia: boolean) => {
       : edicion.precio_autobus_normal
     : 0;
   const precioSeguro = data.seguro_anulacion ? edicion.precio_seguro : 0;
+  const descuento = descuentoCupon || 0;
 
   return {
     tarifa_base: tarifaBase,
     precio_autobus: precioAutobus,
     precio_seguro: precioSeguro,
-    precio_total: tarifaBase + precioAutobus + precioSeguro,
+    descuento_cupon: descuento,
+    precio_total: tarifaBase + precioAutobus + precioSeguro - descuento,
     es_tarifa_tardia: esTarifaTardia,
   };
 };
@@ -726,10 +731,7 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                             >
                               <QrCode class="mb-2 h-32 w-32 text-slate-300" />
                               <p class="text-sm text-slate-500">Codi QR de verificació</p>
-                              <a
-                                :href="`/inscripcion/${inscripcion.id}/pdf`"
-                                class="mt-4"
-                              >
+                              <a :href="`/inscripcion/${inscripcion.id}/pdf`" class="mt-4">
                                 <Button variant="outline" size="sm" class="gap-2">
                                   <Download class="h-4 w-4" />
                                   Descarregar PDF amb QR
@@ -743,19 +745,28 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                               <div class="grid grid-cols-2 gap-3 text-sm">
                                 <div>
                                   <span class="text-slate-500">Nom:</span>
-                                  <span class="ml-2 font-medium">{{ inscripcion.participante.nombre }} {{ inscripcion.participante.apellidos }}</span>
+                                  <span class="ml-2 font-medium"
+                                    >{{ inscripcion.participante.nombre }}
+                                    {{ inscripcion.participante.apellidos }}</span
+                                  >
                                 </div>
                                 <div>
                                   <span class="text-slate-500">DNI:</span>
-                                  <span class="ml-2 font-medium">{{ inscripcion.participante.dni }}</span>
+                                  <span class="ml-2 font-medium">{{
+                                    inscripcion.participante.dni
+                                  }}</span>
                                 </div>
                                 <div>
                                   <span class="text-slate-500">Email:</span>
-                                  <span class="ml-2 font-medium">{{ inscripcion.participante.email }}</span>
+                                  <span class="ml-2 font-medium">{{
+                                    inscripcion.participante.email
+                                  }}</span>
                                 </div>
                                 <div>
                                   <span class="text-slate-500">Telèfon:</span>
-                                  <span class="ml-2 font-medium">{{ inscripcion.participante.telefono }}</span>
+                                  <span class="ml-2 font-medium">{{
+                                    inscripcion.participante.telefono
+                                  }}</span>
                                 </div>
                               </div>
                             </div>
@@ -768,10 +779,14 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                                   <span class="text-slate-500">Estat:</span>
                                   <span
                                     :class="{
-                                      'bg-green-100 text-green-800': inscripcion.estado_pago === 'pagado',
-                                      'bg-amber-100 text-amber-800': inscripcion.estado_pago === 'pendiente',
-                                      'bg-red-100 text-red-800': inscripcion.estado_pago === 'cancelado',
-                                      'bg-blue-100 text-blue-800': inscripcion.estado_pago === 'invitado',
+                                      'bg-green-100 text-green-800':
+                                        inscripcion.estado_pago === 'pagado',
+                                      'bg-amber-100 text-amber-800':
+                                        inscripcion.estado_pago === 'pendiente',
+                                      'bg-red-100 text-red-800':
+                                        inscripcion.estado_pago === 'cancelado',
+                                      'bg-blue-100 text-blue-800':
+                                        inscripcion.estado_pago === 'invitado',
                                     }"
                                     class="ml-2 rounded-full px-2 py-0.5 text-xs font-semibold"
                                   >
@@ -780,15 +795,21 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                                 </div>
                                 <div>
                                   <span class="text-slate-500">Total:</span>
-                                  <span class="ml-2 text-lg font-bold text-slate-900">{{ inscripcion.precio_total }}€</span>
+                                  <span class="ml-2 text-lg font-bold text-slate-900"
+                                    >{{ inscripcion.precio_total }}€</span
+                                  >
                                 </div>
                                 <div v-if="inscripcion.numero_pedido">
                                   <span class="text-slate-500">Nº Pedido:</span>
-                                  <span class="ml-2 font-mono text-xs">{{ inscripcion.numero_pedido }}</span>
+                                  <span class="ml-2 font-mono text-xs">{{
+                                    inscripcion.numero_pedido
+                                  }}</span>
                                 </div>
                                 <div v-if="inscripcion.fecha_pago">
                                   <span class="text-slate-500">Data pagament:</span>
-                                  <span class="ml-2">{{ formatearFecha(inscripcion.fecha_pago) }}</span>
+                                  <span class="ml-2">{{
+                                    formatearFecha(inscripcion.fecha_pago)
+                                  }}</span>
                                 </div>
                               </div>
                             </div>
@@ -798,27 +819,57 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                               <h3 class="mb-3 font-semibold text-slate-900">Opcions</h3>
                               <div class="grid grid-cols-2 gap-3 text-sm">
                                 <div class="flex items-center gap-2">
-                                  <span :class="inscripcion.es_socio_uec ? 'text-green-600' : 'text-slate-400'">
+                                  <span
+                                    :class="
+                                      inscripcion.es_socio_uec ? 'text-green-600' : 'text-slate-400'
+                                    "
+                                  >
                                     {{ inscripcion.es_socio_uec ? '✓' : '✗' }}
                                   </span>
                                   <span>Soci UEC</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                  <span :class="inscripcion.esta_federado ? 'text-green-600' : 'text-slate-400'">
+                                  <span
+                                    :class="
+                                      inscripcion.esta_federado
+                                        ? 'text-green-600'
+                                        : 'text-slate-400'
+                                    "
+                                  >
                                     {{ inscripcion.esta_federado ? '✓' : '✗' }}
                                   </span>
                                   <span>Federat</span>
-                                  <span v-if="inscripcion.numero_licencia" class="text-xs text-slate-500">({{ inscripcion.numero_licencia }})</span>
+                                  <span
+                                    v-if="inscripcion.numero_licencia"
+                                    class="text-xs text-slate-500"
+                                    >({{ inscripcion.numero_licencia }})</span
+                                  >
                                 </div>
                                 <div class="flex items-center gap-2">
-                                  <span :class="inscripcion.necesita_autobus ? 'text-green-600' : 'text-slate-400'">
+                                  <span
+                                    :class="
+                                      inscripcion.necesita_autobus
+                                        ? 'text-green-600'
+                                        : 'text-slate-400'
+                                    "
+                                  >
                                     {{ inscripcion.necesita_autobus ? '✓' : '✗' }}
                                   </span>
                                   <span>Autobús</span>
-                                  <span v-if="inscripcion.parada_autobus" class="text-xs text-slate-500">({{ inscripcion.parada_autobus }})</span>
+                                  <span
+                                    v-if="inscripcion.parada_autobus"
+                                    class="text-xs text-slate-500"
+                                    >({{ inscripcion.parada_autobus }})</span
+                                  >
                                 </div>
                                 <div class="flex items-center gap-2">
-                                  <span :class="inscripcion.seguro_anulacion ? 'text-green-600' : 'text-slate-400'">
+                                  <span
+                                    :class="
+                                      inscripcion.seguro_anulacion
+                                        ? 'text-green-600'
+                                        : 'text-slate-400'
+                                    "
+                                  >
                                     {{ inscripcion.seguro_anulacion ? '✓' : '✗' }}
                                   </span>
                                   <span>Assegurança</span>
@@ -832,11 +883,15 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                               <div class="flex justify-around text-center">
                                 <div>
                                   <span class="text-xs text-slate-500">Caro</span>
-                                  <div class="text-lg font-bold">{{ inscripcion.talla_camiseta_caro?.toUpperCase() }}</div>
+                                  <div class="text-lg font-bold">
+                                    {{ inscripcion.talla_camiseta_caro?.toUpperCase() }}
+                                  </div>
                                 </div>
                                 <div>
                                   <span class="text-xs text-slate-500">Paüls</span>
-                                  <div class="text-lg font-bold">{{ inscripcion.talla_camiseta_pauls?.toUpperCase() }}</div>
+                                  <div class="text-lg font-bold">
+                                    {{ inscripcion.talla_camiseta_pauls?.toUpperCase() }}
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -856,332 +911,371 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                               </Button>
                             </div>
                             <div v-if="editingData[inscripcion.id]" class="space-y-6 text-sm">
-                          <!-- Datos personales -->
-                          <div class="space-y-3">
-                            <h3 class="font-semibold text-slate-900">Datos Personales</h3>
-                            <div class="grid grid-cols-2 gap-4 rounded-lg border bg-slate-50 p-4">
-                              <!-- Nombre -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Nombre</Label>
-                                <Input v-model="editingData[inscripcion.id].nombre" class="mt-1" />
-                              </div>
-                              <!-- Apellidos -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Apellidos</Label>
-                                <Input
-                                  v-model="editingData[inscripcion.id].apellidos"
-                                  class="mt-1"
-                                />
-                              </div>
-                              <!-- DNI -->
-                              <div>
-                                <Label class="text-xs text-slate-500">DNI</Label>
-                                <Input v-model="editingData[inscripcion.id].dni" class="mt-1" />
-                              </div>
-                              <!-- Género -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Género</Label>
-                                <select
-                                  v-model="editingData[inscripcion.id].genero"
-                                  class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                                >
-                                  <option value="masculino">Masculino</option>
-                                  <option value="femenino">Femenino</option>
-                                </select>
-                              </div>
-                              <!-- Email -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Email</Label>
-                                <Input
-                                  v-model="editingData[inscripcion.id].email"
-                                  type="email"
-                                  class="mt-1"
-                                />
-                              </div>
-                              <!-- Teléfono -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Teléfono</Label>
-                                <Input
-                                  v-model="editingData[inscripcion.id].telefono"
-                                  class="mt-1"
-                                />
-                              </div>
-                              <!-- Fecha Nacimiento -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Fecha Nacimiento</Label>
-                                <Input
-                                  v-model="editingData[inscripcion.id].fecha_nacimiento"
-                                  type="date"
-                                  class="mt-1"
-                                />
-                              </div>
-                              <!-- Dirección (col-span-2) -->
-                              <div class="col-span-2">
-                                <Label class="text-xs text-slate-500">Dirección</Label>
-                                <Input
-                                  v-model="editingData[inscripcion.id].direccion"
-                                  class="mt-1"
-                                />
-                              </div>
-                              <!-- Código Postal -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Código Postal</Label>
-                                <Input
-                                  v-model="editingData[inscripcion.id].codigo_postal"
-                                  class="mt-1"
-                                />
-                              </div>
-                              <!-- Población -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Población</Label>
-                                <Input
-                                  v-model="editingData[inscripcion.id].poblacion"
-                                  class="mt-1"
-                                />
-                              </div>
-                              <!-- Provincia -->
-                              <div class="col-span-2">
-                                <Label class="text-xs text-slate-500">Provincia</Label>
-                                <Input
-                                  v-model="editingData[inscripcion.id].provincia"
-                                  class="mt-1"
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          <!-- Detalles Inscripción -->
-                          <div class="space-y-3">
-                            <h3 class="font-semibold text-slate-900">Detalles Inscripción</h3>
-                            <div class="grid grid-cols-2 gap-4 rounded-lg border bg-slate-50 p-4">
-                              <!-- Estado Pago -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Estado Pago</Label>
-                                <select
-                                  v-model="editingData[inscripcion.id].estado_pago"
-                                  class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                                >
-                                  <option value="pendiente">Pendiente</option>
-                                  <option value="pagado">Pagado</option>
-                                  <option value="cancelado">Cancelado</option>
-                                  <option value="devuelto">Devuelto</option>
-                                  <option value="invitado">Invitado</option>
-                                </select>
-                              </div>
-                              <!-- Precio Actual (solo lectura) -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Precio Registrado</Label>
-                                <span class="block font-medium text-slate-500"
-                                  >{{ inscripcion.precio_total }}€</span
-                                >
-                              </div>
-
-                              <!-- Datos de pago Redsys -->
-                              <div
-                                v-if="inscripcion.numero_pedido"
-                                class="col-span-2 mt-2 border-t pt-3"
-                              >
-                                <Label class="text-xs font-semibold text-slate-500"
-                                  >Datos de Pago Redsys</Label
-                                >
-                                <div class="mt-2 grid grid-cols-3 gap-2 text-sm">
-                                  <div>
-                                    <span class="text-xs text-slate-400">Nº Pedido:</span>
-                                    <span class="block font-mono text-slate-700">{{
-                                      inscripcion.numero_pedido
-                                    }}</span>
-                                  </div>
-                                  <div>
-                                    <span class="text-xs text-slate-400">Cód. Auth:</span>
-                                    <span class="block font-mono text-slate-700">{{
-                                      inscripcion.numero_autorizacion || '-'
-                                    }}</span>
-                                  </div>
-                                  <div>
-                                    <span class="text-xs text-slate-400">Fecha Pago:</span>
-                                    <span class="block text-slate-700">{{
-                                      inscripcion.fecha_pago
-                                        ? formatearFecha(inscripcion.fecha_pago)
-                                        : '-'
-                                    }}</span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <!-- Socio UEC -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Socio UEC</Label>
-                                <div class="mt-1">
-                                  <input
-                                    type="checkbox"
-                                    v-model="editingData[inscripcion.id].es_socio_uec"
-                                    class="h-4 w-4 rounded border-slate-300"
-                                  />
-                                </div>
-                              </div>
-                              <!-- Federado -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Federado</Label>
-                                <div class="mt-1">
-                                  <input
-                                    type="checkbox"
-                                    v-model="editingData[inscripcion.id].esta_federado"
-                                    class="h-4 w-4 rounded border-slate-300"
-                                  />
-                                </div>
-                              </div>
-                              <!-- Número Licencia -->
-                              <div v-if="editingData[inscripcion.id]?.esta_federado">
-                                <Label class="text-xs text-slate-500">Nº Licencia</Label>
-                                <Input
-                                  v-model="editingData[inscripcion.id].numero_licencia"
-                                  class="mt-1"
-                                />
-                              </div>
-                              <!-- Club -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Club</Label>
-                                <Input v-model="editingData[inscripcion.id].club" class="mt-1" />
-                              </div>
-                              <!-- Autobús -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Necesita Autobús</Label>
-                                <div class="mt-1">
-                                  <input
-                                    type="checkbox"
-                                    v-model="editingData[inscripcion.id].necesita_autobus"
-                                    class="h-4 w-4 rounded border-slate-300"
-                                  />
-                                </div>
-                              </div>
-                              <!-- Parada Autobús -->
-                              <div v-if="editingData[inscripcion.id]?.necesita_autobus">
-                                <Label class="text-xs text-slate-500">Parada Autobús</Label>
-                                <select
-                                  v-model="editingData[inscripcion.id].parada_autobus"
-                                  class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                                >
-                                  <option value="">Selecciona parada...</option>
-                                  <option
-                                    v-for="parada in PARADAS"
-                                    :key="parada.value"
-                                    :value="parada.value"
-                                  >
-                                    {{ parada.label }} ({{ parada.descripcion }})
-                                  </option>
-                                </select>
-                              </div>
-                              <!-- Seguro Anulación -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Seguro Anulación</Label>
-                                <div class="mt-1">
-                                  <input
-                                    type="checkbox"
-                                    v-model="editingData[inscripcion.id].seguro_anulacion"
-                                    class="h-4 w-4 rounded border-slate-300"
-                                  />
-                                </div>
-                              </div>
-                              <!-- Camiseta Caro -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Camiseta Caro</Label>
-                                <select
-                                  v-model="editingData[inscripcion.id].talla_camiseta_caro"
-                                  class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                                >
-                                  <option value="XS">XS</option>
-                                  <option value="S">S</option>
-                                  <option value="M">M</option>
-                                  <option value="L">L</option>
-                                  <option value="XL">XL</option>
-                                  <option value="XXL">XXL</option>
-                                </select>
-                              </div>
-                              <!-- Camiseta Paüls -->
-                              <div>
-                                <Label class="text-xs text-slate-500">Camiseta Paüls</Label>
-                                <select
-                                  v-model="editingData[inscripcion.id].talla_camiseta_pauls"
-                                  class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                                >
-                                  <option value="XS">XS</option>
-                                  <option value="S">S</option>
-                                  <option value="M">M</option>
-                                  <option value="L">L</option>
-                                  <option value="XL">XL</option>
-                                  <option value="XXL">XXL</option>
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-
-                          <!-- Resumen de Precio Calculado -->
-                          <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                            <h3 class="mb-3 font-semibold text-slate-900">
-                              Resum de l'inscripció (segons opcions)
-                            </h3>
-                            <div class="space-y-2 text-sm">
-                              <div class="flex justify-between text-slate-700">
-                                <span>Inscripció:</span>
-                                <span
-                                  >{{
-                                    calcularPrecio(editingData[inscripcion.id], false).tarifa_base
-                                  }}€</span
-                                >
-                              </div>
-                              <div
-                                v-if="editingData[inscripcion.id]?.necesita_autobus"
-                                class="flex justify-between text-slate-700"
-                              >
-                                <span>Autobús:</span>
-                                <span
-                                  >{{
-                                    calcularPrecio(editingData[inscripcion.id], false)
-                                      .precio_autobus
-                                  }}€</span
-                                >
-                              </div>
-                              <div
-                                v-if="editingData[inscripcion.id]?.seguro_anulacion"
-                                class="flex justify-between text-slate-700"
-                              >
-                                <span>Assegurança:</span>
-                                <span
-                                  >{{
-                                    calcularPrecio(editingData[inscripcion.id], false)
-                                      .precio_seguro
-                                  }}€</span
-                                >
-                              </div>
-                              <div class="mt-2 border-t border-blue-300 pt-2">
+                              <!-- Datos personales -->
+                              <div class="space-y-3">
+                                <h3 class="font-semibold text-slate-900">Datos Personales</h3>
                                 <div
-                                  class="flex justify-between text-base font-bold text-slate-900"
+                                  class="grid grid-cols-2 gap-4 rounded-lg border bg-slate-50 p-4"
                                 >
-                                  <span>TOTAL CALCULAT:</span>
-                                  <span
-                                    >{{
-                                      calcularPrecio(editingData[inscripcion.id], false)
-                                        .precio_total
-                                    }}€</span
-                                  >
+                                  <!-- Nombre -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Nombre</Label>
+                                    <Input
+                                      v-model="editingData[inscripcion.id].nombre"
+                                      class="mt-1"
+                                    />
+                                  </div>
+                                  <!-- Apellidos -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Apellidos</Label>
+                                    <Input
+                                      v-model="editingData[inscripcion.id].apellidos"
+                                      class="mt-1"
+                                    />
+                                  </div>
+                                  <!-- DNI -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">DNI</Label>
+                                    <Input v-model="editingData[inscripcion.id].dni" class="mt-1" />
+                                  </div>
+                                  <!-- Género -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Género</Label>
+                                    <select
+                                      v-model="editingData[inscripcion.id].genero"
+                                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                                    >
+                                      <option value="masculino">Masculino</option>
+                                      <option value="femenino">Femenino</option>
+                                    </select>
+                                  </div>
+                                  <!-- Email -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Email</Label>
+                                    <Input
+                                      v-model="editingData[inscripcion.id].email"
+                                      type="email"
+                                      class="mt-1"
+                                    />
+                                  </div>
+                                  <!-- Teléfono -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Teléfono</Label>
+                                    <Input
+                                      v-model="editingData[inscripcion.id].telefono"
+                                      class="mt-1"
+                                    />
+                                  </div>
+                                  <!-- Fecha Nacimiento -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Fecha Nacimiento</Label>
+                                    <Input
+                                      v-model="editingData[inscripcion.id].fecha_nacimiento"
+                                      type="date"
+                                      class="mt-1"
+                                    />
+                                  </div>
+                                  <!-- Dirección (col-span-2) -->
+                                  <div class="col-span-2">
+                                    <Label class="text-xs text-slate-500">Dirección</Label>
+                                    <Input
+                                      v-model="editingData[inscripcion.id].direccion"
+                                      class="mt-1"
+                                    />
+                                  </div>
+                                  <!-- Código Postal -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Código Postal</Label>
+                                    <Input
+                                      v-model="editingData[inscripcion.id].codigo_postal"
+                                      class="mt-1"
+                                    />
+                                  </div>
+                                  <!-- Población -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Población</Label>
+                                    <Input
+                                      v-model="editingData[inscripcion.id].poblacion"
+                                      class="mt-1"
+                                    />
+                                  </div>
+                                  <!-- Provincia -->
+                                  <div class="col-span-2">
+                                    <Label class="text-xs text-slate-500">Provincia</Label>
+                                    <Input
+                                      v-model="editingData[inscripcion.id].provincia"
+                                      class="mt-1"
+                                    />
+                                  </div>
                                 </div>
                               </div>
-                              <p
-                                v-if="
-                                  calcularPrecio(editingData[inscripcion.id], false)
-                                    .precio_total !== Number(inscripcion.precio_total)
-                                "
-                                class="mt-2 text-xs text-amber-600"
-                              >
-                                * El preu calculat ({{
-                                  calcularPrecio(editingData[inscripcion.id], false).precio_total
-                                }}€) és diferent del preu registrat ({{
-                                  inscripcion.precio_total
-                                }}€)
-                              </p>
+
+                              <!-- Detalles Inscripción -->
+                              <div class="space-y-3">
+                                <h3 class="font-semibold text-slate-900">Detalles Inscripción</h3>
+                                <div
+                                  class="grid grid-cols-2 gap-4 rounded-lg border bg-slate-50 p-4"
+                                >
+                                  <!-- Estado Pago -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Estado Pago</Label>
+                                    <select
+                                      v-model="editingData[inscripcion.id].estado_pago"
+                                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                                    >
+                                      <option value="pendiente">Pendiente</option>
+                                      <option value="pagado">Pagado</option>
+                                      <option value="cancelado">Cancelado</option>
+                                      <option value="devuelto">Devuelto</option>
+                                      <option value="invitado">Invitado</option>
+                                    </select>
+                                  </div>
+                                  <!-- Precio Actual (solo lectura) -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Precio Registrado</Label>
+                                    <span class="block font-medium text-slate-500"
+                                      >{{ inscripcion.precio_total }}€</span
+                                    >
+                                  </div>
+
+                                  <!-- Datos de pago Redsys -->
+                                  <div
+                                    v-if="inscripcion.numero_pedido"
+                                    class="col-span-2 mt-2 border-t pt-3"
+                                  >
+                                    <Label class="text-xs font-semibold text-slate-500"
+                                      >Datos de Pago Redsys</Label
+                                    >
+                                    <div class="mt-2 grid grid-cols-3 gap-2 text-sm">
+                                      <div>
+                                        <span class="text-xs text-slate-400">Nº Pedido:</span>
+                                        <span class="block font-mono text-slate-700">{{
+                                          inscripcion.numero_pedido
+                                        }}</span>
+                                      </div>
+                                      <div>
+                                        <span class="text-xs text-slate-400">Cód. Auth:</span>
+                                        <span class="block font-mono text-slate-700">{{
+                                          inscripcion.numero_autorizacion || '-'
+                                        }}</span>
+                                      </div>
+                                      <div>
+                                        <span class="text-xs text-slate-400">Fecha Pago:</span>
+                                        <span class="block text-slate-700">{{
+                                          inscripcion.fecha_pago
+                                            ? formatearFecha(inscripcion.fecha_pago)
+                                            : '-'
+                                        }}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <!-- Socio UEC -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Socio UEC</Label>
+                                    <div class="mt-1">
+                                      <input
+                                        type="checkbox"
+                                        v-model="editingData[inscripcion.id].es_socio_uec"
+                                        class="h-4 w-4 rounded border-slate-300"
+                                      />
+                                    </div>
+                                  </div>
+                                  <!-- Federado -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Federado</Label>
+                                    <div class="mt-1">
+                                      <input
+                                        type="checkbox"
+                                        v-model="editingData[inscripcion.id].esta_federado"
+                                        class="h-4 w-4 rounded border-slate-300"
+                                      />
+                                    </div>
+                                  </div>
+                                  <!-- Número Licencia -->
+                                  <div v-if="editingData[inscripcion.id]?.esta_federado">
+                                    <Label class="text-xs text-slate-500">Nº Licencia</Label>
+                                    <Input
+                                      v-model="editingData[inscripcion.id].numero_licencia"
+                                      class="mt-1"
+                                    />
+                                  </div>
+                                  <!-- Club -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Club</Label>
+                                    <Input
+                                      v-model="editingData[inscripcion.id].club"
+                                      class="mt-1"
+                                    />
+                                  </div>
+                                  <!-- Autobús -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Necesita Autobús</Label>
+                                    <div class="mt-1">
+                                      <input
+                                        type="checkbox"
+                                        v-model="editingData[inscripcion.id].necesita_autobus"
+                                        class="h-4 w-4 rounded border-slate-300"
+                                      />
+                                    </div>
+                                  </div>
+                                  <!-- Parada Autobús -->
+                                  <div v-if="editingData[inscripcion.id]?.necesita_autobus">
+                                    <Label class="text-xs text-slate-500">Parada Autobús</Label>
+                                    <select
+                                      v-model="editingData[inscripcion.id].parada_autobus"
+                                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                                    >
+                                      <option value="">Selecciona parada...</option>
+                                      <option
+                                        v-for="parada in PARADAS"
+                                        :key="parada.value"
+                                        :value="parada.value"
+                                      >
+                                        {{ parada.label }} ({{ parada.descripcion }})
+                                      </option>
+                                    </select>
+                                  </div>
+                                  <!-- Seguro Anulación -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Seguro Anulación</Label>
+                                    <div class="mt-1">
+                                      <input
+                                        type="checkbox"
+                                        v-model="editingData[inscripcion.id].seguro_anulacion"
+                                        class="h-4 w-4 rounded border-slate-300"
+                                      />
+                                    </div>
+                                  </div>
+                                  <!-- Camiseta Caro -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Camiseta Caro</Label>
+                                    <select
+                                      v-model="editingData[inscripcion.id].talla_camiseta_caro"
+                                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                                    >
+                                      <option value="XS">XS</option>
+                                      <option value="S">S</option>
+                                      <option value="M">M</option>
+                                      <option value="L">L</option>
+                                      <option value="XL">XL</option>
+                                      <option value="XXL">XXL</option>
+                                    </select>
+                                  </div>
+                                  <!-- Camiseta Paüls -->
+                                  <div>
+                                    <Label class="text-xs text-slate-500">Camiseta Paüls</Label>
+                                    <select
+                                      v-model="editingData[inscripcion.id].talla_camiseta_pauls"
+                                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                                    >
+                                      <option value="XS">XS</option>
+                                      <option value="S">S</option>
+                                      <option value="M">M</option>
+                                      <option value="L">L</option>
+                                      <option value="XL">XL</option>
+                                      <option value="XXL">XXL</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- Resumen de Precio Calculado -->
+                              <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                                <h3 class="mb-3 font-semibold text-slate-900">
+                                  Resum de l'inscripció (segons opcions)
+                                </h3>
+                                <div class="space-y-2 text-sm">
+                                  <div class="flex justify-between text-slate-700">
+                                    <span>Inscripció:</span>
+                                    <span
+                                      >{{
+                                        calcularPrecio(
+                                          editingData[inscripcion.id],
+                                          false,
+                                          inscripcion.descuento_cupon
+                                        ).tarifa_base
+                                      }}€</span
+                                    >
+                                  </div>
+                                  <div
+                                    v-if="editingData[inscripcion.id]?.necesita_autobus"
+                                    class="flex justify-between text-slate-700"
+                                  >
+                                    <span>Autobús:</span>
+                                    <span
+                                      >{{
+                                        calcularPrecio(
+                                          editingData[inscripcion.id],
+                                          false,
+                                          inscripcion.descuento_cupon
+                                        ).precio_autobus
+                                      }}€</span
+                                    >
+                                  </div>
+                                  <div
+                                    v-if="editingData[inscripcion.id]?.seguro_anulacion"
+                                    class="flex justify-between text-slate-700"
+                                  >
+                                    <span>Assegurança:</span>
+                                    <span
+                                      >{{
+                                        calcularPrecio(
+                                          editingData[inscripcion.id],
+                                          false,
+                                          inscripcion.descuento_cupon
+                                        ).precio_seguro
+                                      }}€</span
+                                    >
+                                  </div>
+                                  <div
+                                    v-if="
+                                      inscripcion.descuento_cupon && inscripcion.descuento_cupon > 0
+                                    "
+                                    class="flex justify-between text-green-600"
+                                  >
+                                    <span>Descompte cupó:</span>
+                                    <span>-{{ inscripcion.descuento_cupon }}€</span>
+                                  </div>
+                                  <div class="mt-2 border-t border-blue-300 pt-2">
+                                    <div
+                                      class="flex justify-between text-base font-bold text-slate-900"
+                                    >
+                                      <span>TOTAL CALCULAT:</span>
+                                      <span
+                                        >{{
+                                          calcularPrecio(
+                                            editingData[inscripcion.id],
+                                            false,
+                                            inscripcion.descuento_cupon
+                                          ).precio_total
+                                        }}€</span
+                                      >
+                                    </div>
+                                  </div>
+                                  <p
+                                    v-if="
+                                      calcularPrecio(
+                                        editingData[inscripcion.id],
+                                        false,
+                                        inscripcion.descuento_cupon
+                                      ).precio_total !== Number(inscripcion.precio_total)
+                                    "
+                                    class="mt-2 text-xs text-amber-600"
+                                  >
+                                    * El preu calculat ({{
+                                      calcularPrecio(
+                                        editingData[inscripcion.id],
+                                        false,
+                                        inscripcion.descuento_cupon
+                                      ).precio_total
+                                    }}€) és diferent del preu registrat ({{
+                                      inscripcion.precio_total
+                                    }}€)
+                                  </p>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
                           </TabsContent>
                         </Tabs>
                       </SheetContent>
