@@ -357,7 +357,7 @@ const enviarInscripcion = () => {
       </div>
 
       <!-- Formulario de inscripción -->
-      <main class="mb-20 rounded-lg bg-white p-8 shadow-lg">
+      <main class="mx-4 mb-10 rounded-lg bg-white p-4 shadow-lg md:p-8">
         <Link href="/">
           <Button variant="ghost" class="mb-4"> ← Tornar </Button>
         </Link>
