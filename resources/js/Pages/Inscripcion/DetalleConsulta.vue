@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Footer from '@/components/ui-layout/footer.vue';
 import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
@@ -33,7 +34,7 @@ const consultarInscripcion = () => {
 <template>
   <Header />
 
-  <div class="min-h-screen">
+  <div class="min-h-screen px-4 py-10">
     <div class="mx-auto max-w-4xl">
       <!-- Header -->
       <div class="mb-8 text-center">
@@ -94,6 +95,7 @@ const consultarInscripcion = () => {
           </div>
         </form>
       </div>
+      <Footer />
     </div>
   </div>
 </template>

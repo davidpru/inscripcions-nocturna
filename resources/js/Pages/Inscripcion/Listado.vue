@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Footer from '@/components/ui-layout/footer.vue';
 import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,7 +71,7 @@ const inscritosFiltrados = computed(() => {
         <Link href="/">
           <Button variant="ghost" class="mb-4"> ← Tornar </Button>
         </Link>
-        <h1 class="mb-2 text-3xl font-bold text-slate-900">
+        <h1 class="mb-2 text-2xl font-bold text-slate-900 md:text-3xl">
           Llistat d'inscrits - Nocturna Fredes Paüls {{ edicion.anio }}
         </h1>
         <p class="text-slate-600">
@@ -95,7 +96,7 @@ const inscritosFiltrados = computed(() => {
       </div>
 
       <!-- Tabla de inscritos -->
-      <div class="rounded-lg border bg-white shadow">
+      <div class="rounded-lg bg-white shadow">
         <Table>
           <TableHeader>
             <TableRow>
@@ -123,6 +124,7 @@ const inscritosFiltrados = computed(() => {
           </TableBody>
         </Table>
       </div>
+      <Footer />
     </div>
   </div>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Footer from '@/components/ui-layout/footer.vue';
 import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -102,7 +103,7 @@ onUnmounted(() => {
 <template>
   <Header />
 
-  <div class="min-h-screen px-4 py-12">
+  <section class="min-h-screen px-4 py-12">
     <div class="mx-auto max-w-6xl">
       <!-- Banner de modo prueba -->
       <div
@@ -133,10 +134,10 @@ onUnmounted(() => {
       <div v-else>
         <!-- Header -->
         <div class="mb-8">
-          <h1 class="text-slate-90 mb-2 text-4xl font-bold">
+          <h1 class="text-slate-90 mb-2 text-3xl font-bold text-balance md:text-4xl">
             Nocturna Fredes-Paüls {{ edicion?.anio }}
           </h1>
-          <p v-if="inscripcionesAbiertas" class="text-foreground text-lg">Selecciona una opció</p>
+          <p v-if="inscripcionesAbiertas" class="text-foreground text-lg">Inscripcions online</p>
           <p v-else class="text-foreground text-lg">Pròximament</p>
         </div>
 
@@ -239,5 +240,14 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
-  </div>
+
+    <section class="mx-auto mt-12 max-w-6xl overflow-hidden rounded-2xl shadow-lg">
+      <img
+        src="@/assets/site/bg-imagen-cova-vidre.jpg"
+        class="aspect-square h-auto w-full object-cover md:aspect-16/7"
+        alt=""
+      />
+    </section>
+    <Footer />
+  </section>
 </template>

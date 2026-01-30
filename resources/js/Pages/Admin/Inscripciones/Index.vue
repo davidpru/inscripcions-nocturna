@@ -37,6 +37,7 @@ import {
   Check,
   Download,
   Eye,
+  Mail,
   Pencil,
   QrCode,
   RotateCcw,
@@ -381,6 +382,21 @@ const filtrarPorEdicion = () => {
   window.location.href = `/admin/inscripciones?edicion_id=${edicionSeleccionada.value}`;
 };
 
+const reenviarCorreo = (id: number) => {
+  if (confirm('¿Estás seguro de que deseas reenviar el correo de confirmación?')) {
+    router.post(
+      `/admin/inscripciones/${id}/reenviar-correo`,
+      {},
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          // Opcional: mostrar notificación
+        },
+      }
+    );
+  }
+};
+
 const eliminarInscripcion = (id: number) => {
   if (
     confirm(
@@ -600,15 +616,15 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                         <Tooltip>
                           <TooltipTrigger as-child>
                             <span
-                              class="flex h-5 w-5 cursor-help items-center justify-center rounded"
+                              class="flex h-6 w-6 cursor-help items-center justify-center rounded"
                               :class="
                                 inscripcion.esta_federado
                                   ? 'bg-green-100 text-green-600'
                                   : 'bg-red-100 text-red-600'
                               "
                             >
-                              <Check v-if="inscripcion.esta_federado" class="h-3 w-3" />
-                              <X v-else class="h-3 w-3" />
+                              <Check v-if="inscripcion.esta_federado" class="h-4 w-4" />
+                              <X v-else class="h-4 w-4" />
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -620,15 +636,15 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                         <Tooltip>
                           <TooltipTrigger as-child>
                             <span
-                              class="flex h-5 w-5 cursor-help items-center justify-center rounded"
+                              class="flex h-6 w-6 cursor-help items-center justify-center rounded"
                               :class="
                                 inscripcion.es_socio_uec
                                   ? 'bg-green-100 text-green-600'
                                   : 'bg-red-100 text-red-600'
                               "
                             >
-                              <Check v-if="inscripcion.es_socio_uec" class="h-3 w-3" />
-                              <X v-else class="h-3 w-3" />
+                              <Check v-if="inscripcion.es_socio_uec" class="h-4 w-4" />
+                              <X v-else class="h-4 w-4" />
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -640,15 +656,15 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                         <Tooltip>
                           <TooltipTrigger as-child>
                             <span
-                              class="flex h-5 w-5 cursor-help items-center justify-center rounded"
+                              class="flex h-6 w-6 cursor-help items-center justify-center rounded"
                               :class="
                                 inscripcion.necesita_autobus
                                   ? 'bg-green-100 text-green-600'
                                   : 'bg-red-100 text-red-600'
                               "
                             >
-                              <Bus v-if="inscripcion.necesita_autobus" class="h-3 w-3" />
-                              <X v-else class="h-3 w-3" />
+                              <Bus v-if="inscripcion.necesita_autobus" class="h-4 w-4" />
+                              <X v-else class="h-4 w-4" />
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -684,6 +700,25 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                     {{ formatearFecha(inscripcion.created_at) }}
                   </td>
                   <td class="space-x-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            class="h-9 w-9 border-blue-200 text-blue-600 hover:bg-blue-50"
+                            @click="reenviarCorreo(inscripcion.id)"
+                            title="Reenviar Correu"
+                          >
+                            <Mail class="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Reenviar Correu de Confirmació</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
                     <Sheet
                       @update:open="
                         (open: boolean) => {
@@ -712,11 +747,11 @@ const getEstadoPagoBadgeClass = (estado: string) => {
 
                         <Tabs default-value="resumen" class="mt-6">
                           <TabsList class="grid w-full grid-cols-2">
-                            <TabsTrigger value="resumen" class="gap-2">
+                            <TabsTrigger value="resumen" class="flex!">
                               <Eye class="h-4 w-4" />
                               Resum
                             </TabsTrigger>
-                            <TabsTrigger value="editar" class="gap-2">
+                            <TabsTrigger value="editar" class="flex!">
                               <Pencil class="h-4 w-4" />
                               Editar
                             </TabsTrigger>
@@ -726,17 +761,31 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                           <TabsContent value="resumen" class="mt-4 space-y-6">
                             <!-- QR Code -->
                             <div
-                              v-if="inscripcion.estado_pago === 'pagado'"
+                              v-if="
+                                inscripcion.estado_pago === 'pagado' ||
+                                inscripcion.estado_pago === 'invitado'
+                              "
                               class="flex flex-col items-center rounded-lg border bg-white p-6"
                             >
                               <QrCode class="mb-2 h-32 w-32 text-slate-300" />
                               <p class="text-sm text-slate-500">Codi QR de verificació</p>
-                              <a :href="`/inscripcion/${inscripcion.id}/pdf`" class="mt-4">
-                                <Button variant="outline" size="sm" class="gap-2">
-                                  <Download class="h-4 w-4" />
-                                  Descarregar PDF amb QR
+                              <div class="mt-4 flex gap-2">
+                                <a :href="`/inscripcion/${inscripcion.id}/pdf`" target="_blank">
+                                  <Button variant="outline" size="sm" class="gap-2">
+                                    <Download class="h-4 w-4" />
+                                    PDF
+                                  </Button>
+                                </a>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  class="gap-2 border-blue-200 text-blue-600"
+                                  @click="reenviarCorreo(inscripcion.id)"
+                                >
+                                  <Mail class="h-4 w-4" />
+                                  Reenviar Correu
                                 </Button>
-                              </a>
+                              </div>
                             </div>
 
                             <!-- Datos del participante -->

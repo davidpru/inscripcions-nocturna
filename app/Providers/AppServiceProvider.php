@@ -23,9 +23,10 @@ class AppServiceProvider extends ServiceProvider
     {
         // Añadir Reply-To global a todos los correos
         Event::listen(MessageSending::class, function (MessageSending $event) {
-            $replyTo = config('mail.reply_to');
-            if ($replyTo['address']) {
-                $event->message->replyTo($replyTo['address'], $replyTo['name']);
+            $replyToAddress = config('mail.reply_to.address');
+            
+            if ($replyToAddress) {
+                $event->message->replyTo($replyToAddress);
             }
         });
     }

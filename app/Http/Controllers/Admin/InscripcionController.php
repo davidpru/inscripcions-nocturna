@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Inscripcion;
 use App\Models\Edicion;
 use App\Models\Participante;
+use App\Mail\InscripcionConfirmada;
 use App\Services\TarifaService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -235,6 +237,22 @@ class InscripcionController extends Controller
 
         return redirect()->route('admin.inscripciones.index')
             ->with('success', 'Inscripción eliminada con éxito');
+    }
+
+    public function reenviarCorreo(Inscripcion $inscripcion)
+    {
+        $inscripcion->load(['participante', 'edicion']);
+
+        if (!$inscripcion->participante->email) {
+            return back()->with('error', 'El participante no tiene un correo electrónico asociado.');
+        }
+
+        try {
+            Mail::to($inscripcion->participante->email)->send(new InscripcionConfirmada($inscripcion));
+            return back()->with('success', 'Correo de confirmación reenviado con éxito.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al enviar el correo: ' . $e->getMessage());
+        }
     }
 
     public function exportar(Request $request)

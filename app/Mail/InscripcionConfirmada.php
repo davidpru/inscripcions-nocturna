@@ -37,6 +37,7 @@ class InscripcionConfirmada extends Mailable
     {
         return new Content(
             markdown: 'emails.inscripcion-confirmada',
+            text: 'emails.inscripcion-confirmada-text',
         );
     }
 

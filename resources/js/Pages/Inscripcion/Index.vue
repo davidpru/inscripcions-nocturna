@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Footer from '@/components/ui-layout/footer.vue';
 import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -1030,13 +1031,7 @@ const enviarInscripcion = () => {
           </div>
         </form>
       </main>
-      <section>
-        <div class="mb-10 flex items-center justify-center gap-4 mix-blend-multiply grayscale">
-          <img src="@/assets/logos/logo-suport-gencat.png" alt="Logo Gencat" class="h-6.5" />
-          <img src="@/assets/logos/logo-suport-pnports.png" alt="Logo PNPorts" class="h-6" />
-          <img src="@/assets/logos/logo-suport-tinenca.jpg" alt="Logo Tinença" class="h-8" />
-        </div>
-      </section>
+      <Footer />
     </div>
   </div>
 </template>

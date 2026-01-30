@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inscripcion;
+use App\Mail\InscripcionConfirmada;
 use Creagia\Redsys\RedsysClient;
 use Creagia\Redsys\RedsysRequest;
 use Creagia\Redsys\Support\RequestParameters;
@@ -13,6 +14,7 @@ use Creagia\Redsys\Enums\TransactionType;
 use Creagia\Redsys\RedsysResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class RedsysController extends Controller
@@ -249,6 +251,17 @@ class RedsysController extends Controller
                     'inscripcion_id' => $inscripcion->id,
                     'amount' => $params->amount,
                 ]);
+                
+                // Enviar email de confirmación
+                try {
+                    Mail::to($inscripcion->participante->email)->send(new InscripcionConfirmada($inscripcion));
+                    Log::info('Email de confirmación enviado', ['inscripcion_id' => $inscripcion->id]);
+                } catch (\Exception $e) {
+                    Log::error('Error enviando email de confirmación', [
+                        'inscripcion_id' => $inscripcion->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
             } else {
                 Log::info('Redsys notification: Already paid, skipping', ['inscripcion_id' => $inscripcion->id]);
             }
@@ -355,6 +368,17 @@ class RedsysController extends Controller
                     'numero_autorizacion' => $params->responseAuthorisationCode,
                     'fecha_pago' => now(),
                 ]);
+                
+                // Enviar email de confirmación
+                try {
+                    Mail::to($inscripcion->participante->email)->send(new InscripcionConfirmada($inscripcion));
+                    Log::info('Email de confirmación enviado', ['inscripcion_id' => $inscripcion->id]);
+                } catch (\Exception $e) {
+                    Log::error('Error enviando email de confirmación', [
+                        'inscripcion_id' => $inscripcion->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
 
             return Inertia::render('Pago/Exito', [

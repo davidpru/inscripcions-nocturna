@@ -12,8 +12,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PARADAS, getParadaLabel } from '@/constants/paradas';
-import { Link, useForm } from '@inertiajs/vue3';
-import { Bus, CheckCircle, Clock, Download, XCircle } from 'lucide-vue-next';
+import { Link, router, useForm } from '@inertiajs/vue3';
+import { Bus, CheckCircle, Clock, Mail, XCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface Participante {
@@ -82,6 +82,16 @@ const cambiarParada = () => {
       mostrarFormularioCambiarParada.value = false;
     },
   });
+};
+
+const reenviarCorreo = () => {
+  router.post(
+    `/admin/inscripciones/${props.inscripcion.id}/reenviar-correo`,
+    {},
+    {
+      preserveScroll: true,
+    }
+  );
 };
 
 const formatDate = (dateString: string): string => {
@@ -153,7 +163,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
           :is="estadoInfo.icon"
           :class="['mx-auto mb-3 h-12 w-12', estadoInfo.iconColor]"
         />
-        <h1 :class="['text-2xl font-bold', estadoInfo.textColor]">
+        <h1 :class="['text-xl font-bold md:text-2xl', estadoInfo.textColor]">
           {{ estadoInfo.text }}
         </h1>
         <p class="mt-2 text-slate-600">Nocturna Fredes Paüls {{ inscripcion.edicion.anio }}</p>
@@ -440,12 +450,10 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
         <Link href="/">
           <Button variant="outline">Tornar a l'inici</Button>
         </Link>
-        <a v-if="inscripcion.estado_pago === 'pagado'" :href="`/inscripcion/${inscripcion.id}/pdf`">
-          <Button class="gap-2">
-            <Download class="h-4 w-4" />
-            Descarregar PDF
-          </Button>
-        </a>
+        <Button v-if="inscripcion.estado_pago === 'pagado'" @click="reenviarCorreo" class="gap-2">
+          <Mail class="h-4 w-4" />
+          Reenviar correu de confirmació
+        </Button>
       </div>
     </div>
   </div>

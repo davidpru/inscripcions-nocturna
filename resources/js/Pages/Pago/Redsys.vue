@@ -43,9 +43,9 @@ onMounted(() => {
     <div class="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-lg">
       <div class="mb-6">
         <div
-          class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100"
+          class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100"
         >
-          <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -54,15 +54,17 @@ onMounted(() => {
             />
           </svg>
         </div>
-        <h1 class="mb-2 text-2xl font-bold text-slate-900">Redirigiendo al pago</h1>
-        <p class="text-slate-600">Serás redirigido a la pasarela de pago segura de Redsys...</p>
+        <h1 class="mb-2 text-2xl font-bold text-slate-900">Redirigint al pagament</h1>
+        <p class="text-slate-600">
+          Seràs redirigit a la passarel·la de pagament segura de Redsys...
+        </p>
 
         <div class="mt-4">
           <button
             @click="submitForm"
-            class="text-sm font-medium text-blue-600 hover:text-blue-500 hover:underline"
+            class="text-sm font-medium text-green-600 hover:text-green-500 hover:underline"
           >
-            Si no eres redirigido automáticamente, haz clic aquí
+            Si no ets redirigit automàticament, fes clic aquí
           </button>
         </div>
       </div>
