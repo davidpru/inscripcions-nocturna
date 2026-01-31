@@ -507,11 +507,26 @@ const getEstadoPagoBadgeClass = (estado: string) => {
     return 'bg-red-100 text-red-800';
   } else if (estado === 'devuelto') {
     return 'bg-purple-100 text-purple-800';
+  } else if (estado === 'devolucion_parcial') {
+    return 'bg-orange-100 text-orange-800';
   } else if (estado === 'invitado') {
     return 'bg-blue-100 text-blue-800';
   } else {
     return 'bg-amber-100 text-amber-800';
   }
+};
+
+const getEstadoPagoTexto = (estado: string) => {
+  const textos: Record<string, string> = {
+    pagado: 'Pagat',
+    pendiente: 'Pendent',
+    cancelado: 'Cancel·lat',
+    devuelto: 'Devolt',
+    devolucion_parcial: 'Devolució Parcial',
+    invitado: 'Invitat',
+    fallido: 'Fallit',
+  };
+  return textos[estado] || estado;
 };
 
 // Estado del diálogo de dorsal
@@ -797,7 +812,7 @@ const confirmarToggleDorsal = () => {
                         :class="getEstadoPagoBadgeClass(inscripcion.estado_pago)"
                         class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold"
                       >
-                        {{ inscripcion.estado_pago }}
+                        {{ getEstadoPagoTexto(inscripcion.estado_pago) }}
                       </span>
                       <Link
                         v-if="inscripcion.estado_pago === 'pendiente'"

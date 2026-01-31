@@ -521,25 +521,31 @@ class RedsysController extends Controller
         // Calcular importe a devolver (puede ser parcial o total)
         $importeDevolucion = $request->input('importe', $inscripcion->precio_total);
         
-        // Validar que el importe no sea mayor al pagado
-        if ($importeDevolucion > $inscripcion->precio_total) {
-            return back()->withErrors(['error' => 'El importe de devolución no puede ser mayor al importe pagado']);
+        // Calcular cuánto se ha devuelto ya (si hay devoluciones previas)
+        $importeYaDevuelto = $inscripcion->importe_devolucion ?? 0;
+        $importeMaximoDevolucion = $inscripcion->precio_total - $importeYaDevuelto;
+        
+        // Validar que el importe no supere lo permitido
+        if ($importeDevolucion > $importeMaximoDevolucion) {
+            return back()->withErrors(['error' => "El importe de devolución ({$importeDevolucion}€) supera el máximo permitido ({$importeMaximoDevolucion}€). Ya se han devuelto {$importeYaDevuelto}€ anteriormente."]);
+        }
+        
+        if ($importeDevolucion <= 0) {
+            return back()->withErrors(['error' => 'El importe de devolución debe ser mayor a 0']);
         }
         
         $amountInCents = (int)($importeDevolucion * 100);
 
         try {
-            // Generar número de pedido único para devolución (diferente al original)
-            // Redsys requiere que sea diferente y no permite letras al inicio en algunos casos
-            // Formato: primeros 4 dígitos del original + timestamp de 8 dígitos
-            $timestamp = (string)time();
-            $refundOrderNumber = substr($inscripcion->numero_pedido, 0, 4) . substr($timestamp, -8);
+            // IMPORTANTE: Para devoluciones, Redsys REQUIERE usar el mismo número de pedido original
+            // No se debe generar un nuevo número de pedido, sino usar exactamente el mismo
+            // que se usó en la transacción de pago original
+            $orderNumber = $inscripcion->numero_pedido;
             
             Log::info('Preparando devolución con librería creagia/redsys-php', [
                 'inscripcion_id' => $inscripcion->id,
-                'original_order' => $inscripcion->numero_pedido,
-                'refund_order' => $refundOrderNumber,
-                'original_auth' => $inscripcion->numero_autorizacion,
+                'order' => $orderNumber,
+                'auth_code' => $inscripcion->numero_autorizacion,
                 'amount_cents' => $amountInCents,
                 'amount_euros' => $importeDevolucion,
                 'environment' => config('redsys.environment'),
@@ -557,11 +563,10 @@ class RedsysController extends Controller
 
             $requestParams = new \Creagia\Redsys\Support\RequestParameters(
                 amountInCents: $amountInCents,
-                order: $refundOrderNumber,
+                order: $orderNumber, // Usar el número de pedido ORIGINAL, no generar uno nuevo
                 transactionType: \Creagia\Redsys\Enums\TransactionType::Devolucion,
                 currency: \Creagia\Redsys\Enums\Currency::EUR,
                 authorisationCode: $inscripcion->numero_autorizacion,
-                merchantData: $inscripcion->numero_pedido, // Pedido original
             );
 
             $redsysRequest = \Creagia\Redsys\RedsysRequest::create($redsysClient, $requestParams);
@@ -584,34 +589,43 @@ class RedsysController extends Controller
             $notificationParams = $redsysResponse->checkResponse();
             
             Log::info('Respuesta decodificada de Redsys', [
-                'response_code' => $notificationParams->Ds_Response,
-                'order' => $notificationParams->Ds_Order,
-                'auth_code' => $notificationParams->Ds_AuthorisationCode,
+                'response_code' => $notificationParams->response,
+                'order' => $notificationParams->order,
+                'auth_code' => $notificationParams->responseAuthorisationCode,
             ]);
 
             // Códigos 0000-0099 = éxito
-            if (\Creagia\Redsys\RedsysResponse::isAuthorisedCode((int) $notificationParams->Ds_Response)) {
+            if (\Creagia\Redsys\RedsysResponse::isAuthorisedCode((int) $notificationParams->response)) {
+                // Calcular el nuevo importe devuelto total (acumulando devoluciones)
+                $importeDevueltoTotal = ($inscripcion->importe_devolucion ?? 0) + $importeDevolucion;
+                
+                // Determinar el estado: si se devolvió todo = 'devuelto', si es parcial = 'devolucion_parcial'
+                $nuevoEstado = ($importeDevueltoTotal >= $inscripcion->precio_total) ? 'devuelto' : 'devolucion_parcial';
+                
                 // Devolución exitosa
                 $inscripcion->update([
-                    'estado_pago' => 'devuelto',
+                    'estado_pago' => $nuevoEstado,
                     'fecha_devolucion' => now(),
-                    'importe_devolucion' => $importeDevolucion,
-                    'autorizacion_devolucion' => $notificationParams->Ds_AuthorisationCode,
+                    'importe_devolucion' => $importeDevueltoTotal, // Acumular devoluciones
+                    'autorizacion_devolucion' => $notificationParams->responseAuthorisationCode,
                 ]);
 
                 Log::info('Devolución exitosa', [
                     'inscripcion_id' => $inscripcion->id,
-                    'response_code' => $notificationParams->Ds_Response,
-                    'auth_code' => $notificationParams->Ds_AuthorisationCode,
+                    'response_code' => $notificationParams->response,
+                    'auth_code' => $notificationParams->responseAuthorisationCode,
+                    'importe_devolucion_actual' => $importeDevolucion,
+                    'importe_devuelto_total' => $importeDevueltoTotal,
+                    'estado_final' => $nuevoEstado,
                 ]);
 
-                return back()->with('success', 'Devolución procesada correctamente');
+                return back()->with('success', "Devolución procesada correctamente ({$importeDevolucion}€). Total devuelto: {$importeDevueltoTotal}€");
             } else {
-                $errorDescription = $this->getErrorDescription($notificationParams->Ds_Response);
-                $errorMsg = "Devolución rechazada. Código: {$notificationParams->Ds_Response} - {$errorDescription}";
+                $errorDescription = $this->getErrorDescription($notificationParams->response);
+                $errorMsg = "Devolución rechazada. Código: {$notificationParams->response} - {$errorDescription}";
                 
                 Log::error('Devolución rechazada', [
-                    'response_code' => $notificationParams->Ds_Response,
+                    'response_code' => $notificationParams->response,
                     'error_description' => $errorDescription,
                     'inscripcion_id' => $inscripcion->id,
                 ]);
