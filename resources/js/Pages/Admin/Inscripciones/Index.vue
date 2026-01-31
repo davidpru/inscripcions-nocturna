@@ -31,6 +31,7 @@ import {
   IdCard,
   Mail,
   RotateCcw,
+  Search,
   ShieldUser,
   Trash2,
   UserPlus,
@@ -110,6 +111,27 @@ const props = defineProps<{
 const edicionSeleccionada = ref(props.filtros.edicion_id || '');
 const saving = ref(false);
 const editingData = reactive<Record<number, any>>({});
+
+// Buscador de participantes
+const busqueda = ref('');
+const inscripcionesFiltradas = computed(() => {
+  if (!busqueda.value.trim()) {
+    return props.inscripciones.data;
+  }
+  
+  const termino = busqueda.value.toLowerCase().trim();
+  return props.inscripciones.data.filter((inscripcion) => {
+    const nombreCompleto = `${inscripcion.participante.nombre} ${inscripcion.participante.apellidos}`.toLowerCase();
+    const dni = inscripcion.participante.dni.toLowerCase();
+    const email = inscripcion.participante.email.toLowerCase();
+    
+    return (
+      nombreCompleto.includes(termino) ||
+      dni.includes(termino) ||
+      email.includes(termino)
+    );
+  });
+});
 
 // Computed para contar solo inscripciones pagadas
 const totalInscripcionesPagadas = computed(() => {
@@ -545,12 +567,30 @@ const confirmarToggleDorsal = () => {
           <h1 class="text-3xl font-bold text-slate-900">Gestión de Inscripciones</h1>
           <p class="mt-1 text-slate-600">
             Total: {{ totalInscripcionesPagadas }} inscripciones pagadas
+            <span v-if="busqueda" class="ml-2 text-slate-500">
+              ({{ inscripcionesFiltradas.length }} resultats de la cerca)
+            </span>
           </p>
         </div>
 
         <!-- Filtros -->
         <section class="mb-6 rounded-lg bg-white p-4 shadow">
-          <div class="flex items-end gap-4">
+          <div class="mb-4">
+            <label class="mb-2 block text-sm font-medium text-slate-700">
+              Buscar Participant
+            </label>
+            <div class="relative">
+              <Search class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <Input
+                v-model="busqueda"
+                type="text"
+                placeholder="Buscar por nom, cognoms, DNI o email..."
+                class="pl-10"
+              />
+            </div>
+          </div>
+          
+          <div class="flex flex-wrap items-end gap-4">
             <div class="flex-1">
               <label class="mb-2 block text-sm font-medium text-slate-700">
                 Filtrar por Edición
@@ -639,7 +679,7 @@ const confirmarToggleDorsal = () => {
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 bg-white">
-                <tr v-for="inscripcion in inscripciones.data" :key="inscripcion.id">
+                <tr v-for="inscripcion in inscripcionesFiltradas" :key="inscripcion.id">
                   <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ inscripcion.id }}
                   </td>
