@@ -56,14 +56,12 @@ interface Participante {
 interface Edicion {
   id: number;
   anio: number;
-  tarifa_socio_federado_normal: number;
-  tarifa_socio_federado_tardia: number;
-  tarifa_socio_no_federado_normal: number;
-  tarifa_socio_no_federado_tardia: number;
-  tarifa_publico_federado_normal: number;
-  tarifa_publico_federado_tardia: number;
-  tarifa_publico_no_federado_normal: number;
-  tarifa_publico_no_federado_tardia: number;
+  precio_inscripcion_socio_normal: number;
+  precio_inscripcion_socio_tardia: number;
+  precio_inscripcion_publico_normal: number;
+  precio_inscripcion_publico_tardia: number;
+  precio_licencia_federativa_socio: number;
+  precio_licencia_federativa_publico: number;
   precio_autobus_normal: number;
   precio_autobus_tardia: number;
   precio_seguro: number;
@@ -262,10 +260,13 @@ const getEdicionActual = () => {
 };
 
 // Calcular precio en base a las opciones (usando tarifas de la edición)
+// Nova estructura: preu inscripció + llicència federativa (si no federat) + extras
 const calcularPrecio = (data: any, esTarifaTardia: boolean, descuentoCupon: number | null = 0) => {
   const edicion = getEdicionActual();
   if (!edicion) {
     return {
+      precio_inscripcion: 0,
+      precio_licencia: 0,
       tarifa_base: 0,
       precio_autobus: 0,
       precio_seguro: 0,
@@ -275,24 +276,28 @@ const calcularPrecio = (data: any, esTarifaTardia: boolean, descuentoCupon: numb
     };
   }
 
-  let tarifaBase: number;
-  if (data.es_socio_uec && data.esta_federado) {
-    tarifaBase = esTarifaTardia
-      ? edicion.tarifa_socio_federado_tardia
-      : edicion.tarifa_socio_federado_normal;
-  } else if (data.es_socio_uec && !data.esta_federado) {
-    tarifaBase = esTarifaTardia
-      ? edicion.tarifa_socio_no_federado_tardia
-      : edicion.tarifa_socio_no_federado_normal;
-  } else if (!data.es_socio_uec && data.esta_federado) {
-    tarifaBase = esTarifaTardia
-      ? edicion.tarifa_publico_federado_tardia
-      : edicion.tarifa_publico_federado_normal;
+  // Preu d'inscripció base segons si és soci o no
+  let precioInscripcion: number;
+  if (data.es_socio_uec) {
+    precioInscripcion = esTarifaTardia
+      ? edicion.precio_inscripcion_socio_tardia
+      : edicion.precio_inscripcion_socio_normal;
   } else {
-    tarifaBase = esTarifaTardia
-      ? edicion.tarifa_publico_no_federado_tardia
-      : edicion.tarifa_publico_no_federado_normal;
+    precioInscripcion = esTarifaTardia
+      ? edicion.precio_inscripcion_publico_tardia
+      : edicion.precio_inscripcion_publico_normal;
   }
+
+  // Preu de la llicència federativa (només si NO està federat)
+  let precioLicencia = 0;
+  if (!data.esta_federado) {
+    precioLicencia = data.es_socio_uec
+      ? edicion.precio_licencia_federativa_socio
+      : edicion.precio_licencia_federativa_publico;
+  }
+
+  // Tarifa base = inscripció + llicència (si escau)
+  const tarifaBase = precioInscripcion + precioLicencia;
 
   const precioAutobus = data.necesita_autobus
     ? esTarifaTardia
@@ -303,6 +308,8 @@ const calcularPrecio = (data: any, esTarifaTardia: boolean, descuentoCupon: numb
   const descuento = descuentoCupon || 0;
 
   return {
+    precio_inscripcion: precioInscripcion,
+    precio_licencia: precioLicencia,
     tarifa_base: tarifaBase,
     precio_autobus: precioAutobus,
     precio_seguro: precioSeguro,

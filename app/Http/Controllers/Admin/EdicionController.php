@@ -40,16 +40,13 @@ class EdicionController extends Controller
             'autobuses' => 'nullable|array',
             'autobuses.*.nombre' => 'required|string|max:100',
             'autobuses.*.plazas' => 'required|integer|min:1',
-            // Tarifas normales
-            'tarifa_publico_federado_normal' => 'nullable|numeric|min:0',
-            'tarifa_publico_no_federado_normal' => 'nullable|numeric|min:0',
-            'tarifa_socio_federado_normal' => 'nullable|numeric|min:0',
-            'tarifa_socio_no_federado_normal' => 'nullable|numeric|min:0',
-            // Tarifas tardías
-            'tarifa_publico_federado_tardia' => 'nullable|numeric|min:0',
-            'tarifa_publico_no_federado_tardia' => 'nullable|numeric|min:0',
-            'tarifa_socio_federado_tardia' => 'nullable|numeric|min:0',
-            'tarifa_socio_no_federado_tardia' => 'nullable|numeric|min:0',
+            // Nova estructura de preus
+            'precio_inscripcion_socio_normal' => 'nullable|numeric|min:0',
+            'precio_inscripcion_publico_normal' => 'nullable|numeric|min:0',
+            'precio_inscripcion_socio_tardia' => 'nullable|numeric|min:0',
+            'precio_inscripcion_publico_tardia' => 'nullable|numeric|min:0',
+            'precio_licencia_federativa_socio' => 'nullable|numeric|min:0',
+            'precio_licencia_federativa_publico' => 'nullable|numeric|min:0',
             // Extras
             'precio_autobus_normal' => 'nullable|numeric|min:0',
             'precio_autobus_tardia' => 'nullable|numeric|min:0',
@@ -105,16 +102,13 @@ class EdicionController extends Controller
             'autobuses' => 'nullable|array',
             'autobuses.*.nombre' => 'required|string|max:100',
             'autobuses.*.plazas' => 'required|integer|min:1',
-            // Tarifas normales
-            'tarifa_publico_federado_normal' => 'nullable|numeric|min:0',
-            'tarifa_publico_no_federado_normal' => 'nullable|numeric|min:0',
-            'tarifa_socio_federado_normal' => 'nullable|numeric|min:0',
-            'tarifa_socio_no_federado_normal' => 'nullable|numeric|min:0',
-            // Tarifas tardías
-            'tarifa_publico_federado_tardia' => 'nullable|numeric|min:0',
-            'tarifa_publico_no_federado_tardia' => 'nullable|numeric|min:0',
-            'tarifa_socio_federado_tardia' => 'nullable|numeric|min:0',
-            'tarifa_socio_no_federado_tardia' => 'nullable|numeric|min:0',
+            // Nova estructura de preus
+            'precio_inscripcion_socio_normal' => 'nullable|numeric|min:0',
+            'precio_inscripcion_publico_normal' => 'nullable|numeric|min:0',
+            'precio_inscripcion_socio_tardia' => 'nullable|numeric|min:0',
+            'precio_inscripcion_publico_tardia' => 'nullable|numeric|min:0',
+            'precio_licencia_federativa_socio' => 'nullable|numeric|min:0',
+            'precio_licencia_federativa_publico' => 'nullable|numeric|min:0',
             // Extras
             'precio_autobus_normal' => 'nullable|numeric|min:0',
             'precio_autobus_tardia' => 'nullable|numeric|min:0',

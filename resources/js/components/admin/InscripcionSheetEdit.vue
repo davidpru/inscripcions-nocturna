@@ -32,14 +32,12 @@ interface Participante {
 interface Edicion {
   id: number;
   anio: number;
-  tarifa_socio_federado_normal: number;
-  tarifa_socio_federado_tardia: number;
-  tarifa_socio_no_federado_normal: number;
-  tarifa_socio_no_federado_tardia: number;
-  tarifa_publico_federado_normal: number;
-  tarifa_publico_federado_tardia: number;
-  tarifa_publico_no_federado_normal: number;
-  tarifa_publico_no_federado_tardia: number;
+  precio_inscripcion_socio_normal: number;
+  precio_inscripcion_socio_tardia: number;
+  precio_inscripcion_publico_normal: number;
+  precio_inscripcion_publico_tardia: number;
+  precio_licencia_federativa_socio: number;
+  precio_licencia_federativa_publico: number;
   precio_autobus_normal: number;
   precio_autobus_tardia: number;
   precio_seguro: number;
@@ -506,10 +504,27 @@ const handleOpenChange = (open: boolean) => {
               <h3 class="mb-3 font-semibold text-slate-900">Càlcul del preu</h3>
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between text-slate-700">
-                  <span>Tarifa base:</span>
+                  <span>Inscripció {{ editingData.es_socio_uec ? '(Soci)' : '(Públic)' }}:</span>
                   <span
                     >{{
-                      calcularPrecio(editingData, false, inscripcion.descuento_cupon).tarifa_base
+                      calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                        .precio_inscripcion
+                    }}€</span
+                  >
+                </div>
+                <div
+                  v-if="
+                    !editingData.esta_federado &&
+                    calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_licencia >
+                      0
+                  "
+                  class="flex justify-between text-slate-700"
+                >
+                  <span>Llicència federativa:</span>
+                  <span
+                    >{{
+                      calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                        .precio_licencia
                     }}€</span
                   >
                 </div>
@@ -557,7 +572,9 @@ const handleOpenChange = (open: boolean) => {
                 <div class="mt-3 border-t border-blue-300 pt-3">
                   <div class="flex justify-between text-sm text-slate-600">
                     <span>Preu guardat al sistema:</span>
-                    <span class="font-medium">{{ inscripcion.precio_total }}€</span>
+                    <span class="font-medium"
+                      >{{ Number(inscripcion.precio_total).toFixed(2) }}€</span
+                    >
                   </div>
                 </div>
                 <p
@@ -567,12 +584,12 @@ const handleOpenChange = (open: boolean) => {
                   "
                   class="mt-3 rounded-md bg-amber-50 p-3 text-xs text-amber-700"
                 >
-                  ⚠️ <strong>Atenció:</strong> El preu guardat ({{ inscripcion.precio_total }}€) no
-                  coincideix amb el preu calculat ({{
+                  ⚠️ <strong>Atenció:</strong> El preu guardat ({{
+                    Number(inscripcion.precio_total).toFixed(2)
+                  }}€) no coincideix amb el preu calculat ({{
                     calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_total
-                  }}€). Això pot ser perquè el descompte del cupó no es va aplicar correctament.
-                  calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_total }}€)
-                  és diferent del preu registrat ({{ inscripcion.precio_total }}€)
+                  }}€). Això pot ser perquè les tarifes de l'edició han canviat des de la
+                  inscripció.
                 </p>
               </div>
             </div>
