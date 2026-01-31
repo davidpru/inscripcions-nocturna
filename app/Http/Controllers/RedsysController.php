@@ -556,11 +556,13 @@ class RedsysController extends Controller
                     'estado_pago' => 'devuelto',
                     'fecha_devolucion' => now(),
                     'importe_devolucion' => $importeDevolucion,
+                    'autorizacion_devolucion' => $notificationParams->Ds_AuthorisationCode,
                 ]);
 
                 Log::info('Devolución exitosa', [
                     'inscripcion_id' => $inscripcion->id,
                     'response_code' => $notificationParams->Ds_Response,
+                    'auth_code' => $notificationParams->Ds_AuthorisationCode,
                 ]);
 
                 return back()->with('success', 'Devolución procesada correctamente');
