@@ -21,6 +21,7 @@ const props = defineProps<{
   hayEdicion: boolean;
   inscripcionesAbiertas: boolean;
   isTestMode?: boolean;
+  estadoEdicion?: string;
 }>();
 
 const dni = ref('');
@@ -76,8 +77,12 @@ const iniciarInscripcion = async () => {
 };
 
 onMounted(() => {
-  // Iniciar countdown solo si las inscripciones NO están abiertas y hay fecha futura
-  if (!props.inscripcionesAbiertas && props.edicion?.fecha_inicio_inscripciones) {
+  // Iniciar countdown solo si las inscripciones NO están abiertas, hay fecha futura y NO está cerrada
+  if (
+    !props.inscripcionesAbiertas &&
+    props.edicion?.fecha_inicio_inscripciones &&
+    props.estadoEdicion !== 'cerrada'
+  ) {
     const initial = calculateTimeRemaining(props.edicion.fecha_inicio_inscripciones);
     // Solo iniciar countdown si la fecha está en el futuro
     if (initial.difference > 0) {
@@ -147,9 +152,13 @@ onUnmounted(() => {
           <p v-else class="text-foreground text-lg">Pròximament</p>
         </div>
 
-        <!-- Countdown si las inscripciones no están abiertas -->
+        <!-- Countdown si las inscripciones no están abiertas y no está cerrada -->
         <div
-          v-if="!inscripcionesAbiertas && edicion?.fecha_inicio_inscripciones"
+          v-if="
+            !inscripcionesAbiertas &&
+            edicion?.fecha_inicio_inscripciones &&
+            estadoEdicion !== 'cerrada'
+          "
           class="to-gray-1000 mb-8 rounded-lg bg-linear-to-r from-gray-800 to-gray-900 p-8 text-white shadow-xl"
         >
           <h2 class="mb-4 text-center text-3xl font-bold">Les inscripcions s'obren en:</h2>
@@ -173,10 +182,13 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Mensaje cuando inscripciones cerradas sin fecha -->
+        <!-- Mensaje cuando inscripciones cerradas -->
         <Card
-          v-if="!inscripcionesAbiertas && !edicion?.fecha_inicio_inscripciones"
-          class="mx-auto max-w-md"
+          v-if="
+            !inscripcionesAbiertas &&
+            (estadoEdicion === 'cerrada' || !edicion?.fecha_inicio_inscripciones)
+          "
+          class="mx-auto w-full"
         >
           <CardHeader>
             <CardTitle class="text-2xl">Inscripcions tancades</CardTitle>

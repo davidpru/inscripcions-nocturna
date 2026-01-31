@@ -64,35 +64,21 @@ class Cupon extends Model
 
     /**
      * Calcular el descuento que aplica el cupón
-     * - Si NO federado: descuenta la tarifa federado (paga solo 5€ de licencia)
-     * - Si YA federado: descuenta toda la inscripción (paga 0€)
+     * Descuenta solo el precio de inscripción, nunca la licencia federativa
      */
     public function calcularDescuento(Edicion $edicion, bool $esSocioUEC, bool $estaFederado = false): float
     {
         $esTarifaTardia = $edicion->esTarifaTardia();
 
-        // Si ya está federado, descuenta toda su tarifa (inscripción gratis)
-        if ($estaFederado) {
-            if ($esSocioUEC) {
-                return $esTarifaTardia 
-                    ? (float) $edicion->tarifa_socio_federado_tardia 
-                    : (float) $edicion->tarifa_socio_federado_normal;
-            } else {
-                return $esTarifaTardia 
-                    ? (float) $edicion->tarifa_publico_federado_tardia 
-                    : (float) $edicion->tarifa_publico_federado_normal;
-            }
-        }
-
-        // Si NO está federado, descuenta la tarifa federado (queda solo 5€ de licencia)
+        // El cupón descuenta solo la inscripción, no la licencia
         if ($esSocioUEC) {
             return $esTarifaTardia 
-                ? (float) $edicion->tarifa_socio_federado_tardia 
-                : (float) $edicion->tarifa_socio_federado_normal;
+                ? (float) $edicion->precio_inscripcion_socio_tardia 
+                : (float) $edicion->precio_inscripcion_socio_normal;
         } else {
             return $esTarifaTardia 
-                ? (float) $edicion->tarifa_publico_federado_tardia 
-                : (float) $edicion->tarifa_publico_federado_normal;
+                ? (float) $edicion->precio_inscripcion_publico_tardia 
+                : (float) $edicion->precio_inscripcion_publico_normal;
         }
     }
 

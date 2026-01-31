@@ -112,14 +112,18 @@ const handleOpenChange = (open: boolean) => {
       </SheetHeader>
 
       <Tabs default-value="resumen" class="mt-6">
-        <TabsList class="grid w-full grid-cols-2">
-          <TabsTrigger value="resumen" class="flex!">
-            <Eye class="h-4 w-4" />
-            Resum
+        <TabsList>
+          <TabsTrigger value="resumen" class="px-10">
+            <span class="flex items-center gap-2">
+              <Eye class="h-4 w-4" />
+              Resum
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="editar" class="flex!">
-            <Pencil class="h-4 w-4" />
-            Editar
+          <TabsTrigger value="editar" class="px-10">
+            <span class="flex items-center gap-2">
+              <Pencil class="h-4 w-4" />
+              Editar
+            </span>
           </TabsTrigger>
         </TabsList>
 
@@ -273,7 +277,7 @@ const handleOpenChange = (open: boolean) => {
         <TabsContent value="editar" class="mt-4">
           <div class="mb-4 flex justify-end">
             <Button variant="default" size="sm" :disabled="saving" @click="emit('save')">
-              <Save class="mr-2 h-4 w-4" />
+              <Save class="h-4 w-4" />
               {{ saving ? 'Guardando...' : 'Guardar' }}
             </Button>
           </div>
@@ -499,12 +503,10 @@ const handleOpenChange = (open: boolean) => {
 
             <!-- Resumen de Precio Calculado -->
             <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
-              <h3 class="mb-3 font-semibold text-slate-900">
-                Resum de l'inscripció (segons opcions)
-              </h3>
+              <h3 class="mb-3 font-semibold text-slate-900">Càlcul del preu</h3>
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between text-slate-700">
-                  <span>Inscripció:</span>
+                  <span>Tarifa base:</span>
                   <span
                     >{{
                       calcularPrecio(editingData, false, inscripcion.descuento_cupon).tarifa_base
@@ -543,7 +545,7 @@ const handleOpenChange = (open: boolean) => {
                 </div>
                 <div class="mt-2 border-t border-blue-300 pt-2">
                   <div class="flex justify-between text-base font-bold text-slate-900">
-                    <span>TOTAL CALCULAT:</span>
+                    <span>PREU FINAL:</span>
                     <span
                       >{{
                         calcularPrecio(editingData, false, inscripcion.descuento_cupon)
@@ -552,16 +554,25 @@ const handleOpenChange = (open: boolean) => {
                     >
                   </div>
                 </div>
+                <div class="mt-3 border-t border-blue-300 pt-3">
+                  <div class="flex justify-between text-sm text-slate-600">
+                    <span>Preu guardat al sistema:</span>
+                    <span class="font-medium">{{ inscripcion.precio_total }}€</span>
+                  </div>
+                </div>
                 <p
                   v-if="
                     calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_total !==
                     Number(inscripcion.precio_total)
                   "
-                  class="mt-2 text-xs text-amber-600"
+                  class="mt-3 rounded-md bg-amber-50 p-3 text-xs text-amber-700"
                 >
-                  * El preu calculat ({{
+                  ⚠️ <strong>Atenció:</strong> El preu guardat ({{ inscripcion.precio_total }}€) no
+                  coincideix amb el preu calculat ({{
                     calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_total
-                  }}€) és diferent del preu registrat ({{ inscripcion.precio_total }}€)
+                  }}€). Això pot ser perquè el descompte del cupó no es va aplicar correctament.
+                  calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_total }}€)
+                  és diferent del preu registrat ({{ inscripcion.precio_total }}€)
                 </p>
               </div>
             </div>

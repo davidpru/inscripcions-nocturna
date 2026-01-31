@@ -15,16 +15,16 @@ class TarifaService
     ): array {
         $esTarifaTardia = $edicion->esTarifaTardia();
 
-        // Obtener tarifa de federado (inscripción base sin licencia)
-        $tarifaFederado = $this->obtenerTarifaFederado($edicion, $esSocioUEC, $esTarifaTardia);
+        // Obtener precio de inscripción base
+        $precioInscripcion = $this->obtenerPrecioInscripcion($edicion, $esSocioUEC, $esTarifaTardia);
         
-        // Calcular coste de licencia federativa (diferencia entre no federado y federado)
+        // Calcular coste de licencia federativa
         // Si ya está federado, no paga licencia (0€)
-        // Si no está federado, paga la diferencia (5€)
-        $precioLicencia = $estaFederado ? 0 : $this->calcularCosteLicencia($edicion, $esSocioUEC, $esTarifaTardia);
+        // Si no está federado, paga la licencia (5€)
+        $precioLicencia = $estaFederado ? 0 : $this->obtenerPrecioLicencia($edicion, $esSocioUEC);
 
-        // Tarifa base = inscripción federado + licencia
-        $tarifaBase = $tarifaFederado + $precioLicencia;
+        // Tarifa base = inscripción + licencia (si no está federado)
+        $tarifaBase = $precioInscripcion + $precioLicencia;
 
         // Calcular extras
         $precioAutobus = $necesitaAutobus 
@@ -38,7 +38,7 @@ class TarifaService
         $nombreTarifa = $this->obtenerNombreTarifa($esSocioUEC, $estaFederado);
 
         return [
-            'tarifa_inscripcion' => $tarifaFederado,
+            'precio_inscripcion' => $precioInscripcion,
             'precio_licencia' => $precioLicencia,
             'tarifa_base' => $tarifaBase,
             'nombre_tarifa' => $nombreTarifa,
@@ -49,47 +49,24 @@ class TarifaService
         ];
     }
 
-    private function obtenerTarifaFederado(Edicion $edicion, bool $esSocioUEC, bool $esTarifaTardia): float
+    private function obtenerPrecioInscripcion(Edicion $edicion, bool $esSocioUEC, bool $esTarifaTardia): float
     {
         if ($esSocioUEC) {
-            return $esTarifaTardia ? (float) $edicion->tarifa_socio_federado_tardia : (float) $edicion->tarifa_socio_federado_normal;
+            return $esTarifaTardia 
+                ? (float) $edicion->precio_inscripcion_socio_tardia 
+                : (float) $edicion->precio_inscripcion_socio_normal;
         } else {
-            return $esTarifaTardia ? (float) $edicion->tarifa_publico_federado_tardia : (float) $edicion->tarifa_publico_federado_normal;
+            return $esTarifaTardia 
+                ? (float) $edicion->precio_inscripcion_publico_tardia 
+                : (float) $edicion->precio_inscripcion_publico_normal;
         }
     }
 
-    private function calcularCosteLicencia(Edicion $edicion, bool $esSocioUEC, bool $esTarifaTardia): float
+    private function obtenerPrecioLicencia(Edicion $edicion, bool $esSocioUEC): float
     {
-        if ($esSocioUEC) {
-            $tarifaNoFederado = $esTarifaTardia 
-                ? (float) $edicion->tarifa_socio_no_federado_tardia 
-                : (float) $edicion->tarifa_socio_no_federado_normal;
-            $tarifaFederado = $esTarifaTardia 
-                ? (float) $edicion->tarifa_socio_federado_tardia 
-                : (float) $edicion->tarifa_socio_federado_normal;
-        } else {
-            $tarifaNoFederado = $esTarifaTardia 
-                ? (float) $edicion->tarifa_publico_no_federado_tardia 
-                : (float) $edicion->tarifa_publico_no_federado_normal;
-            $tarifaFederado = $esTarifaTardia 
-                ? (float) $edicion->tarifa_publico_federado_tardia 
-                : (float) $edicion->tarifa_publico_federado_normal;
-        }
-
-        return $tarifaNoFederado - $tarifaFederado;
-    }
-
-    private function obtenerTarifaBase(Edicion $edicion, bool $esSocioUEC, bool $estaFederado, bool $esTarifaTardia): float
-    {
-        if ($esSocioUEC && $estaFederado) {
-            return $esTarifaTardia ? (float) $edicion->tarifa_socio_federado_tardia : (float) $edicion->tarifa_socio_federado_normal;
-        } elseif ($esSocioUEC && !$estaFederado) {
-            return $esTarifaTardia ? (float) $edicion->tarifa_socio_no_federado_tardia : (float) $edicion->tarifa_socio_no_federado_normal;
-        } elseif (!$esSocioUEC && $estaFederado) {
-            return $esTarifaTardia ? (float) $edicion->tarifa_publico_federado_tardia : (float) $edicion->tarifa_publico_federado_normal;
-        } else {
-            return $esTarifaTardia ? (float) $edicion->tarifa_publico_no_federado_tardia : (float) $edicion->tarifa_publico_no_federado_normal;
-        }
+        return $esSocioUEC 
+            ? (float) $edicion->precio_licencia_federativa_socio 
+            : (float) $edicion->precio_licencia_federativa_publico;
     }
 
     private function obtenerNombreTarifa(bool $esSocioUEC, bool $estaFederado): string

@@ -373,18 +373,16 @@ class InscripcionController extends Controller
                     ->first();
 
                 if ($cupon && $cupon->estaDisponible()) {
-                    // El cupón solo aplica si el usuario NO está federado
-                    if (!$validated['esta_federado']) {
-                        $descuentoCupon = $precio['tarifa_base'];
-                        
-                        // Si incluye autobús, añadir el precio del autobús al descuento
-                        if ($cupon->incluye_autobus && $validated['necesita_autobus']) {
-                            $descuentoCupon += $precio['precio_autobus'];
-                        }
-                        
-                        $cuponId = $cupon->id;
-                        $cupon->incrementarUso();
+                    // Calcular descuento usando el método del cupón
+                    $descuentoCupon = $cupon->calcularDescuento($edicion, $validated['es_socio_uec'], $validated['esta_federado']);
+                    
+                    // Si incluye autobús, añadir el precio del autobús al descuento
+                    if ($cupon->incluye_autobus && $validated['necesita_autobus']) {
+                        $descuentoCupon += $precio['precio_autobus'];
                     }
+                    
+                    $cuponId = $cupon->id;
+                    $cupon->incrementarUso();
                 }
             }
 

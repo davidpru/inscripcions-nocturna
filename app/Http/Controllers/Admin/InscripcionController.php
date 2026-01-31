@@ -208,7 +208,26 @@ class InscripcionController extends Controller
                 $validated['necesita_autobus'] ?? false,
                 $validated['seguro_anulacion'] ?? false
             );
-            $precioTotal = $resultadoCalculo['precio_total'];
+            
+            // Si tiene cupón aplicado, recalcular el descuento
+            $descuentoCupon = 0;
+            if ($inscripcion->cupon_id) {
+                $cupon = $inscripcion->cupon;
+                if ($cupon) {
+                    $descuentoCupon = $cupon->calcularDescuento(
+                        $inscripcion->edicion,
+                        $validated['es_socio_uec'] ?? false,
+                        $validated['esta_federado'] ?? false
+                    );
+                    
+                    // Si incluye autobús, añadir el precio del autobús al descuento
+                    if ($cupon->incluye_autobus && ($validated['necesita_autobus'] ?? false)) {
+                        $descuentoCupon += $resultadoCalculo['precio_autobus'];
+                    }
+                }
+            }
+            
+            $precioTotal = max(0, $resultadoCalculo['precio_total'] - $descuentoCupon);
             $tarifaAplicada = $resultadoCalculo['nombre_tarifa'];
         }
 
@@ -226,6 +245,7 @@ class InscripcionController extends Controller
             'talla_camiseta_pauls' => $validated['talla_camiseta_pauls'],
             'precio_total' => $precioTotal,
             'tarifa_aplicada' => $tarifaAplicada,
+            'descuento_cupon' => $descuentoCupon ?? 0,
         ]);
 
         return back()->with('success', 'Inscripción actualizada con éxito');

@@ -27,7 +27,8 @@ Route::get('/', function () {
         'edicion' => $edicion,
         'hayEdicion' => $edicion !== null,
         'inscripcionesAbiertas' => $inscripcionesAbiertas,
-        'isTestMode' => $isTestIp && $edicion && !$edicion->inscripcionesAbiertas()
+        'isTestMode' => $isTestIp && $edicion && !$edicion->inscripcionesAbiertas(),
+        'estadoEdicion' => $edicion?->estado
     ]);
 })->name('home');
 

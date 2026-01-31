@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { PARADAS } from '@/constants/paradas';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { onKeyStroke } from '@vueuse/core';
 import axios from 'axios';
 import {
   Bus,
@@ -35,7 +36,6 @@ import {
   UserPlus,
   X,
 } from 'lucide-vue-next';
-import { onKeyStroke } from '@vueuse/core';
 import { computed, reactive, ref } from 'vue';
 
 interface Participante {
@@ -360,7 +360,7 @@ const saveChanges = (inscripcion: Inscripcion) => {
   router.put(`/admin/inscripciones/${inscripcion.id}`, editingData[inscripcion.id], {
     preserveScroll: true,
     onSuccess: () => {
-      delete editingData[inscripcion.id];
+      // No eliminar editingData, solo actualizar el estado
       saving.value = false;
     },
     onError: () => {
@@ -570,55 +570,55 @@ const confirmarToggleDorsal = () => {
         <div class="overflow-hidden rounded-lg bg-white shadow">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
-              <thead class="bg-slate-50">
+              <thead class="bg-white">
                 <tr>
                   <th
-                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     #
                   </th>
                   <th
-                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Participante
                   </th>
                   <th
-                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     DNI
                   </th>
                   <th
-                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Edición
                   </th>
                   <th
-                    class="px-6 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Tipo
                   </th>
                   <th
-                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Precio
                   </th>
                   <th
-                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Estado Pago
                   </th>
                   <th
-                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Fecha
                   </th>
                   <th
-                    class="px-6 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Dorsal
                   </th>
                   <th
-                    class="px-6 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-3 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Acciones
                   </th>
@@ -626,10 +626,10 @@ const confirmarToggleDorsal = () => {
               </thead>
               <tbody class="divide-y divide-slate-200 bg-white">
                 <tr v-for="inscripcion in inscripciones.data" :key="inscripcion.id">
-                  <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-900">
+                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ inscripcion.id }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-3 py-3 whitespace-nowrap">
                     <div class="text-sm font-medium text-slate-900">
                       {{ inscripcion.participante.nombre }} {{ inscripcion.participante.apellidos }}
                     </div>
@@ -637,13 +637,13 @@ const confirmarToggleDorsal = () => {
                       {{ inscripcion.participante.email }}
                     </div>
                   </td>
-                  <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-900">
+                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ inscripcion.participante.dni }}
                   </td>
-                  <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-900">
+                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ inscripcion.edicion.anio }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-3 py-3 whitespace-nowrap">
                     <div class="flex items-center justify-center gap-1">
                       <TooltipProvider>
                         <!-- Federado -->
@@ -708,10 +708,37 @@ const confirmarToggleDorsal = () => {
                       </TooltipProvider>
                     </div>
                   </td>
-                  <td class="px-6 py-4 text-sm font-semibold whitespace-nowrap text-slate-900">
-                    {{ inscripcion.precio_total }}€
+                  <td class="px-3 py-3 text-sm font-semibold whitespace-nowrap">
+                    <div class="flex items-center gap-2">
+                      <span
+                        :class="
+                          inscripcion.descuento_cupon && inscripcion.descuento_cupon > 0
+                            ? 'text-green-600'
+                            : 'text-slate-900'
+                        "
+                      >
+                        {{ Number(inscripcion.precio_total).toFixed(2) }}€
+                      </span>
+                      <TooltipProvider
+                        v-if="inscripcion.descuento_cupon && inscripcion.descuento_cupon > 0"
+                      >
+                        <Tooltip>
+                          <TooltipTrigger as-child>
+                            <span
+                              class="inline-flex h-5 items-center rounded bg-green-100 px-1.5 text-xs font-medium text-green-700"
+                            >
+                              -{{ inscripcion.descuento_cupon }}€
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Preu amb cupó: {{ Number(inscripcion.precio_total).toFixed(2) }}€</p>
+                            <p>Descompte aplicat: -{{ inscripcion.descuento_cupon }}€</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-3 py-3 whitespace-nowrap">
                     <div class="flex items-center gap-2">
                       <span
                         :class="getEstadoPagoBadgeClass(inscripcion.estado_pago)"
@@ -730,10 +757,10 @@ const confirmarToggleDorsal = () => {
                       </Link>
                     </div>
                   </td>
-                  <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-900">
+                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ formatearFecha(inscripcion.created_at) }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-3 py-3 whitespace-nowrap">
                     <div class="flex justify-center">
                       <Button
                         variant="ghost"
@@ -753,7 +780,7 @@ const confirmarToggleDorsal = () => {
                       </Button>
                     </div>
                   </td>
-                  <td class="space-x-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                  <td class="space-x-2 px-3 py-3 text-right text-sm font-medium whitespace-nowrap">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger as-child>

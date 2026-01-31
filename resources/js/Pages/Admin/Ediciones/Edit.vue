@@ -23,14 +23,12 @@ interface Edicion {
   estado: 'abierta' | 'cerrada';
   activa: boolean;
   autobuses: Autobus[];
-  tarifa_publico_federado_normal: number;
-  tarifa_publico_no_federado_normal: number;
-  tarifa_socio_federado_normal: number;
-  tarifa_socio_no_federado_normal: number;
-  tarifa_publico_federado_tardia: number;
-  tarifa_publico_no_federado_tardia: number;
-  tarifa_socio_federado_tardia: number;
-  tarifa_socio_no_federado_tardia: number;
+  precio_inscripcion_socio_normal: number;
+  precio_inscripcion_publico_normal: number;
+  precio_inscripcion_socio_tardia: number;
+  precio_inscripcion_publico_tardia: number;
+  precio_licencia_federativa_socio: number;
+  precio_licencia_federativa_publico: number;
   precio_autobus_normal: number;
   precio_autobus_tardia: number;
   precio_seguro: number;
@@ -56,14 +54,12 @@ const form = useForm({
   estado: props.edicion.estado ?? 'abierta',
   activa: props.edicion.activa ?? false,
   autobuses: props.edicion.autobuses?.length ? props.edicion.autobuses : defaultAutobuses,
-  tarifa_publico_federado_normal: props.edicion.tarifa_publico_federado_normal ?? 35,
-  tarifa_publico_no_federado_normal: props.edicion.tarifa_publico_no_federado_normal ?? 40,
-  tarifa_socio_federado_normal: props.edicion.tarifa_socio_federado_normal ?? 30,
-  tarifa_socio_no_federado_normal: props.edicion.tarifa_socio_no_federado_normal ?? 35,
-  tarifa_publico_federado_tardia: props.edicion.tarifa_publico_federado_tardia ?? 40,
-  tarifa_publico_no_federado_tardia: props.edicion.tarifa_publico_no_federado_tardia ?? 45,
-  tarifa_socio_federado_tardia: props.edicion.tarifa_socio_federado_tardia ?? 35,
-  tarifa_socio_no_federado_tardia: props.edicion.tarifa_socio_no_federado_tardia ?? 40,
+  precio_inscripcion_socio_normal: props.edicion.precio_inscripcion_socio_normal ?? 30,
+  precio_inscripcion_publico_normal: props.edicion.precio_inscripcion_publico_normal ?? 35,
+  precio_inscripcion_socio_tardia: props.edicion.precio_inscripcion_socio_tardia ?? 35,
+  precio_inscripcion_publico_tardia: props.edicion.precio_inscripcion_publico_tardia ?? 40,
+  precio_licencia_federativa_socio: props.edicion.precio_licencia_federativa_socio ?? 5,
+  precio_licencia_federativa_publico: props.edicion.precio_licencia_federativa_publico ?? 5,
   precio_autobus_normal: props.edicion.precio_autobus_normal ?? 12,
   precio_autobus_tardia: props.edicion.precio_autobus_tardia ?? 14,
   precio_seguro: props.edicion.precio_seguro ?? 9,
@@ -114,6 +110,31 @@ const eliminarAutobus = (index: number) => {
 const enviarFormulario = () => {
   form.put(`/admin/ediciones/${props.edicion.id}`);
 };
+
+// Computed: Tarifas finales (inscripción + licencia federativa para no federados)
+const tarifaFinalSocioNormalNoFederado = computed(
+  () =>
+    Number(form.precio_inscripcion_socio_normal || 0) +
+    Number(form.precio_licencia_federativa_socio || 0)
+);
+
+const tarifaFinalPublicoNormalNoFederado = computed(
+  () =>
+    Number(form.precio_inscripcion_publico_normal || 0) +
+    Number(form.precio_licencia_federativa_publico || 0)
+);
+
+const tarifaFinalSocioTardiaNoFederado = computed(
+  () =>
+    Number(form.precio_inscripcion_socio_tardia || 0) +
+    Number(form.precio_licencia_federativa_socio || 0)
+);
+
+const tarifaFinalPublicoTardiaNoFederado = computed(
+  () =>
+    Number(form.precio_inscripcion_publico_tardia || 0) +
+    Number(form.precio_licencia_federativa_publico || 0)
+);
 
 // Calcular distribución de asientos ocupados por autobús
 const calcularAsientosOcupados = computed(() => {
@@ -315,114 +336,220 @@ const calcularAsientosOcupados = computed(() => {
 
                 <!-- Columna 2: Tarifes i Serveis -->
                 <div class="space-y-6">
-                  <!-- Tarifes Normals -->
+                  <!-- Tarifes (Normals, Tardanes i Llicències) -->
                   <div class="rounded-lg bg-white p-6 shadow">
-                    <h3 class="mb-4 text-lg font-semibold text-slate-900">Tarifes Normals (€)</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">
-                          Públic Federat
-                        </label>
-                        <input
-                          v-model.number="form.tarifa_publico_federado_normal"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
-                        />
+                    <h3 class="mb-6 text-lg font-semibold text-slate-900">
+                      Tarifes d'Inscripció i Llicències (€)
+                    </h3>
+
+                    <!-- Tarifes Normals -->
+                    <div class="mb-6">
+                      <h4 class="text-destructive mb-3 text-sm font-semibold">Tarifes Normals</h4>
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <label class="mb-2 block text-sm font-medium text-slate-700">
+                            Soci UEC
+                          </label>
+                          <input
+                            v-model.number="form.precio_inscripcion_socio_normal"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
+                          />
+                        </div>
+                        <div>
+                          <label class="mb-2 block text-sm font-medium text-slate-700">
+                            Públic
+                          </label>
+                          <input
+                            v-model.number="form.precio_inscripcion_publico_normal"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">
-                          Públic No Federat
-                        </label>
-                        <input
-                          v-model.number="form.tarifa_publico_no_federado_normal"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
-                        />
+                    </div>
+
+                    <!-- Tarifes Tardanes -->
+                    <div class="mb-6">
+                      <h4 class="text-destructive mb-3 text-sm font-semibold">Tarifes Tardanes</h4>
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <label class="mb-2 block text-sm font-medium text-slate-700">
+                            Soci UEC
+                          </label>
+                          <input
+                            v-model.number="form.precio_inscripcion_socio_tardia"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
+                          />
+                        </div>
+                        <div>
+                          <label class="mb-2 block text-sm font-medium text-slate-700">
+                            Públic
+                          </label>
+                          <input
+                            v-model.number="form.precio_inscripcion_publico_tardia"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">
-                          Soci UEC Federat
-                        </label>
-                        <input
-                          v-model.number="form.tarifa_socio_federado_normal"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
-                        />
-                      </div>
-                      <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">
-                          Soci UEC No Federat
-                        </label>
-                        <input
-                          v-model.number="form.tarifa_socio_no_federado_normal"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
-                        />
+                    </div>
+
+                    <!-- Llicències Federatives -->
+                    <div>
+                      <h4 class="text-destructive mb-1 text-sm font-semibold">
+                        Llicències Federatives
+                      </h4>
+                      <p class="mb-3 text-xs text-slate-600">
+                        Cost de la llicència per a participants no federats
+                      </p>
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <label class="mb-2 block text-sm font-medium text-slate-700">
+                            Llicència Soci UEC
+                          </label>
+                          <input
+                            v-model.number="form.precio_licencia_federativa_socio"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
+                          />
+                        </div>
+                        <div>
+                          <label class="mb-2 block text-sm font-medium text-slate-700">
+                            Llicència Públic
+                          </label>
+                          <input
+                            v-model.number="form.precio_licencia_federativa_publico"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Tarifes Tardanes -->
-                  <div class="rounded-lg bg-white p-6 shadow">
-                    <h3 class="mb-4 text-lg font-semibold text-slate-900">Tarifes Tardanes (€)</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">
-                          Públic Federat
-                        </label>
-                        <input
-                          v-model.number="form.tarifa_publico_federado_tardia"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
-                        />
-                      </div>
-                      <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">
-                          Públic No Federat
-                        </label>
-                        <input
-                          v-model.number="form.tarifa_publico_no_federado_tardia"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
-                        />
-                      </div>
-                      <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">
-                          Soci UEC Federat
-                        </label>
-                        <input
-                          v-model.number="form.tarifa_socio_federado_tardia"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
-                        />
-                      </div>
-                      <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">
-                          Soci UEC No Federat
-                        </label>
-                        <input
-                          v-model.number="form.tarifa_socio_no_federado_tardia"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
-                        />
-                      </div>
+                  <!-- Previsualització Tarifes Finals -->
+                  <div class="rounded-lg bg-blue-50 p-6 shadow">
+                    <h3 class="mb-4 text-lg font-semibold text-blue-900">
+                      Previsualització Tarifes Finals
+                    </h3>
+
+                    <div class="overflow-hidden rounded-lg border border-slate-300 bg-white">
+                      <table class="w-full">
+                        <thead class="bg-slate-100">
+                          <tr>
+                            <th
+                              class="border-r border-slate-300 px-4 py-3 text-left text-sm font-semibold text-slate-700"
+                            >
+                              Tarifes
+                            </th>
+                            <th
+                              class="border-r border-slate-300 px-4 py-3 text-left text-sm font-semibold text-slate-700"
+                            >
+                              Federativa
+                            </th>
+                            <th
+                              class="border-r border-slate-300 px-4 py-3 text-center text-sm font-semibold text-slate-700"
+                            >
+                              Preu Normal
+                            </th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold text-slate-700">
+                              Preu Tardà
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                          <tr>
+                            <td class="border-r border-slate-300 px-4 py-3 text-sm text-slate-900">
+                              Públic
+                            </td>
+                            <td class="border-r border-slate-300 px-4 py-3 text-sm text-slate-700">
+                              Federats
+                            </td>
+                            <td
+                              class="border-r border-slate-300 bg-green-50 px-4 py-3 text-center text-sm font-semibold text-green-700"
+                            >
+                              {{ Number(form.precio_inscripcion_publico_normal || 0).toFixed(2) }}€
+                            </td>
+                            <td
+                              class="bg-green-50 px-4 py-3 text-center text-sm font-semibold text-green-700"
+                            >
+                              {{ Number(form.precio_inscripcion_publico_tardia || 0).toFixed(2) }}€
+                            </td>
+                          </tr>
+                          <tr>
+                            <td class="border-r border-slate-300 px-4 py-3 text-sm text-slate-900">
+                              Públic
+                            </td>
+                            <td class="border-r border-slate-300 px-4 py-3 text-sm text-slate-700">
+                              No Federats
+                            </td>
+                            <td
+                              class="border-r border-slate-300 px-4 py-3 text-center text-sm font-semibold text-slate-900"
+                            >
+                              {{ tarifaFinalPublicoNormalNoFederado.toFixed(2) }}€
+                            </td>
+                            <td class="px-4 py-3 text-center text-sm font-semibold text-slate-900">
+                              {{ tarifaFinalPublicoTardiaNoFederado.toFixed(2) }}€
+                            </td>
+                          </tr>
+                          <tr>
+                            <td class="border-r border-slate-300 px-4 py-3 text-sm text-slate-900">
+                              Socis UEC Tortosa
+                            </td>
+                            <td class="border-r border-slate-300 px-4 py-3 text-sm text-slate-700">
+                              Federats
+                            </td>
+                            <td
+                              class="border-r border-slate-300 bg-green-50 px-4 py-3 text-center text-sm font-semibold text-green-700"
+                            >
+                              {{ Number(form.precio_inscripcion_socio_normal || 0).toFixed(2) }}€
+                            </td>
+                            <td
+                              class="bg-green-50 px-4 py-3 text-center text-sm font-semibold text-green-700"
+                            >
+                              {{ Number(form.precio_inscripcion_socio_tardia || 0).toFixed(2) }}€
+                            </td>
+                          </tr>
+                          <tr>
+                            <td class="border-r border-slate-300 px-4 py-3 text-sm text-slate-900">
+                              Socis UEC Tortosa
+                            </td>
+                            <td class="border-r border-slate-300 px-4 py-3 text-sm text-slate-700">
+                              No Federats
+                            </td>
+                            <td
+                              class="border-r border-slate-300 px-4 py-3 text-center text-sm font-semibold text-slate-900"
+                            >
+                              {{ tarifaFinalSocioNormalNoFederado.toFixed(2) }}€
+                            </td>
+                            <td class="px-4 py-3 text-center text-sm font-semibold text-slate-900">
+                              {{ tarifaFinalSocioTardiaNoFederado.toFixed(2) }}€
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
+
+                    <p class="mt-3 text-xs text-blue-700">
+                      * Les tarifes per a federats només inclouen la inscripció. Les tarifes per a
+                      no federats inclouen inscripció + llicència federativa ({{
+                        Number(form.precio_licencia_federativa_publico || 0).toFixed(2)
+                      }}€).
+                    </p>
                   </div>
 
                   <!-- Serveis Addicionals -->
