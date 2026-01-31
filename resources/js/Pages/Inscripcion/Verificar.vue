@@ -41,6 +41,37 @@ defineProps<{
   participante: Participante;
   edicion: Edicion;
 }>();
+
+const getEstadoPagoClass = (estado: string) => {
+  switch (estado) {
+    case 'pagado':
+      return 'bg-green-100 text-green-800';
+    case 'pendiente':
+      return 'bg-amber-100 text-amber-800';
+    case 'cancelado':
+      return 'bg-red-100 text-red-800';
+    case 'invitado':
+      return 'bg-blue-100 text-blue-800';
+    case 'devuelto':
+      return 'bg-purple-100 text-purple-800';
+    case 'devolucion_parcial':
+      return 'bg-orange-100 text-orange-800';
+    default:
+      return 'bg-slate-100 text-slate-800';
+  }
+};
+
+const getEstadoPagoTexto = (estado: string) => {
+  const textos: Record<string, string> = {
+    pagado: 'PAGAT',
+    pendiente: 'PENDENT',
+    cancelado: 'CANCEL·LAT',
+    devuelto: 'DEVOLT',
+    devolucion_parcial: 'DEVOLUCIÓ PARCIAL',
+    invitado: 'INVITAT',
+  };
+  return textos[estado] || estado.toUpperCase();
+};
 </script>
 
 <template>
@@ -67,15 +98,11 @@ defineProps<{
           <!-- Estado del pago -->
           <div class="flex justify-center">
             <span
-              :class="
-                inscripcion.estado_pago === 'pagado'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-amber-100 text-amber-800'
-              "
+              :class="getEstadoPagoClass(inscripcion.estado_pago)"
               class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
             >
               <CreditCard class="h-4 w-4" />
-              {{ inscripcion.estado_pago === 'pagado' ? 'PAGAT' : 'PENDENT' }}
+              {{ getEstadoPagoTexto(inscripcion.estado_pago) }}
             </span>
           </div>
 

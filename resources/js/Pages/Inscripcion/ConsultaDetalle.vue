@@ -43,6 +43,8 @@ interface Inscripcion {
   numero_pedido: string | null;
   numero_autorizacion: string | null;
   fecha_pago: string | null;
+  fecha_devolucion: string | null;
+  importe_devolucion: number | null;
   es_socio_uec: boolean;
   esta_federado: boolean;
   numero_licencia: string | null;
@@ -137,6 +139,30 @@ const getEstadoPagoInfo = (estado: string) => {
         bgColor: 'bg-red-100',
         textColor: 'text-red-800',
         iconColor: 'text-red-600',
+      };
+    case 'invitado':
+      return {
+        icon: CheckCircle,
+        text: 'Inscripció Confirmada (Invitat)',
+        bgColor: 'bg-blue-100',
+        textColor: 'text-blue-800',
+        iconColor: 'text-blue-600',
+      };
+    case 'devuelto':
+      return {
+        icon: XCircle,
+        text: 'Import Devolt',
+        bgColor: 'bg-purple-100',
+        textColor: 'text-purple-800',
+        iconColor: 'text-purple-600',
+      };
+    case 'devolucion_parcial':
+      return {
+        icon: Clock,
+        text: 'Devolució Parcial',
+        bgColor: 'bg-orange-100',
+        textColor: 'text-orange-800',
+        iconColor: 'text-orange-600',
       };
     default:
       return {
@@ -246,7 +272,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
               }}
             </span>
             <button
-              v-if="inscripcion.necesita_autobus && inscripcion.estado_pago === 'pagado'"
+              v-if="inscripcion.necesita_autobus && (inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado')"
               type="button"
               class="text-xs text-blue-600 hover:text-blue-800 hover:underline"
               @click="mostrarFormularioCambiarParada = true"
@@ -271,7 +297,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
 
       <!-- Opción de contratar autobús si está pagado y no tiene bus -->
       <div
-        v-if="inscripcion.estado_pago === 'pagado' && !inscripcion.necesita_autobus"
+        v-if="(inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado') && !inscripcion.necesita_autobus"
         class="mb-6 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 p-6"
       >
         <div class="flex items-start gap-4">
@@ -366,6 +392,14 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
             <span class="block text-sm text-slate-500">Nº Autorització</span>
             <span class="font-medium">{{ inscripcion.numero_autorizacion }}</span>
           </div>
+          <div v-if="inscripcion.fecha_devolucion">
+            <span class="block text-sm text-slate-500">Data de devolució</span>
+            <span class="font-medium">{{ formatDateTime(inscripcion.fecha_devolucion) }}</span>
+          </div>
+          <div v-if="inscripcion.importe_devolucion">
+            <span class="block text-sm text-slate-500">Import devolt</span>
+            <span class="text-lg font-bold text-purple-600">{{ inscripcion.importe_devolucion }}€</span>
+          </div>
         </div>
       </div>
 
@@ -451,7 +485,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
         <Link href="/">
           <Button variant="outline">Tornar a l'inici</Button>
         </Link>
-        <Button v-if="inscripcion.estado_pago === 'pagado'" @click="reenviarCorreo" class="gap-2">
+        <Button v-if="inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado'" @click="reenviarCorreo" class="gap-2">
           <Mail class="h-4 w-4" />
           Reenviar correu de confirmació
         </Button>
