@@ -55,18 +55,21 @@ const iniciarInscripcion = async () => {
   buscando.value = true;
 
   try {
-    const response = await axios.post('/inscripcion/buscar-participante', {
+    const response = await axios.post('/inscripcio/buscar-participante', {
       dni: dni.value,
     });
 
     // Navegar a inscripción con los datos del participante si existe
-    router.get('/inscripcion', {
-      dni: dni.value,
-      participante: response.data.participante ? JSON.stringify(response.data.participante) : null,
-    });
+    const params: { dni: string; participante?: string } = { dni: dni.value };
+
+    if (response.data.participante) {
+      params.participante = JSON.stringify(response.data.participante);
+    }
+
+    router.get('/inscripcio', params);
   } catch (e) {
     // Si no encuentra participante, navegar igualmente con el DNI
-    router.get('/inscripcion', { dni: dni.value });
+    router.get('/inscripcio', { dni: dni.value });
   } finally {
     buscando.value = false;
   }
@@ -223,7 +226,7 @@ onUnmounted(() => {
                 >
               </CardHeader>
               <CardContent class="">
-                <Link href="/inscripcion/consulta">
+                <Link href="/inscripcions/consulta">
                   <Button class="w-full"> Consultar Inscripció </Button>
                 </Link>
               </CardContent>
@@ -234,7 +237,7 @@ onUnmounted(() => {
                 <CardDescription>Comprova el llistat general d'inscrits</CardDescription>
               </CardHeader>
               <CardContent class="">
-                <Link href="/inscripcion/listado">
+                <Link href="/inscripcions/inscrits">
                   <Button class="w-full"> Veure llistat </Button>
                 </Link>
               </CardContent>

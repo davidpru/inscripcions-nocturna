@@ -38,7 +38,7 @@ const imprimir = () => {
 };
 
 const descargarPdf = () => {
-  window.location.href = `/inscripcion/${props.inscripcion.id}/pdf`;
+  window.location.href = `/inscripcio/${props.inscripcion.id}/pdf`;
 };
 </script>
 
@@ -186,13 +186,13 @@ const descargarPdf = () => {
         </div>
 
         <!-- Botones -->
-        <div class="flex justify-center gap-4 pt-4">
-          <Button variant="outline" as="a" href="/"> Volver al Inicio </Button>
+        <div class="flex flex-wrap justify-center gap-4 pt-4">
+          <Button variant="outline" as="a" href="/"> Tornar a l'Inici </Button>
           <Button v-if="inscripcion.estado_pago === 'pagado'" @click="descargarPdf" class="gap-2">
             <Download class="h-4 w-4" />
             Descarregar PDF
           </Button>
-          <Button @click="imprimir"> Imprimir Confirmación </Button>
+          <Button @click="imprimir"> Imprimir Confirmació </Button>
         </div>
       </div>
     </div>

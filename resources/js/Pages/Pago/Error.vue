@@ -28,15 +28,18 @@ defineProps<{
             />
           </svg>
         </div>
-        <h1 class="mb-2 text-2xl font-bold text-slate-900">Error en el pago</h1>
+        <h1 class="mb-2 text-2xl font-bold text-slate-900">Error en el pagament</h1>
         <p class="text-slate-600">
-          {{ errorMessage || 'No se ha podido procesar el pago. Por favor, inténtalo de nuevo.' }}
+          {{
+            errorMessage || "No s'ha pogut processar el pagament. Si us plau, intenta-ho de nou."
+          }}
         </p>
       </div>
 
       <div class="mb-6 rounded-lg bg-red-50 p-4">
         <p class="text-sm text-red-800">
-          Si el problema persiste, por favor contacta con nosotros para recibir asistencia.
+          Si el problema persisteix, por favor contacta amb nosaltres per rebre assistència:
+          <a href="mailto:activitats@uectortosa.cat">activitats@uectortosa.cat</a>
         </p>
       </div>
 
@@ -46,20 +49,20 @@ defineProps<{
           :href="`/pago/${inscripcion.id}`"
           class="block w-full rounded-md bg-red-700 px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-red-800"
         >
-          Intentar de nuevo
+          Intentar de nou
         </Link>
         <Link
           v-else
-          href="/inscripcion"
+          href="/inscripcio"
           class="block w-full rounded-md bg-red-700 px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-red-800"
         >
-          Nueva inscripción
+          Nova inscripció
         </Link>
         <Link
           href="/"
           class="block w-full rounded-md border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
         >
-          Volver al inicio
+          Tornar a l'Inici
         </Link>
       </div>
     </div>

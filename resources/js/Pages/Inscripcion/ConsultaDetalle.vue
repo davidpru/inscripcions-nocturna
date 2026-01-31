@@ -72,11 +72,11 @@ const cambiarParadaForm = useForm({
 });
 
 const contratarAutobus = () => {
-  autobusForm.post(`/inscripcion/${props.inscripcion.id}/contratar-autobus`);
+  autobusForm.post(`/inscripcio/${props.inscripcion.id}/contratar-autobus`);
 };
 
 const cambiarParada = () => {
-  cambiarParadaForm.post(`/inscripcion/${props.inscripcion.id}/cambiar-parada`, {
+  cambiarParadaForm.post(`/inscripcio/${props.inscripcion.id}/cambiar-parada`, {
     preserveScroll: true,
     onSuccess: () => {
       mostrarFormularioCambiarParada.value = false;
@@ -446,7 +446,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
       </div>
 
       <!-- Botones de navegación -->
-      <div class="flex justify-center gap-4">
+      <div class="flex flex-wrap justify-center gap-4">
         <Link href="/">
           <Button variant="outline">Tornar a l'inici</Button>
         </Link>

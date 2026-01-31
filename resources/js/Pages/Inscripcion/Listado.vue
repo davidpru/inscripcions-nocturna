@@ -71,7 +71,7 @@ const inscritosFiltrados = computed(() => {
         <Link href="/">
           <Button variant="ghost" class="mb-4"> ← Tornar </Button>
         </Link>
-        <h1 class="mb-2 text-2xl font-bold text-slate-900 md:text-3xl">
+        <h1 class="font-expanded mb-2 text-2xl font-bold text-slate-900 md:text-3xl">
           Llistat d'inscrits - Nocturna Fredes Paüls {{ edicion.anio }}
         </h1>
         <p class="text-slate-600">
@@ -108,7 +108,11 @@ const inscritosFiltrados = computed(() => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="(inscrito, index) in inscritosFiltrados" :key="inscrito.id">
+            <TableRow
+              class="text-uppercase"
+              v-for="(inscrito, index) in inscritosFiltrados"
+              :key="inscrito.id"
+            >
               <TableCell class="font-medium text-slate-500">{{ index + 1 }}</TableCell>
               <TableCell>{{ inscrito.participante.nombre }}</TableCell>
               <TableCell>{{ inscrito.participante.apellidos }}</TableCell>

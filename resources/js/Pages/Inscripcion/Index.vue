@@ -197,7 +197,7 @@ const buscarParticipante = async () => {
   yaInscrito.value = false;
 
   try {
-    const response = await axios.post('/inscripcion/buscar-participante', {
+    const response = await axios.post('/inscripcio/buscar-participante', {
       dni: form.dni,
       edicion_id: form.edicion_id,
     });
@@ -250,7 +250,7 @@ const buscarParticipante = async () => {
 
 const calcularPrecio = async () => {
   try {
-    const response = await axios.post('/inscripcion/calcular-precio', {
+    const response = await axios.post('/inscripcio/calcular-precio', {
       edicion_id: form.edicion_id,
       es_socio_uec: form.es_socio_uec,
       esta_federado: form.esta_federado,
@@ -278,7 +278,7 @@ const validarCupon = async () => {
   errorCupon.value = '';
 
   try {
-    const response = await axios.post('/inscripcion/validar-cupon', {
+    const response = await axios.post('/inscripcio/validar-cupon', {
       codigo: codigoCupon.value.toUpperCase(),
       edicion_id: form.edicion_id,
       es_socio_uec: form.es_socio_uec,
@@ -338,7 +338,7 @@ watch(
 );
 
 const enviarInscripcion = () => {
-  form.post('/inscripcion', {
+  form.post('/inscripcio', {
     preserveScroll: true, // Mantener scroll para que vea el error si está cerca, o dejar false si queremos que suba.
     // Dejamos preserveScroll en false (por defecto) o true?
     // Si hay errores, Inertia por defecto hace scroll a top si no se indica lo contrario? No, Inertia mantiene scroll en validation errors (422).
@@ -363,7 +363,7 @@ const enviarInscripcion = () => {
     <div class="mx-auto max-w-4xl">
       <!-- Header -->
       <div class="my-8 text-center">
-        <h2 class="mb-2 text-2xl font-bold text-balance text-slate-900">
+        <h2 class="font-expanded mb-2 text-2xl font-bold text-balance text-slate-900">
           Nocturna <span>Fredes-Paüls {{ edicion.anio }}</span>
         </h2>
         <p class="text-md text-slate-900">Formulari d'Inscripció</p>
@@ -514,7 +514,7 @@ const enviarInscripcion = () => {
                     </h3>
                     <div class="mt-2 text-sm text-green-700">
                       <p class="mb-4">El DNI indicat ja té una inscripció activa.</p>
-                      <Link href="/inscripcion/consulta">
+                      <Link href="/inscripcions/consulta">
                         <Button variant="default" size="lg"> Comprovar la meva inscripció </Button>
                       </Link>
                     </div>

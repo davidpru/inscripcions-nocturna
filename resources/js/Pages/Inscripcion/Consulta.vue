@@ -28,7 +28,7 @@ const consultaForm = useForm<{
 });
 
 const consultarInscripcion = () => {
-  consultaForm.post('/inscripcion/buscar-inscripcion');
+  consultaForm.post('/inscripcio/buscar-inscripcion');
 };
 </script>
 

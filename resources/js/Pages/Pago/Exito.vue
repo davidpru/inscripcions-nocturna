@@ -93,7 +93,7 @@ defineProps<{
         <Link href="/">
           <Button class="w-full sm:w-auto">Volver al inicio</Button>
         </Link>
-        <Link href="/inscripcion/consulta">
+        <Link href="/inscripcions/consulta">
           <Button variant="outline" class="w-full sm:w-auto">Consultar mi inscripción</Button>
         </Link>
       </div>

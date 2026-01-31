@@ -98,7 +98,7 @@ defineProps<{
           <!-- Botones de acción -->
           <div class="flex flex-col gap-3 pt-4 sm:flex-row">
             <Button as-child variant="outline" class="flex-1">
-              <Link href="/inscripcion/consulta">
+              <Link href="/inscripcions/consulta">
                 <ArrowLeft class="mr-2 h-4 w-4" />
                 Veure la meva inscripció
               </Link>

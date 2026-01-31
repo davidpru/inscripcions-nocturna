@@ -13,8 +13,8 @@ import { computed } from 'vue';
 const navLinks = [
   { href: '/', label: 'Inici' },
   // { href: '/inscripcion', label: 'Inscripció' },
-  { href: '/inscripcion/consulta', label: 'Consulta Inscripció' },
-  { href: '/inscripcion/listado', label: 'Llistat Inscrits' },
+  { href: '/inscripcions/consulta', label: 'Consulta Inscripció' },
+  { href: '/inscripcions/inscrits', label: 'Llistat Inscrits' },
 ];
 
 const currentPath = computed(() => usePage().url);
