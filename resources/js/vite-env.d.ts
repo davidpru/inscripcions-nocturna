@@ -6,3 +6,12 @@ declare module '*.svg?component' {
   const component: DefineComponent;
   export default component;
 }
+
+// Google Analytics 4 gtag types
+interface Window {
+  gtag?: (
+    command: 'event',
+    eventName: string,
+    eventParams?: Record<string, any>
+  ) => void;
+}

@@ -390,6 +390,18 @@ class RedsysController extends Controller
 
                 return Inertia::render('Pago/ExitoAutobus', [
                     'inscripcion' => $inscripcion->load(['participante', 'edicion']),
+                    'transaction' => [
+                        'transaction_id' => $params->order,
+                        'value' => $precioAutobus,
+                        'currency' => 'EUR',
+                        'items' => [[
+                            'item_id' => 'autobus_' . $inscripcion->edicion_id,
+                            'item_name' => 'Autobús Cursa Nocturna ' . $inscripcion->edicion->anio,
+                            'item_category' => 'Transporte',
+                            'price' => $precioAutobus,
+                            'quantity' => 1,
+                        ]],
+                    ],
                 ]);
             }
 
@@ -428,6 +440,18 @@ class RedsysController extends Controller
 
             return Inertia::render('Pago/Exito', [
                 'inscripcion' => $inscripcion->load(['participante', 'edicion']),
+                'transaction' => [
+                    'transaction_id' => $params->order,
+                    'value' => $inscripcion->precio_total,
+                    'currency' => 'EUR',
+                    'items' => [[
+                        'item_id' => 'inscripcion_' . $inscripcion->edicion_id,
+                        'item_name' => 'Inscripció Cursa Nocturna ' . $inscripcion->edicion->anio,
+                        'item_category' => 'Inscripcions',
+                        'price' => $inscripcion->precio_total,
+                        'quantity' => 1,
+                    ]],
+                ],
             ]);
         } catch (\Exception $e) {
             Log::error('Redsys success error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);

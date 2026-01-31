@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getParadaLabel } from '@/constants/paradas';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Bus, CheckCircle, MapPin } from 'lucide-vue-next';
+import { onMounted } from 'vue';
 
 interface Edicion {
   id: number;
@@ -27,9 +28,35 @@ interface Inscripcion {
   precio_total: number;
 }
 
-defineProps<{
+interface Transaction {
+  transaction_id: string;
+  value: number;
+  currency: string;
+  items: Array<{
+    item_id: string;
+    item_name: string;
+    item_category: string;
+    price: number;
+    quantity: number;
+  }>;
+}
+
+const props = defineProps<{
   inscripcion: Inscripcion;
+  transaction?: Transaction;
 }>();
+
+// Enviar evento de conversión a Google Analytics 4
+onMounted(() => {
+  if (props.transaction && typeof window.gtag !== 'undefined') {
+    window.gtag('event', 'purchase', {
+      transaction_id: props.transaction.transaction_id,
+      value: props.transaction.value,
+      currency: props.transaction.currency,
+      items: props.transaction.items,
+    });
+  }
+});
 
 // Usamos getParadaLabel importado de @/constants/paradas
 </script>

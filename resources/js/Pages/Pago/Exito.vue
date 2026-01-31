@@ -3,6 +3,7 @@ import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/vue3';
 import { CheckCircle, Download } from 'lucide-vue-next';
+import { onMounted } from 'vue';
 
 interface Participante {
   nombre: string;
@@ -29,13 +30,39 @@ interface Inscripcion {
   edicion: Edicion;
 }
 
+interface Transaction {
+  transaction_id: string;
+  value: number;
+  currency: string;
+  items: Array<{
+    item_id: string;
+    item_name: string;
+    item_category: string;
+    price: number;
+    quantity: number;
+  }>;
+}
+
 const props = defineProps<{
   inscripcion: Inscripcion;
+  transaction?: Transaction;
 }>();
 
 const descargarPdf = () => {
   window.location.href = `/inscripcio/${props.inscripcion.id}/pdf`;
 };
+
+// Enviar evento de conversión a Google Analytics 4
+onMounted(() => {
+  if (props.transaction && typeof window.gtag !== 'undefined') {
+    window.gtag('event', 'purchase', {
+      transaction_id: props.transaction.transaction_id,
+      value: props.transaction.value,
+      currency: props.transaction.currency,
+      items: props.transaction.items,
+    });
+  }
+});
 </script>
 
 <template>
