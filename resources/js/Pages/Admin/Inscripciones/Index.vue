@@ -113,6 +113,11 @@ const edicionSeleccionada = ref(props.filtros.edicion_id || '');
 const saving = ref(false);
 const editingData = reactive<Record<number, any>>({});
 
+// Computed para contar solo inscripciones pagadas
+const totalInscripcionesPagadas = computed(() => {
+  return props.inscripciones.data.filter((i) => i.estado_pago === 'pagado').length;
+});
+
 // Modal para nueva inscripción
 const modalNuevaInscripcion = ref(false);
 const buscandoParticipante = ref(false);
@@ -531,7 +536,9 @@ const confirmarToggleDorsal = () => {
         <!-- Header -->
         <div class="mb-8">
           <h1 class="text-3xl font-bold text-slate-900">Gestión de Inscripciones</h1>
-          <p class="mt-1 text-slate-600">Total: {{ inscripciones.total }} inscripciones</p>
+          <p class="mt-1 text-slate-600">
+            Total: {{ totalInscripcionesPagadas }} inscripciones pagadas
+          </p>
         </div>
 
         <!-- Filtros -->
@@ -580,7 +587,7 @@ const confirmarToggleDorsal = () => {
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Participante
+                    Participant
                   </th>
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
@@ -590,7 +597,7 @@ const confirmarToggleDorsal = () => {
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Edición
+                    Edició
                   </th>
                   <th
                     class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
@@ -600,27 +607,27 @@ const confirmarToggleDorsal = () => {
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Precio
+                    Preu
                   </th>
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Estado Pago
+                    Pagament
                   </th>
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Fecha
+                    Data
                   </th>
                   <th
                     class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Dorsal
+                    Lliurat
                   </th>
                   <th
                     class="px-3 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Acciones
+                    Accions
                   </th>
                 </tr>
               </thead>

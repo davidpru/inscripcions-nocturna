@@ -20,6 +20,7 @@ La teva inscripció per a la **Nocturna Fredes-Paüls {{ $inscripcion->edicion->
 @if($inscripcion->esta_federado)
 - **Federat:** Sí @if($inscripcion->numero_licencia)(Llicència: {{ $inscripcion->numero_licencia }})@endif
 @endif
+
 - **Samarreta Caro:** Talla {{ strtoupper($inscripcion->talla_camiseta_caro) }}
 - **Samarreta Paüls:** Talla {{ strtoupper($inscripcion->talla_camiseta_pauls) }}
 @if($inscripcion->necesita_autobus)
@@ -38,7 +39,7 @@ La teva inscripció per a la **Nocturna Fredes-Paüls {{ $inscripcion->edicion->
 - **Estat del pagament:** {{ $inscripcion->estado_pago === 'pagado' ? 'Confirmat ✅' : ($inscripcion->estado_pago === 'invitado' ? 'Convidat ✅' : 'Pendent') }}
 
 @if($inscripcion->estado_pago === 'pagado' || $inscripcion->estado_pago === 'invitado')
-Hem rebut el teu pagament correctament. Et veurem a la sortida, a les 16h el 30 de maig a Fredes!
+Enhorabona estàs inscrit! Ens veiem a la sortida.
 
 <x-mail::button :url="config('app.url') . '/inscripcion/' . $inscripcion->id . '/pdf'">
 Descarregar PDF amb codi QR
