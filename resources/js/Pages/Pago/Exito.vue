@@ -131,10 +131,10 @@ onMounted(() => {
 
       <!-- Información adicional -->
       <div class="mb-6 rounded-lg bg-blue-50 p-4">
-        <p class="text-sm text-blue-800">
-          <strong>Importante:</strong> Recibirás un email de confirmación en
-          <strong>{{ inscripcion.participante.email }}</strong> con todos los detalles de tu
-          inscripción y la información necesaria para el día del evento.
+        <p class="text-center text-sm text-balance text-blue-800">
+          <strong>Important:</strong> Rebràs un email de confirmació al teu correu
+          <strong>{{ inscripcion.participante.email }}</strong> amb els detalls de la teua
+          inscripció.
         </p>
       </div>
 

@@ -177,11 +177,11 @@ const descargarPdf = () => {
 
         <!-- Información Adicional -->
         <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
-          <h3 class="mb-2 font-semibold text-blue-900">Próximos Pasos</h3>
+          <h3 class="mb-2 font-semibold text-blue-900">Pròxims Passos</h3>
           <ul class="space-y-1 text-sm text-blue-800">
-            <li>• Recibirás un email de confirmación en {{ inscripcion.participante.email }}</li>
-            <li>• En breve te enviaremos los detalles para realizar el pago</li>
-            <li>• Guarda tu número de inscripción: #{{ inscripcion.id }}</li>
+            <li>• Rebràs un correu electrònic de confirmació a {{ inscripcion.participante.email }}</li>
+            <li>• Aviat t'enviarem els detalls per realitzar el pagament</li>
+            <li>• Guarda el teu número d'inscripció: #{{ inscripcion.id }}</li>
           </ul>
         </div>
 
