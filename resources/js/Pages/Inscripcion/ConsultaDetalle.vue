@@ -354,7 +354,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
                 estadoInfo.textColor,
               ]"
             >
-              {{ inscripcion.estado_pago }}
+              {{ estadoInfo.text }}
             </span>
           </div>
           <div v-if="inscripcion.fecha_pago">

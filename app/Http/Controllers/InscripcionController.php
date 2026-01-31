@@ -129,7 +129,7 @@ class InscripcionController extends Controller
             : ($edicionActiva->precio_autobus_normal ?? 12);
 
         // Mostrar siempre la vista de detalle de inscripción
-        return Inertia::render('Inscripcion/Detalle', [
+        return Inertia::render('Inscripcion/ConsultaDetalle', [
             'inscripcion' => $inscripcion->load(['participante', 'edicion']),
             'precioAutobus' => $precioAutobus,
         ]);

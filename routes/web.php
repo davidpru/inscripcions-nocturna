@@ -37,7 +37,7 @@ Route::prefix('inscripcion')->group(function () {
     Route::get('/listado', [InscripcionController::class, 'listado'])->name('inscripcion.listado');
     Route::get('/consulta', function () {
         $edicion = Edicion::where('activa', true)->first();
-        return Inertia::render('Inscripcion/DetalleConsulta', [
+        return Inertia::render('Inscripcion/Consulta', [
             'edicion' => $edicion
         ]);
     })->name('inscripcion.consulta');
