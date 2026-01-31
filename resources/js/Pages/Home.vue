@@ -103,7 +103,7 @@ onUnmounted(() => {
 <template>
   <Header />
 
-  <section class="min-h-screen px-4 py-12">
+  <section class="min-h-screen px-4 py-12 md:px-16">
     <div class="mx-auto max-w-6xl">
       <!-- Banner de modo prueba -->
       <div
@@ -135,7 +135,7 @@ onUnmounted(() => {
         <!-- Header -->
         <div class="mb-8">
           <h1
-            class="text-slate-90 font-expanded mb-2 text-3xl font-bold text-balance md:text-4xl lg:text-5xl"
+            class="text-slate-90 font-expanded text-destructive mb-2 text-3xl font-bold text-balance md:text-4xl lg:text-5xl"
           >
             Nocturna <br />
             Fredes-Paüls {{ edicion?.anio }}
