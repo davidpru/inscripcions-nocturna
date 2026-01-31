@@ -49,7 +49,8 @@ const getEstadoBadgeClass = (estado: string) => {
 
         <!-- Lista de Ediciones -->
         <div class="overflow-hidden rounded-lg bg-white shadow">
-          <table class="min-w-full divide-y divide-slate-200">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-slate-50">
               <tr>
                 <th
@@ -125,6 +126,7 @@ const getEstadoBadgeClass = (estado: string) => {
               </tr>
             </tbody>
           </table>
+          </div>
 
           <div v-if="ediciones.length === 0" class="py-12 text-center">
             <p class="text-slate-500">No hay ediciones creadas</p>
