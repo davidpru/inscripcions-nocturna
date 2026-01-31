@@ -134,8 +134,11 @@ onUnmounted(() => {
       <div v-else>
         <!-- Header -->
         <div class="mb-8">
-          <h1 class="text-slate-90 mb-2 text-3xl font-bold text-balance md:text-4xl">
-            Nocturna Fredes-Paüls {{ edicion?.anio }}
+          <h1
+            class="text-slate-90 font-expanded mb-2 text-3xl font-bold text-balance md:text-4xl lg:text-5xl"
+          >
+            Nocturna <br />
+            Fredes-Paüls {{ edicion?.anio }}
           </h1>
           <p v-if="inscripcionesAbiertas" class="text-foreground text-lg">Inscripcions online</p>
           <p v-else class="text-foreground text-lg">Pròximament</p>
