@@ -97,7 +97,8 @@ const inscritosFiltrados = computed(() => {
 
       <!-- Tabla de inscritos -->
       <div class="rounded-lg bg-white shadow">
-        <Table>
+        <div class="overflow-x-auto">
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead class="w-12">#</TableHead>
@@ -127,6 +128,7 @@ const inscritosFiltrados = computed(() => {
             </TableRow>
           </TableBody>
         </Table>
+        </div>
       </div>
       <Footer />
     </div>
