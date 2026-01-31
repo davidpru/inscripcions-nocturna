@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Link, usePage } from '@inertiajs/vue3';
-import { Calendar, ClipboardList, Home, Menu, Ticket, X } from 'lucide-vue-next';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { Calendar, ClipboardList, Home, LogOut, Menu, Ticket, UserCog, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const mobileMenuOpen = ref(false);
@@ -11,9 +11,10 @@ const currentPath = computed(() => page.url);
 
 const navItems = [
   { name: 'Dashboard', href: '/admin', icon: Home, exact: true },
-  { name: 'Inscripciones', href: '/admin/inscripciones', icon: ClipboardList },
-  { name: 'Ediciones', href: '/admin/ediciones', icon: Calendar },
-  { name: 'Cupones', href: '/admin/cupones', icon: Ticket },
+  { name: 'Inscripcions', href: '/admin/inscripciones', icon: ClipboardList },
+  { name: 'Edicions', href: '/admin/ediciones', icon: Calendar },
+  { name: 'Cupons', href: '/admin/cupones', icon: Ticket },
+  { name: 'Usuaris', href: '/admin/usuarios', icon: UserCog },
 ];
 
 const isActiveItem = (item: (typeof navItems)[0]) => {
@@ -21,6 +22,10 @@ const isActiveItem = (item: (typeof navItems)[0]) => {
     return currentPath.value === item.href;
   }
   return currentPath.value.startsWith(item.href);
+};
+
+const logout = () => {
+  router.post('/admin/logout');
 };
 </script>
 
@@ -56,13 +61,19 @@ const isActiveItem = (item: (typeof navItems)[0]) => {
         </div>
 
         <!-- Botones derecha -->
-        <div class="hidden items-center gap-4 md:flex">
+        <div class="hidden items-center gap-2 md:flex">
           <Link
             href="/"
             class="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
           >
             ← Tornar al web
           </Link>
+          <form @submit.prevent="logout" class="inline">
+            <Button variant="ghost" size="sm" type="submit" class="gap-2">
+              <LogOut class="h-4 w-4" />
+              Sortir
+            </Button>
+          </form>
         </div>
 
         <!-- Botón menú móvil -->

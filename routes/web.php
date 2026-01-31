@@ -3,6 +3,7 @@
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\InscripcionPdfController;
 use App\Http\Controllers\RedsysController;
+use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EdicionController;
 use App\Http\Controllers\Admin\InscripcionController as AdminInscripcionController;
@@ -79,7 +80,14 @@ Route::get('/preview-email', function () {
     return new App\Mail\InscripcionConfirmada($inscripcion);
 });
 
-// Rutas de administración
+// Rutas de autenticación admin
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+
+// Rutas de administración (protegidas)
 Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -108,4 +116,10 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     Route::put('cupones/{cupon}', [CuponController::class, 'update'])->name('cupones.update');
     Route::delete('cupones/{cupon}', [CuponController::class, 'destroy'])->name('cupones.destroy');
     Route::post('cupones/{cupon}/reset-usos', [CuponController::class, 'resetUsos'])->name('cupones.reset-usos');
+
+    // Gestión de usuarios administradores
+    Route::get('usuarios', [AuthController::class, 'index'])->name('usuarios.index');
+    Route::post('usuarios', [AuthController::class, 'store'])->name('usuarios.store');
+    Route::put('usuarios/{usuario}', [AuthController::class, 'update'])->name('usuarios.update');
+    Route::delete('usuarios/{usuario}', [AuthController::class, 'destroy'])->name('usuarios.destroy');
 });

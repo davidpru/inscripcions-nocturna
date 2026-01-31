@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
@@ -36,8 +37,26 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $administrador = Auth::guard('administrador')->user();
+
         return [
             ...parent::share($request),
+            'auth' => [
+                'administrador' => $administrador ? [
+                    'id' => $administrador->id,
+                    'nombre' => $administrador->nombre,
+                    'email' => $administrador->email,
+                    'tipo' => $administrador->tipo,
+                    'tipo_nombre' => $administrador->tipo_nombre,
+                    'activo' => $administrador->activo,
+                    'is_super_admin' => $administrador->isSuperAdmin(),
+                    'tiene_permiso_completo' => $administrador->tienePermisoCompleto(),
+                ] : null,
+            ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
             'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),

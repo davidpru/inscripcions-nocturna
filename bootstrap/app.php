@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'admin.auth' => \App\Http\Middleware\AdminBasicAuth::class,
+            'admin.auth' => \App\Http\Middleware\AdminAuth::class,
         ]);
 
         // Excluir la ruta de notificación de Redsys del CSRF
