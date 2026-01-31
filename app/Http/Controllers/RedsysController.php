@@ -589,13 +589,13 @@ class RedsysController extends Controller
             $notificationParams = $redsysResponse->checkResponse();
             
             Log::info('Respuesta decodificada de Redsys', [
-                'response_code' => $notificationParams->response,
+                'response_code' => $notificationParams->responseCode,
                 'order' => $notificationParams->order,
                 'auth_code' => $notificationParams->responseAuthorisationCode,
             ]);
 
             // Códigos 0000-0099 = éxito
-            if (\Creagia\Redsys\RedsysResponse::isAuthorisedCode((int) $notificationParams->response)) {
+            if (\Creagia\Redsys\RedsysResponse::isAuthorisedCode((int) $notificationParams->responseCode)) {
                 // Calcular el nuevo importe devuelto total (acumulando devoluciones)
                 $importeDevueltoTotal = ($inscripcion->importe_devolucion ?? 0) + $importeDevolucion;
                 
@@ -612,7 +612,7 @@ class RedsysController extends Controller
 
                 Log::info('Devolución exitosa', [
                     'inscripcion_id' => $inscripcion->id,
-                    'response_code' => $notificationParams->response,
+                    'response_code' => $notificationParams->responseCode,
                     'auth_code' => $notificationParams->responseAuthorisationCode,
                     'importe_devolucion_actual' => $importeDevolucion,
                     'importe_devuelto_total' => $importeDevueltoTotal,
@@ -621,11 +621,11 @@ class RedsysController extends Controller
 
                 return back()->with('success', "Devolución procesada correctamente ({$importeDevolucion}€). Total devuelto: {$importeDevueltoTotal}€");
             } else {
-                $errorDescription = $this->getErrorDescription($notificationParams->response);
-                $errorMsg = "Devolución rechazada. Código: {$notificationParams->response} - {$errorDescription}";
+                $errorDescription = $this->getErrorDescription($notificationParams->responseCode);
+                $errorMsg = "Devolución rechazada. Código: {$notificationParams->responseCode} - {$errorDescription}";
                 
                 Log::error('Devolución rechazada', [
-                    'response_code' => $notificationParams->response,
+                    'response_code' => $notificationParams->responseCode,
                     'error_description' => $errorDescription,
                     'inscripcion_id' => $inscripcion->id,
                 ]);
