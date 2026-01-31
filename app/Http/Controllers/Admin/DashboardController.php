@@ -30,8 +30,42 @@ class DashboardController extends Controller
             ] : null,
         ];
 
+        // Datos para la gráfica de inscripciones por día
+        $inscripcionesPorDia = [];
+        if ($edicionActual) {
+            // Obtener inscripciones agrupadas por día
+            $inscripciones = Inscripcion::where('edicion_id', $edicionActual->id)
+                ->where('estado_pago', 'pagado')
+                ->selectRaw('DATE(fecha_pago) as fecha, COUNT(*) as total')
+                ->groupBy('fecha')
+                ->orderBy('fecha')
+                ->get()
+                ->pluck('total', 'fecha')
+                ->toArray();
+
+            // Si hay inscripciones, rellenar todos los días desde la primera venta hasta el evento
+            if (!empty($inscripciones)) {
+                $primeraFecha = min(array_keys($inscripciones));
+                $fechaEvento = $edicionActual->fecha_evento;
+
+                $fechaInicio = new \DateTime($primeraFecha);
+                $fechaFin = new \DateTime($fechaEvento);
+
+                $inscripcionesPorDia = [];
+                while ($fechaInicio <= $fechaFin) {
+                    $fechaStr = $fechaInicio->format('Y-m-d');
+                    $inscripcionesPorDia[] = [
+                        'fecha' => $fechaStr,
+                        'total' => $inscripciones[$fechaStr] ?? 0,
+                    ];
+                    $fechaInicio->modify('+1 day');
+                }
+            }
+        }
+
         return Inertia::render('Admin/Dashboard', [
             'stats' => $stats,
+            'inscripcionesPorDia' => $inscripcionesPorDia,
         ]);
     }
 }

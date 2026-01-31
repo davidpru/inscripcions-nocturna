@@ -34,6 +34,8 @@
   },
   "dependencies": {
     "@inertiajs/vue3": "^2.3.10",
+    "@unovis/ts": "^1.6.4",
+    "@unovis/vue": "^1.6.4",
     "@vueuse/core": "^14.2.0",
     "radix-vue": "^1.9.17",
     "reka-ui": "^2.8.0",
