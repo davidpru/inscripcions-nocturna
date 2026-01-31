@@ -515,8 +515,8 @@ const handleOpenChange = (open: boolean) => {
                 <div
                   v-if="
                     !editingData.esta_federado &&
-                    calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_licencia >
-                      0
+                    calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                      .precio_licencia > 0
                   "
                   class="flex justify-between text-slate-700"
                 >

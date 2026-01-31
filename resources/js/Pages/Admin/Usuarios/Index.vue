@@ -1,32 +1,4 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,10 +9,38 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
-import { Pencil, Plus, Trash2, Shield, ShieldCheck, ShieldAlert } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { Pencil, Plus, Shield, ShieldAlert, ShieldCheck, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 type TipoAdministrador = 'super_admin' | 'admin' | 'editor';
 
@@ -60,7 +60,9 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
-const currentUserId = computed(() => (page.props.auth as { administrador: Administrador } | undefined)?.administrador?.id);
+const currentUserId = computed(
+  () => (page.props.auth as { administrador: Administrador } | undefined)?.administrador?.id
+);
 
 const showDialog = ref(false);
 const showDeleteDialog = ref(false);
@@ -161,26 +163,26 @@ const formatDate = (date: string) => {
   <Head title="Usuaris Administradors" />
 
   <AdminLayout>
-    <div class="space-y-6">
+    <div class="mx-auto mt-10 max-w-7xl space-y-6 px-4">
       <!-- Header -->
-      <div class="flex items-center justify-between">
+      <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 class="flex items-center gap-2 text-2xl font-bold text-slate-900">
             <ShieldCheck class="h-7 w-7" />
             Administradors
           </h1>
-          <p class="text-slate-500 mt-1">
+          <p class="mt-1 text-slate-500">
             Gestiona els usuaris amb accés al panell d'administració
           </p>
         </div>
         <Button @click="openCreateDialog">
-          <Plus class="h-4 w-4 mr-2" />
+          <Plus class="mr-2 h-4 w-4" />
           Nou Administrador
         </Button>
       </div>
 
       <!-- Table -->
-      <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+      <div class="overflow-hidden rounded-xl border bg-white shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
@@ -207,9 +209,13 @@ const formatDate = (date: string) => {
                 </Badge>
               </TableCell>
               <TableCell class="text-center">
-                <Badge 
+                <Badge
                   :variant="admin.activo ? 'default' : 'secondary'"
-                  :class="admin.activo ? 'bg-green-100 text-green-700 hover:bg-green-100' : 'bg-slate-100 text-slate-500'"
+                  :class="
+                    admin.activo
+                      ? 'bg-green-100 text-green-700 hover:bg-green-100'
+                      : 'bg-slate-100 text-slate-500'
+                  "
                 >
                   {{ admin.activo ? 'Actiu' : 'Inactiu' }}
                 </Badge>
@@ -217,13 +223,13 @@ const formatDate = (date: string) => {
               <TableCell>
                 {{ admin.ultimo_acceso ? formatDate(admin.ultimo_acceso) : 'Mai' }}
               </TableCell>
-              <TableCell class="text-right space-x-2">
+              <TableCell class="space-x-2 text-right">
                 <Button variant="outline" size="icon-sm" @click="openEditDialog(admin)">
                   <Pencil class="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon-sm" 
+                <Button
+                  variant="outline"
+                  size="icon-sm"
                   class="text-destructive hover:text-destructive"
                   :disabled="admin.id === currentUserId"
                   @click="openDeleteDialog(admin)"
@@ -233,7 +239,7 @@ const formatDate = (date: string) => {
               </TableCell>
             </TableRow>
             <TableRow v-if="administradores.length === 0">
-              <TableCell colspan="6" class="text-center py-8 text-slate-500">
+              <TableCell colspan="6" class="py-8 text-center text-slate-500">
                 No hi ha administradors
               </TableCell>
             </TableRow>
@@ -250,9 +256,10 @@ const formatDate = (date: string) => {
             {{ editingUser ? 'Editar Administrador' : 'Nou Administrador' }}
           </DialogTitle>
           <DialogDescription>
-            {{ editingUser 
-              ? 'Modifica les dades de l\'administrador' 
-              : 'Crea un nou administrador amb accés al panell' 
+            {{
+              editingUser
+                ? "Modifica les dades de l'administrador"
+                : 'Crea un nou administrador amb accés al panell'
             }}
           </DialogDescription>
         </DialogHeader>
@@ -268,7 +275,7 @@ const formatDate = (date: string) => {
               placeholder="Nom de l'administrador"
               :class="{ 'border-destructive': form.errors.nombre }"
             />
-            <p v-if="form.errors.nombre" class="text-xs text-destructive">
+            <p v-if="form.errors.nombre" class="text-destructive text-xs">
               {{ form.errors.nombre }}
             </p>
           </div>
@@ -283,7 +290,7 @@ const formatDate = (date: string) => {
               placeholder="admin@example.com"
               :class="{ 'border-destructive': form.errors.email }"
             />
-            <p v-if="form.errors.email" class="text-xs text-destructive">
+            <p v-if="form.errors.email" class="text-destructive text-xs">
               {{ form.errors.email }}
             </p>
           </div>
@@ -296,9 +303,9 @@ const formatDate = (date: string) => {
                 <SelectValue placeholder="Selecciona un tipus" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem 
-                  v-for="tipo in tiposAdministrador" 
-                  :key="tipo.value" 
+                <SelectItem
+                  v-for="tipo in tiposAdministrador"
+                  :key="tipo.value"
                   :value="tipo.value"
                 >
                   <div class="flex items-center gap-2">
@@ -308,7 +315,7 @@ const formatDate = (date: string) => {
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p v-if="form.errors.tipo" class="text-xs text-destructive">
+            <p v-if="form.errors.tipo" class="text-destructive text-xs">
               {{ form.errors.tipo }}
             </p>
           </div>
@@ -317,7 +324,7 @@ const formatDate = (date: string) => {
           <div class="space-y-2">
             <Label for="password">
               Contrasenya
-              <span v-if="editingUser" class="text-slate-400 font-normal">
+              <span v-if="editingUser" class="font-normal text-slate-400">
                 (deixa en blanc per mantenir)
               </span>
             </Label>
@@ -328,7 +335,7 @@ const formatDate = (date: string) => {
               placeholder="••••••••"
               :class="{ 'border-destructive': form.errors.password }"
             />
-            <p v-if="form.errors.password" class="text-xs text-destructive">
+            <p v-if="form.errors.password" class="text-destructive text-xs">
               {{ form.errors.password }}
             </p>
           </div>
@@ -348,7 +355,7 @@ const formatDate = (date: string) => {
           <div v-if="editingUser" class="flex items-center justify-between rounded-lg border p-3">
             <div>
               <Label for="activo" class="cursor-pointer">Administrador actiu</Label>
-              <p class="text-xs text-slate-500 mt-0.5">
+              <p class="mt-0.5 text-xs text-slate-500">
                 Els administradors inactius no poden accedir al panell
               </p>
             </div>
@@ -359,7 +366,7 @@ const formatDate = (date: string) => {
               @update:checked="form.activo = $event"
             />
           </div>
-          <p v-if="form.errors.activo" class="text-xs text-destructive">
+          <p v-if="form.errors.activo" class="text-destructive text-xs">
             {{ form.errors.activo }}
           </p>
 
@@ -381,14 +388,14 @@ const formatDate = (date: string) => {
         <AlertDialogHeader>
           <AlertDialogTitle>Eliminar administrador?</AlertDialogTitle>
           <AlertDialogDescription>
-            Estàs segur que vols eliminar l'administrador 
-            <strong>{{ deletingUser?.nombre }}</strong>? 
-            Aquesta acció no es pot desfer.
+            Estàs segur que vols eliminar l'administrador
+            <strong>{{ deletingUser?.nombre }}</strong
+            >? Aquesta acció no es pot desfer.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel·lar</AlertDialogCancel>
-          <AlertDialogAction 
+          <AlertDialogAction
             class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             @click="confirmDelete"
           >
