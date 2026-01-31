@@ -20,6 +20,51 @@ use Inertia\Inertia;
 class RedsysController extends Controller
 {
     /**
+     * Obtener descripción del código de error de Redsys
+     */
+    private function getErrorDescription(string $code): string
+    {
+        $errors = [
+            '0101' => 'Targeta caducada',
+            '0102' => 'Targeta bloquejada temporalment o sota sospita de frau',
+            '0104' => 'Operació no permesa per la targeta',
+            '0106' => 'Nombre d\'intents PIN superat',
+            '0116' => 'Disponible insuficient',
+            '0118' => 'Targeta no registrada',
+            '0125' => 'Targeta no efectiva',
+            '0129' => 'Codi de seguretat (CVV2/CVC2) incorrecte',
+            '0180' => 'Targeta aliena al servei',
+            '0184' => 'Error en l\'autenticació del titular',
+            '0190' => 'Denegació sense especificar motiu',
+            '0191' => 'Data de caducitat errònia',
+            '0202' => 'Targeta bloquejada temporalment o sota sospita de frau',
+            '0904' => 'Comerciant no registrat a FUC',
+            '0909' => 'Error del sistema',
+            '0913' => 'Comanda repetida',
+            '0944' => 'Sessió incorrecta',
+            '0950' => 'Operació de devolució no permesa',
+            '9064' => 'Número de posicions de la targeta incorrecte',
+            '9078' => 'No existeix cap mètode de pagament vàlid per la targeta',
+            '9093' => 'Targeta no existent',
+            '9094' => 'Rebuig servidors internacionals',
+            '9104' => 'Comerciant amb "titular segur" i titular sense clau',
+            '9218' => 'Operació no permesa per aquest tipus de targeta',
+            '9253' => 'Targeta no compleix amb el control de seguretat',
+            '9256' => 'El comerciant no pot realitzar preautoritzacions',
+            '9257' => 'Aquesta targeta no permet operativa de preautoritzacions',
+            '9261' => 'Operació aturada per superar el control de restriccions',
+            '9912' => 'Emissor no disponible',
+            '9913' => 'Error en la confirmació que l\'emissor ha rebut correctament les dades',
+            '9914' => 'Confirmació "KO" del emissor',
+            '9915' => 'Operació cancel·lada per l\'usuari',
+            '9928' => 'Operació cancel·lada: Temps màxim per completar el pagament superat',
+            '9929' => 'Operació cancel·lada: El procés de pagament no s\'ha completat',
+        ];
+
+        return $errors[$code] ?? 'Error desconegut';
+    }
+
+    /**
      * Procesar el pago iniciando la transacción con Redsys
      */
     public function procesarPago(Inscripcion $inscripcion)
@@ -410,7 +455,9 @@ class RedsysController extends Controller
             $redsysResponse->setParametersFromResponse($request->all());
             
             $inscripcion = Inscripcion::where('numero_pedido', $redsysResponse->parameters->order)->first();
-            $errorMessage = 'El pago fue rechazado. Código: ' . $redsysResponse->parameters->responseCode;
+            $errorCode = $redsysResponse->parameters->responseCode;
+            $errorDescription = $this->getErrorDescription($errorCode);
+            $errorMessage = "El pagament ha estat rebutjat.\n\nCodi: {$errorCode}\n{$errorDescription}";
         } catch (\Exception $e) {
             Log::error('Redsys error page', ['error' => $e->getMessage()]);
         }

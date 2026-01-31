@@ -29,7 +29,7 @@ defineProps<{
           </svg>
         </div>
         <h1 class="mb-2 text-2xl font-bold text-slate-900">Error en el pagament</h1>
-        <p class="text-slate-600">
+        <p class="whitespace-pre-line text-slate-600">
           {{
             errorMessage || "No s'ha pogut processar el pagament. Si us plau, intenta-ho de nou."
           }}
@@ -38,7 +38,7 @@ defineProps<{
 
       <div class="mb-6 rounded-lg bg-red-50 p-4">
         <p class="text-sm text-red-800">
-          Si el problema persisteix, por favor contacta amb nosaltres per rebre assistència:
+          Si el problema persisteix, per favor contacta amb nosaltres per rebre assistència:
           <a href="mailto:activitats@uectortosa.cat">activitats@uectortosa.cat</a>
         </p>
       </div>

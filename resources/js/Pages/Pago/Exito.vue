@@ -2,12 +2,13 @@
 import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/vue3';
-import { CheckCircle } from 'lucide-vue-next';
+import { CheckCircle, Download } from 'lucide-vue-next';
 
 interface Participante {
   nombre: string;
   apellidos: string;
   email: string;
+  club?: string | null;
 }
 
 interface Edicion {
@@ -22,36 +23,46 @@ interface Inscripcion {
   talla_camiseta_pauls: string;
   necesita_autobus: boolean;
   parada_autobus: string | null;
+  es_socio_uec: boolean;
+  esta_federado: boolean;
   participante: Participante;
   edicion: Edicion;
 }
 
-defineProps<{
+const props = defineProps<{
   inscripcion: Inscripcion;
 }>();
+
+const descargarPdf = () => {
+  window.location.href = `/inscripcio/${props.inscripcion.id}/pdf`;
+};
 </script>
 
 <template>
   <Header />
 
-  <div class="min-h-screen bg-slate-50 py-8">
+  <div class="min-h-screen py-8">
     <div class="mx-auto max-w-2xl px-4">
       <!-- Mensaje de éxito -->
       <div class="mb-6 rounded-lg bg-green-100 p-8 text-center">
         <CheckCircle class="mx-auto mb-4 h-16 w-16 text-green-600" />
-        <h1 class="mb-2 text-2xl font-bold text-green-800">¡Pago realizado con éxito!</h1>
-        <p class="text-green-700">
-          Tu inscripción para la Nocturna Fredes Paüls {{ inscripcion.edicion.anio }} ha sido
-          confirmada.
+        <h1 class="font-expanded mb-2 text-2xl font-bold text-green-800">Enhorabona!</h1>
+        <p class="mb-4 text-balance text-green-700">
+          La teva inscripció per la Nocturna Fredes Paüls {{ inscripcion.edicion.anio }} ha estat
+          confirmada i el pagament s'ha realitzat correctament.
         </p>
+        <Button @click="descargarPdf" class="gap-2">
+          <Download class="h-4 w-4" />
+          Descargar PDF
+        </Button>
       </div>
 
       <!-- Resumen de la inscripción -->
       <div class="mb-6 rounded-lg bg-white p-6 shadow">
-        <h2 class="mb-4 text-lg font-semibold text-slate-900">Resumen de tu Inscripción</h2>
-        <div class="space-y-3">
+        <h2 class="mb-4 text-lg font-semibold text-slate-900">Resum de la teua Inscripció</h2>
+        <div class="space-y-3 text-xs md:text-sm">
           <div class="flex justify-between border-b pb-2">
-            <span class="text-slate-600">Nº Inscripción</span>
+            <span class="text-slate-600">Nº Inscripció</span>
             <span class="font-medium">#{{ inscripcion.id }}</span>
           </div>
           <div class="flex justify-between border-b pb-2">
@@ -61,11 +72,22 @@ defineProps<{
             </span>
           </div>
           <div class="flex justify-between border-b pb-2">
-            <span class="text-slate-600">Camiseta Caro</span>
+            <span class="text-slate-600">Tipus d'Inscripció</span>
+            <span class="font-medium">
+              {{ inscripcion.es_socio_uec ? 'Soci UEC' : 'Públic' }}
+              {{ inscripcion.esta_federado ? '(Federat)' : '(No federat)' }}
+            </span>
+          </div>
+          <div v-if="inscripcion.participante.club" class="flex justify-between border-b pb-2">
+            <span class="text-slate-600">Club</span>
+            <span class="font-medium">{{ inscripcion.participante.club }}</span>
+          </div>
+          <div class="flex justify-between border-b pb-2">
+            <span class="text-slate-600">Samarreta Caro</span>
             <span class="font-medium">Talla {{ inscripcion.talla_camiseta_caro }}</span>
           </div>
           <div class="flex justify-between border-b pb-2">
-            <span class="text-slate-600">Camiseta Paüls</span>
+            <span class="text-slate-600">Samarreta Finisher (Jo Tota)</span>
             <span class="font-medium">Talla {{ inscripcion.talla_camiseta_pauls }}</span>
           </div>
           <div v-if="inscripcion.necesita_autobus" class="flex justify-between border-b pb-2">
@@ -73,7 +95,7 @@ defineProps<{
             <span class="font-medium">{{ inscripcion.parada_autobus }}</span>
           </div>
           <div class="flex justify-between pt-2">
-            <span class="text-lg font-semibold text-slate-900">Total pagado</span>
+            <span class="text-lg font-semibold text-slate-900">Total pagat</span>
             <span class="text-lg font-bold text-green-600">{{ inscripcion.precio_total }}€</span>
           </div>
         </div>
