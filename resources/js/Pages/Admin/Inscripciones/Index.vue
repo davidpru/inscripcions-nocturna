@@ -118,18 +118,15 @@ const inscripcionesFiltradas = computed(() => {
   if (!busqueda.value.trim()) {
     return props.inscripciones.data;
   }
-  
+
   const termino = busqueda.value.toLowerCase().trim();
   return props.inscripciones.data.filter((inscripcion) => {
-    const nombreCompleto = `${inscripcion.participante.nombre} ${inscripcion.participante.apellidos}`.toLowerCase();
+    const nombreCompleto =
+      `${inscripcion.participante.nombre} ${inscripcion.participante.apellidos}`.toLowerCase();
     const dni = inscripcion.participante.dni.toLowerCase();
     const email = inscripcion.participante.email.toLowerCase();
-    
-    return (
-      nombreCompleto.includes(termino) ||
-      dni.includes(termino) ||
-      email.includes(termino)
-    );
+
+    return nombreCompleto.includes(termino) || dni.includes(termino) || email.includes(termino);
   });
 });
 
@@ -580,7 +577,9 @@ const confirmarToggleDorsal = () => {
               Buscar Participant
             </label>
             <div class="relative">
-              <Search class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <Search
+                class="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
+              />
               <Input
                 v-model="busqueda"
                 type="text"
@@ -589,7 +588,7 @@ const confirmarToggleDorsal = () => {
               />
             </div>
           </div>
-          
+
           <div class="flex flex-wrap items-end gap-4">
             <div class="flex-1">
               <label class="mb-2 block text-sm font-medium text-slate-700">

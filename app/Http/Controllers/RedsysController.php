@@ -486,63 +486,103 @@ class RedsysController extends Controller
             return back()->withErrors(['error' => 'No se encontró el número de pedido original']);
         }
 
+        // Verificar que tenga número de autorización (necesario para la devolución)
+        if (!$inscripcion->numero_autorizacion) {
+            return back()->withErrors(['error' => 'No se encontró el número de autorización. Usa devolución manual.']);
+        }
+
         // Calcular importe a devolver (puede ser parcial o total)
         $importeDevolucion = $request->input('importe', $inscripcion->precio_total);
         $amountInCents = (int)($importeDevolucion * 100);
 
         try {
-            $redsysClient = new RedsysClient(
-                merchantCode: (int)config('redsys.tpv.merchantCode'),
-                secretKey: config('redsys.tpv.key'),
-                terminal: (int)config('redsys.tpv.terminal'),
-                environment: config('redsys.environment') === 'production' ? Environment::Production : Environment::Test
-            );
-
-            // Crear petición de devolución (TransactionType 3)
-            $requestParams = new RequestParameters(
-                amountInCents: $amountInCents,
-                transactionType: TransactionType::Devolucion,
-                currency: Currency::EUR,
-                order: $inscripcion->numero_pedido,
-            );
-
-            $redsysRequest = RedsysRequest::create($redsysClient, $requestParams);
-
-            // Enviar petición por WebService REST usando el método de la librería
-            $response = $redsysRequest->sendPostRequest();
+            // Generar un nuevo número de pedido para la devolución (máximo 12 caracteres)
+            $refundOrderNumber = 'R' . substr($inscripcion->numero_pedido, 0, 11);
             
-            Log::info('Respuesta devolución Redsys', ['response' => get_class($response)]);
+            Log::info('Preparando devolución con librería creagia/redsys-php', [
+                'inscripcion_id' => $inscripcion->id,
+                'original_order' => $inscripcion->numero_pedido,
+                'refund_order' => $refundOrderNumber,
+                'original_auth' => $inscripcion->numero_autorizacion,
+                'amount_cents' => $amountInCents,
+            ]);
 
-            // Verificar si es una respuesta exitosa o un error
-            if ($response instanceof \Creagia\Redsys\RedsysResponse) {
-                $responseCode = $response->parameters->responseCode ?? null;
+            // Usar la librería creagia/redsys-php para crear la petición de devolución
+            $redsysClient = new \Creagia\Redsys\RedsysClient(
+                config('redsys.tpv.merchantCode'),
+                config('redsys.tpv.key'),
+                config('redsys.tpv.terminal'),
+                \Creagia\Redsys\Enums\Environment::from(config('redsys.environment'))
+            );
 
-                // Códigos 0000-0099 = éxito
-                if ($responseCode !== null && (int)$responseCode >= 0 && (int)$responseCode <= 99) {
-                    // Devolución exitosa
-                    $inscripcion->update([
-                        'estado_pago' => 'devuelto',
-                        'fecha_devolucion' => now(),
-                        'importe_devolucion' => $importeDevolucion,
-                    ]);
+            $requestParams = new \Creagia\Redsys\Support\RequestParameters(
+                amountInCents: $amountInCents,
+                order: $refundOrderNumber,
+                transactionType: \Creagia\Redsys\Enums\TransactionType::Devolucion,
+                currency: \Creagia\Redsys\Enums\Currency::EUR,
+                authorisationCode: $inscripcion->numero_autorizacion,
+                merchantData: $inscripcion->numero_pedido, // Pedido original
+            );
 
-                    Log::info('Devolución exitosa', ['inscripcion_id' => $inscripcion->id, 'response_code' => $responseCode]);
+            $redsysRequest = \Creagia\Redsys\RedsysRequest::create($redsysClient, $requestParams);
+            
+            // Enviar petición REST a Redsys
+            $redsysResponse = $redsysRequest->sendPostRequest();
 
-                    return back()->with('success', 'Devolución procesada correctamente');
-                } else {
-                    $errorMsg = 'Devolución rechazada. Código: ' . ($responseCode ?? 'desconocido');
-                    Log::error('Devolución rechazada', ['response_code' => $responseCode]);
-                    return back()->withErrors(['error' => $errorMsg]);
-                }
-            } elseif ($response instanceof \Creagia\Redsys\Support\PostRequestError) {
-                Log::error('Error en petición de devolución', ['code' => $response->code, 'message' => $response->message]);
-                return back()->withErrors(['error' => 'Error de Redsys: ' . $response->message]);
+            // Verificar si es un error
+            if ($redsysResponse instanceof \Creagia\Redsys\Support\PostRequestError) {
+                Log::error('Error en petición REST a Redsys', [
+                    'error_code' => $redsysResponse->code,
+                    'error_message' => $redsysResponse->message,
+                ]);
+                
+                $errorDescription = $this->getErrorDescription($redsysResponse->code);
+                throw new \Exception("Devolución rechazada. Código: {$redsysResponse->code} - {$errorDescription}");
+            }
+
+            // Procesar respuesta exitosa
+            $notificationParams = $redsysResponse->checkResponse();
+            
+            Log::info('Respuesta decodificada de Redsys', [
+                'response_code' => $notificationParams->Ds_Response,
+                'order' => $notificationParams->Ds_Order,
+                'auth_code' => $notificationParams->Ds_AuthorisationCode,
+            ]);
+
+            // Códigos 0000-0099 = éxito
+            if (\Creagia\Redsys\RedsysResponse::isAuthorisedCode((int) $notificationParams->Ds_Response)) {
+                // Devolución exitosa
+                $inscripcion->update([
+                    'estado_pago' => 'devuelto',
+                    'fecha_devolucion' => now(),
+                    'importe_devolucion' => $importeDevolucion,
+                ]);
+
+                Log::info('Devolución exitosa', [
+                    'inscripcion_id' => $inscripcion->id,
+                    'response_code' => $notificationParams->Ds_Response,
+                ]);
+
+                return back()->with('success', 'Devolución procesada correctamente');
             } else {
-                Log::error('Respuesta inesperada de Redsys');
-                return back()->withErrors(['error' => 'Error al procesar la devolución con Redsys']);
+                $errorDescription = $this->getErrorDescription($notificationParams->Ds_Response);
+                $errorMsg = "Devolución rechazada. Código: {$notificationParams->Ds_Response} - {$errorDescription}";
+                
+                Log::error('Devolución rechazada', [
+                    'response_code' => $notificationParams->Ds_Response,
+                    'error_description' => $errorDescription,
+                    'inscripcion_id' => $inscripcion->id,
+                ]);
+
+                return back()->withErrors(['error' => $errorMsg]);
             }
         } catch (\Exception $e) {
-            Log::error('Excepción en devolución', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            Log::error('Excepción en devolución', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'inscripcion_id' => $inscripcion->id,
+            ]);
+            
             return back()->withErrors(['error' => 'Error interno: ' . $e->getMessage()]);
         }
     }

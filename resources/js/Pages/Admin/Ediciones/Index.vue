@@ -51,81 +51,81 @@ const getEstadoBadgeClass = (estado: string) => {
         <div class="overflow-hidden rounded-lg bg-white shadow">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
-            <thead class="bg-slate-50">
-              <tr>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
-                >
-                  Año
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
-                >
-                  Fecha Evento
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
-                >
-                  Inscritos
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
-                >
-                  Fecha Límite
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
-                >
-                  Estado
-                </th>
-                <th
-                  class="px-6 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
-                >
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200 bg-white">
-              <tr v-for="edicion in ediciones" :key="edicion.id">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-slate-900">
-                    {{ edicion.anio }}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-slate-900">
-                    {{ formatearFecha(edicion.fecha_evento) }}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-slate-900">
-                    {{ edicion.inscripciones_count }} / {{ edicion.limite_inscritos }}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-slate-900">
-                    {{ formatearFecha(edicion.fecha_limite_tarifa_normal) }}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    :class="getEstadoBadgeClass(edicion.estado)"
-                    class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold"
+              <thead class="bg-slate-50">
+                <tr>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    {{ edicion.estado }}
-                  </span>
-                </td>
-                <td class="space-x-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                  <Link :href="`/admin/ediciones/${edicion.id}/edit`">
-                    <Button variant="outline" size="sm">Editar</Button>
-                  </Link>
-                  <Link :href="`/admin/inscripciones?edicion_id=${edicion.id}`">
-                    <Button variant="outline" size="sm">Ver Inscritos</Button>
-                  </Link>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    Año
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
+                    Fecha Evento
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
+                    Inscritos
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
+                    Fecha Límite
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
+                    Estado
+                  </th>
+                  <th
+                    class="px-6 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 bg-white">
+                <tr v-for="edicion in ediciones" :key="edicion.id">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-slate-900">
+                      {{ edicion.anio }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-slate-900">
+                      {{ formatearFecha(edicion.fecha_evento) }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-slate-900">
+                      {{ edicion.inscripciones_count }} / {{ edicion.limite_inscritos }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-slate-900">
+                      {{ formatearFecha(edicion.fecha_limite_tarifa_normal) }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span
+                      :class="getEstadoBadgeClass(edicion.estado)"
+                      class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold"
+                    >
+                      {{ edicion.estado }}
+                    </span>
+                  </td>
+                  <td class="space-x-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                    <Link :href="`/admin/ediciones/${edicion.id}/edit`">
+                      <Button variant="outline" size="sm">Editar</Button>
+                    </Link>
+                    <Link :href="`/admin/inscripciones?edicion_id=${edicion.id}`">
+                      <Button variant="outline" size="sm">Ver Inscritos</Button>
+                    </Link>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <div v-if="ediciones.length === 0" class="py-12 text-center">

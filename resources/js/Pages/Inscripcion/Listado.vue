@@ -100,35 +100,37 @@ const inscritosFiltrados = computed(() => {
       <div class="rounded-lg bg-white shadow">
         <div class="overflow-x-auto">
           <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead class="w-12">#</TableHead>
-              <TableHead>Nom</TableHead>
-              <TableHead>Cognoms</TableHead>
-              <TableHead>Població</TableHead>
-              <TableHead>Club</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow
-              class="text-uppercase"
-              v-for="(inscrito, index) in inscritosFiltrados"
-              :key="inscrito.id"
-            >
-              <TableCell class="font-medium text-slate-500">{{ index + 1 }}</TableCell>
-              <TableCell>{{ inscrito.participante.nombre }}</TableCell>
-              <TableCell>{{ inscrito.participante.apellidos }}</TableCell>
-              <TableCell>{{ inscrito.participante.poblacion || '-' }}</TableCell>
-              <TableCell>{{ inscrito.club || '-' }}</TableCell>
-            </TableRow>
-            <TableRow v-if="inscritosFiltrados.length === 0">
-              <TableCell colspan="5" class="py-8 text-center text-slate-500">
-                <template v-if="busqueda"> No s'han trobat inscrits amb "{{ busqueda }}" </template>
-                <template v-else> Encara no hi ha inscrits </template>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead class="w-12">#</TableHead>
+                <TableHead>Nom</TableHead>
+                <TableHead>Cognoms</TableHead>
+                <TableHead>Població</TableHead>
+                <TableHead>Club</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow
+                class="text-uppercase"
+                v-for="(inscrito, index) in inscritosFiltrados"
+                :key="inscrito.id"
+              >
+                <TableCell class="font-medium text-slate-500">{{ index + 1 }}</TableCell>
+                <TableCell>{{ inscrito.participante.nombre }}</TableCell>
+                <TableCell>{{ inscrito.participante.apellidos }}</TableCell>
+                <TableCell>{{ inscrito.participante.poblacion || '-' }}</TableCell>
+                <TableCell>{{ inscrito.club || '-' }}</TableCell>
+              </TableRow>
+              <TableRow v-if="inscritosFiltrados.length === 0">
+                <TableCell colspan="5" class="py-8 text-center text-slate-500">
+                  <template v-if="busqueda">
+                    No s'han trobat inscrits amb "{{ busqueda }}"
+                  </template>
+                  <template v-else> Encara no hi ha inscrits </template>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </div>
       </div>
       <Footer />
