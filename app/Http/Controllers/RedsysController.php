@@ -59,6 +59,9 @@ class RedsysController extends Controller
             '9915' => 'Operació cancel·lada per l\'usuari',
             '9928' => 'Operació cancel·lada: Temps màxim per completar el pagament superat',
             '9929' => 'Operació cancel·lada: El procés de pagament no s\'ha completat',
+            'SIS0054' => 'Error en els paràmetres de la devolució. Comprova que el comerç té habilitades les devolucions automàtiques',
+            'SIS0057' => 'El comerç no té habilitades les devolucions',
+            'SIS0062' => 'L\'import de la devolució supera l\'import del pagament original',
         ];
 
         return $errors[$code] ?? 'Error desconegut';
@@ -517,11 +520,20 @@ class RedsysController extends Controller
 
         // Calcular importe a devolver (puede ser parcial o total)
         $importeDevolucion = $request->input('importe', $inscripcion->precio_total);
+        
+        // Validar que el importe no sea mayor al pagado
+        if ($importeDevolucion > $inscripcion->precio_total) {
+            return back()->withErrors(['error' => 'El importe de devolución no puede ser mayor al importe pagado']);
+        }
+        
         $amountInCents = (int)($importeDevolucion * 100);
 
         try {
-            // Generar un nuevo número de pedido para la devolución (máximo 12 caracteres)
-            $refundOrderNumber = 'R' . substr($inscripcion->numero_pedido, 0, 11);
+            // Generar número de pedido único para devolución (diferente al original)
+            // Redsys requiere que sea diferente y no permite letras al inicio en algunos casos
+            // Formato: primeros 4 dígitos del original + timestamp de 8 dígitos
+            $timestamp = (string)time();
+            $refundOrderNumber = substr($inscripcion->numero_pedido, 0, 4) . substr($timestamp, -8);
             
             Log::info('Preparando devolución con librería creagia/redsys-php', [
                 'inscripcion_id' => $inscripcion->id,
@@ -529,6 +541,10 @@ class RedsysController extends Controller
                 'refund_order' => $refundOrderNumber,
                 'original_auth' => $inscripcion->numero_autorizacion,
                 'amount_cents' => $amountInCents,
+                'amount_euros' => $importeDevolucion,
+                'environment' => config('redsys.environment'),
+                'merchant_code' => config('redsys.tpv.merchantCode'),
+                'terminal' => config('redsys.tpv.terminal'),
             ]);
 
             // Usar la librería creagia/redsys-php para crear la petición de devolución

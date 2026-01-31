@@ -9,9 +9,5 @@ declare module '*.svg?component' {
 
 // Google Analytics 4 gtag types
 interface Window {
-  gtag?: (
-    command: 'event',
-    eventName: string,
-    eventParams?: Record<string, any>
-  ) => void;
+  gtag?: (command: 'event', eventName: string, eventParams?: Record<string, any>) => void;
 }
