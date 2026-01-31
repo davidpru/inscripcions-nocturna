@@ -11,7 +11,7 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { PARADAS, getParadaShortLabel } from '@/constants/paradas';
-import { Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
@@ -357,6 +357,7 @@ const enviarInscripcion = () => {
 </script>
 
 <template>
+  <Head title="Inscripció" />
   <Header></Header>
 
   <div class="min-h-screen">

@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { Search } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -62,6 +62,7 @@ const inscritosFiltrados = computed(() => {
 </script>
 
 <template>
+  <Head title="Llistat d'Inscrits" />
   <Header />
 
   <div class="min-h-screen px-4 py-8">

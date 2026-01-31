@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 interface Inscripcion {
   id: number;
@@ -13,6 +13,7 @@ defineProps<{
 </script>
 
 <template>
+  <Head title="Error en el Pagament" />
   <div class="flex min-h-screen items-center justify-center bg-slate-50 p-4">
     <div class="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-lg">
       <div class="mb-6">

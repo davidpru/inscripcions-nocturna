@@ -12,7 +12,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PARADAS, getParadaLabel } from '@/constants/paradas';
-import { Link, router, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { Bus, CheckCircle, Clock, Mail, XCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 
@@ -153,6 +153,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
 </script>
 
 <template>
+  <Head title="Detall de la Inscripció" />
   <Header />
 
   <div class="min-h-screen py-8">

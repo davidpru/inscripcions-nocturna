@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { CheckCircle, Download } from 'lucide-vue-next';
 
 interface Participante {
@@ -39,6 +39,7 @@ const descargarPdf = () => {
 </script>
 
 <template>
+  <Head title="Inscripció Confirmada" />
   <Header />
 
   <div class="min-h-screen py-8">

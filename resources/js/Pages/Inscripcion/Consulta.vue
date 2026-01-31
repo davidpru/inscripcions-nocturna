@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 interface Edicion {
   id: number;
@@ -33,6 +33,7 @@ const consultarInscripcion = () => {
 </script>
 
 <template>
+  <Head title="Consultar Inscripció" />
   <Header />
 
   <div class="min-h-screen px-4 py-10">
