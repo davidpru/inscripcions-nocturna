@@ -285,18 +285,101 @@ class InscripcionController extends Controller
 
     public function exportar(Request $request)
     {
-        $query = Inscripcion::with(['participante', 'edicion']);
+        $query = Inscripcion::with(['participante', 'edicion'])
+            ->whereIn('estado_pago', ['pagado', 'invitado'])
+            ->orderBy('created_at', 'desc');
 
-        if ($request->has('edicion_id')) {
+        if ($request->filled('edicion_id')) {
             $query->where('edicion_id', $request->edicion_id);
         }
 
         $inscripciones = $query->get();
 
-        // TODO: Implementar exportación a CSV/Excel
-        return response()->json([
-            'message' => 'Función de exportación pendiente de implementar',
-            'total' => $inscripciones->count(),
+        // Generar CSV
+        $headers = [
+            'ID',
+            'Número Pedido',
+            'Edición',
+            'DNI',
+            'Nombre',
+            'Apellidos',
+            'Email',
+            'Teléfono',
+            'Dirección',
+            'Código Postal',
+            'Población',
+            'Provincia',
+            'Género',
+            'Fecha Nacimiento',
+            'Es Socio UEC',
+            'Está Federado',
+            'Club',
+            'Número Licencia',
+            'Necesita Autobús',
+            'Parada Autobús',
+            'Talla Camiseta Caro',
+            'Talla Camiseta Paüls',
+            'Seguro Anulación',
+            'Precio Total',
+            'Descuento Cupón',
+            'Estado Pago',
+            'Fecha Pago',
+            'Fecha Inscripción',
+            'Dorsal Recogido',
+        ];
+
+        $callback = function() use ($inscripciones, $headers) {
+            $file = fopen('php://output', 'w');
+            
+            // BOM para Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Cabeceras
+            fputcsv($file, $headers);
+            
+            // Datos
+            foreach ($inscripciones as $i) {
+                fputcsv($file, [
+                    $i->id,
+                    $i->numero_pedido ?? '',
+                    $i->edicion->anio,
+                    $i->participante->dni,
+                    $i->participante->nombre,
+                    $i->participante->apellidos,
+                    $i->participante->email,
+                    $i->participante->telefono,
+                    $i->participante->direccion,
+                    $i->participante->codigo_postal,
+                    $i->participante->poblacion,
+                    $i->participante->provincia,
+                    $i->participante->genero === 'M' ? 'Masculí' : ($i->participante->genero === 'F' ? 'Femení' : $i->participante->genero),
+                    $i->participante->fecha_nacimiento,
+                    $i->es_socio_uec ? 'Sí' : 'No',
+                    $i->esta_federado ? 'Sí' : 'No',
+                    $i->club ?? '',
+                    $i->numero_licencia ?? '',
+                    $i->necesita_autobus ? 'Sí' : 'No',
+                    $i->parada_autobus ?? '',
+                    $i->talla_camiseta_caro,
+                    $i->talla_camiseta_pauls,
+                    $i->seguro_anulacion ? 'Sí' : 'No',
+                    number_format($i->precio_total, 2, ',', '') . '€',
+                    $i->descuento_cupon ? number_format($i->descuento_cupon, 2, ',', '') . '€' : '',
+                    $i->estado_pago === 'pagado' ? 'Pagat' : 'Invitat',
+                    $i->fecha_pago ?? '',
+                    substr($i->created_at, 0, 10),
+                    $i->dorsal_recogido ? 'Sí' : 'No',
+                ]);
+            }
+            
+            fclose($file);
+        };
+
+        $filename = 'inscripcions_confirmades_' . date('Y-m-d') . '.csv';
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 }

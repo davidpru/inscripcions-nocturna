@@ -404,6 +404,18 @@ const filtrarPorEdicion = () => {
   window.location.href = `/admin/inscripciones?edicion_id=${edicionSeleccionada.value}`;
 };
 
+// Exportar inscripciones confirmadas a CSV
+const exportarInscripciones = () => {
+  // Construir URL con parámetro de edición si está seleccionada
+  let url = '/admin/inscripciones/exportar';
+  if (edicionSeleccionada.value) {
+    url += `?edicion_id=${edicionSeleccionada.value}`;
+  }
+  
+  // Abrir en nueva pestaña para descargar
+  window.open(url, '_blank');
+};
+
 const reenviarCorreo = (id: number) => {
   if (confirm('¿Estás seguro de que deseas reenviar el correo de confirmación?')) {
     router.post(
@@ -623,7 +635,7 @@ const confirmarToggleDorsal = () => {
               <Button @click="filtrarPorEdicion">Filtrar</Button>
             </div>
             <div>
-              <Button variant="outline">Exportar</Button>
+              <Button variant="outline" @click="exportarInscripciones">Exportar</Button>
             </div>
             <div>
               <Button @click="abrirModalNuevaInscripcion">

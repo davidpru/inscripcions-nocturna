@@ -99,6 +99,7 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     
     // Gestión de inscripciones
     Route::get('inscripciones', [AdminInscripcionController::class, 'index'])->name('inscripciones.index');
+    Route::get('inscripciones/exportar', [AdminInscripcionController::class, 'exportar'])->name('inscripciones.exportar');
     Route::post('inscripciones', [AdminInscripcionController::class, 'store'])->name('inscripciones.store');
     Route::get('inscripciones/{inscripcion}', [AdminInscripcionController::class, 'show'])->name('inscripciones.show');
     Route::get('inscripciones/{inscripcion}/edit', [AdminInscripcionController::class, 'edit'])->name('inscripciones.edit');
@@ -106,7 +107,6 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     Route::delete('inscripciones/{inscripcion}', [AdminInscripcionController::class, 'destroy'])->name('inscripciones.destroy');
     Route::post('inscripciones/{inscripcion}/reenviar-correo', [AdminInscripcionController::class, 'reenviarCorreo'])->name('inscripciones.reenviar-correo');
     Route::post('inscripciones/{inscripcion}/toggle-dorsal', [AdminInscripcionController::class, 'toggleDorsalRecogido'])->name('inscripciones.toggle-dorsal');
-    Route::post('inscripciones/exportar', [AdminInscripcionController::class, 'exportar'])->name('inscripciones.exportar');
     Route::post('inscripciones/{inscripcion}/devolucion', [RedsysController::class, 'procesarDevolucion'])->name('inscripciones.devolucion');
     Route::post('inscripciones/{inscripcion}/devolucion-manual', [RedsysController::class, 'devolucionManual'])->name('inscripciones.devolucion-manual');
 

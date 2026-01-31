@@ -12,7 +12,9 @@ class EdicionController extends Controller
 {
     public function index(): Response
     {
-        $ediciones = Edicion::withCount('inscripciones')
+        $ediciones = Edicion::withCount(['inscripciones' => function ($query) {
+                $query->whereIn('estado_pago', ['pagado', 'invitado']);
+            }])
             ->orderBy('anio', 'desc')
             ->get();
 
