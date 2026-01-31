@@ -255,6 +255,14 @@ class InscripcionController extends Controller
         }
     }
 
+    public function toggleDorsalRecogido(Inscripcion $inscripcion)
+    {
+        $inscripcion->dorsal_recogido = !$inscripcion->dorsal_recogido;
+        $inscripcion->save();
+
+        return redirect()->back();
+    }
+
     public function exportar(Request $request)
     {
         $query = Inscripcion::with(['participante', 'edicion']);

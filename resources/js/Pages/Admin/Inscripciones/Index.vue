@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import InscripcionSheetEdit from '@/components/admin/InscripcionSheetEdit.vue';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,15 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PARADAS } from '@/constants/paradas';
 import AdminLayout from '@/layouts/AdminLayout.vue';
@@ -35,17 +27,15 @@ import axios from 'axios';
 import {
   Bus,
   Check,
-  Download,
-  Eye,
+  IdCard,
   Mail,
-  Pencil,
-  QrCode,
   RotateCcw,
-  Save,
+  ShieldUser,
   Trash2,
   UserPlus,
   X,
 } from 'lucide-vue-next';
+import { onKeyStroke } from '@vueuse/core';
 import { computed, reactive, ref } from 'vue';
 
 interface Participante {
@@ -100,6 +90,7 @@ interface Inscripcion {
   fecha_pago: string | null;
   cupon_id: number | null;
   descuento_cupon: number | null;
+  dorsal_recogido: boolean;
 }
 
 interface Paginacion {
@@ -491,6 +482,44 @@ const getEstadoPagoBadgeClass = (estado: string) => {
     return 'bg-amber-100 text-amber-800';
   }
 };
+
+// Estado del diálogo de dorsal
+const dorsalDialogOpen = ref(false);
+const dorsalInscripcion = ref<Inscripcion | null>(null);
+
+const abrirDialogoDorsal = (inscripcion: Inscripcion) => {
+  dorsalInscripcion.value = inscripcion;
+  dorsalDialogOpen.value = true;
+};
+
+// Manejar Enter cuando el modal está abierto
+onKeyStroke('Enter', (e) => {
+  if (dorsalDialogOpen.value) {
+    e.preventDefault();
+    confirmarToggleDorsal();
+  }
+});
+
+const confirmarToggleDorsal = () => {
+  if (!dorsalInscripcion.value) return;
+
+  const inscripcionId = dorsalInscripcion.value.id;
+
+  router.post(
+    `/admin/inscripciones/${inscripcionId}/toggle-dorsal`,
+    {},
+    {
+      preserveScroll: true,
+      onSuccess: () => {
+        dorsalDialogOpen.value = false;
+        dorsalInscripcion.value = null;
+      },
+      onError: (errors) => {
+        console.error('Error al cambiar estado dorsal:', errors);
+      },
+    }
+  );
+};
 </script>
 
 <template>
@@ -506,7 +535,7 @@ const getEstadoPagoBadgeClass = (estado: string) => {
         </div>
 
         <!-- Filtros -->
-        <div class="mb-6 rounded-lg bg-white p-4 shadow">
+        <section class="mb-6 rounded-lg bg-white p-4 shadow">
           <div class="flex items-end gap-4">
             <div class="flex-1">
               <label class="mb-2 block text-sm font-medium text-slate-700">
@@ -535,7 +564,7 @@ const getEstadoPagoBadgeClass = (estado: string) => {
               </Button>
             </div>
           </div>
-        </div>
+        </section>
 
         <!-- Tabla de Inscripciones -->
         <div class="overflow-hidden rounded-lg bg-white shadow">
@@ -584,6 +613,11 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                     Fecha
                   </th>
                   <th
+                    class="px-6 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
+                    Dorsal
+                  </th>
+                  <th
                     class="px-6 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Acciones
@@ -623,8 +657,8 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                                   : 'bg-red-100 text-red-600'
                               "
                             >
-                              <Check v-if="inscripcion.esta_federado" class="h-4 w-4" />
-                              <X v-else class="h-4 w-4" />
+                              <IdCard v-if="inscripcion.esta_federado" class="h-4 w-4" />
+                              <IdCard v-else class="h-4 w-4" />
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -643,8 +677,8 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                                   : 'bg-red-100 text-red-600'
                               "
                             >
-                              <Check v-if="inscripcion.es_socio_uec" class="h-4 w-4" />
-                              <X v-else class="h-4 w-4" />
+                              <ShieldUser v-if="inscripcion.es_socio_uec" class="h-4 w-4" />
+                              <ShieldUser v-else class="h-4 w-4" />
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -664,7 +698,7 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                               "
                             >
                               <Bus v-if="inscripcion.necesita_autobus" class="h-4 w-4" />
-                              <X v-else class="h-4 w-4" />
+                              <Bus v-else class="h-4 w-4" />
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -699,18 +733,38 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                   <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-900">
                     {{ formatearFecha(inscripcion.created_at) }}
                   </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex justify-center">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        :class="
+                          inscripcion.dorsal_recogido
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                            : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                        "
+                        @click="abrirDialogoDorsal(inscripcion)"
+                        :title="
+                          inscripcion.dorsal_recogido ? 'Dorsal recogido' : 'Dorsal no recogido'
+                        "
+                      >
+                        <Check v-if="inscripcion.dorsal_recogido" class="h-4 w-4" />
+                        <X v-else class="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </td>
                   <td class="space-x-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger as-child>
                           <Button
                             variant="outline"
-                            size="icon"
-                            class="h-9 w-9 border-blue-200 text-blue-600 hover:bg-blue-50"
+                            size="icon-sm"
+                            class="border-blue-500! bg-blue-100! text-blue-600!"
                             @click="reenviarCorreo(inscripcion.id)"
                             title="Reenviar Correu"
                           >
-                            <Mail class="h-4 w-4" />
+                            <Mail class="h-4 w-4 text-blue-600" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -719,621 +773,22 @@ const getEstadoPagoBadgeClass = (estado: string) => {
                       </Tooltip>
                     </TooltipProvider>
 
-                    <Sheet
-                      @update:open="
-                        (open: boolean) => {
-                          if (open) startEditing(inscripcion);
-                          else cancelEditing(inscripcion.id);
-                        }
-                      "
-                    >
-                      <SheetTrigger as-child>
-                        <Button variant="" size="sm">
-                          <Pencil class="mr-2 h-4 w-4" />
-                          Editar
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent class="w-full overflow-y-auto sm:max-w-xl">
-                        <SheetHeader>
-                          <div class="flex items-center justify-between">
-                            <div>
-                              <SheetTitle>Inscripción #{{ inscripcion.id }}</SheetTitle>
-                              <SheetDescription>
-                                {{ formatearFecha(inscripcion.created_at) }}
-                              </SheetDescription>
-                            </div>
-                          </div>
-                        </SheetHeader>
-
-                        <Tabs default-value="resumen" class="mt-6">
-                          <TabsList class="grid w-full grid-cols-2">
-                            <TabsTrigger value="resumen" class="flex!">
-                              <Eye class="h-4 w-4" />
-                              Resum
-                            </TabsTrigger>
-                            <TabsTrigger value="editar" class="flex!">
-                              <Pencil class="h-4 w-4" />
-                              Editar
-                            </TabsTrigger>
-                          </TabsList>
-
-                          <!-- Tab Resumen -->
-                          <TabsContent value="resumen" class="mt-4 space-y-6">
-                            <!-- QR Code -->
-                            <div
-                              v-if="
-                                inscripcion.estado_pago === 'pagado' ||
-                                inscripcion.estado_pago === 'invitado'
-                              "
-                              class="flex flex-col items-center rounded-lg border bg-white p-6"
-                            >
-                              <QrCode class="mb-2 h-32 w-32 text-slate-300" />
-                              <p class="text-sm text-slate-500">Codi QR de verificació</p>
-                              <div class="mt-4 flex gap-2">
-                                <a :href="`/inscripcion/${inscripcion.id}/pdf`" target="_blank">
-                                  <Button variant="outline" size="sm" class="gap-2">
-                                    <Download class="h-4 w-4" />
-                                    PDF
-                                  </Button>
-                                </a>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  class="gap-2 border-blue-200 text-blue-600"
-                                  @click="reenviarCorreo(inscripcion.id)"
-                                >
-                                  <Mail class="h-4 w-4" />
-                                  Reenviar Correu
-                                </Button>
-                              </div>
-                            </div>
-
-                            <!-- Datos del participante -->
-                            <div class="rounded-lg border bg-slate-50 p-4">
-                              <h3 class="mb-3 font-semibold text-slate-900">Participant</h3>
-                              <div class="grid grid-cols-2 gap-3 text-sm">
-                                <div>
-                                  <span class="text-slate-500">Nom:</span>
-                                  <span class="ml-2 font-medium"
-                                    >{{ inscripcion.participante.nombre }}
-                                    {{ inscripcion.participante.apellidos }}</span
-                                  >
-                                </div>
-                                <div>
-                                  <span class="text-slate-500">DNI:</span>
-                                  <span class="ml-2 font-medium">{{
-                                    inscripcion.participante.dni
-                                  }}</span>
-                                </div>
-                                <div>
-                                  <span class="text-slate-500">Email:</span>
-                                  <span class="ml-2 font-medium">{{
-                                    inscripcion.participante.email
-                                  }}</span>
-                                </div>
-                                <div>
-                                  <span class="text-slate-500">Telèfon:</span>
-                                  <span class="ml-2 font-medium">{{
-                                    inscripcion.participante.telefono
-                                  }}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <!-- Estado y Pago -->
-                            <div class="rounded-lg border bg-slate-50 p-4">
-                              <h3 class="mb-3 font-semibold text-slate-900">Estat i Pagament</h3>
-                              <div class="grid grid-cols-2 gap-3 text-sm">
-                                <div>
-                                  <span class="text-slate-500">Estat:</span>
-                                  <span
-                                    :class="{
-                                      'bg-green-100 text-green-800':
-                                        inscripcion.estado_pago === 'pagado',
-                                      'bg-amber-100 text-amber-800':
-                                        inscripcion.estado_pago === 'pendiente',
-                                      'bg-red-100 text-red-800':
-                                        inscripcion.estado_pago === 'cancelado',
-                                      'bg-blue-100 text-blue-800':
-                                        inscripcion.estado_pago === 'invitado',
-                                    }"
-                                    class="ml-2 rounded-full px-2 py-0.5 text-xs font-semibold"
-                                  >
-                                    {{ inscripcion.estado_pago.toUpperCase() }}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span class="text-slate-500">Total:</span>
-                                  <span class="ml-2 text-lg font-bold text-slate-900"
-                                    >{{ inscripcion.precio_total }}€</span
-                                  >
-                                </div>
-                                <div v-if="inscripcion.numero_pedido">
-                                  <span class="text-slate-500">Nº Pedido:</span>
-                                  <span class="ml-2 font-mono text-xs">{{
-                                    inscripcion.numero_pedido
-                                  }}</span>
-                                </div>
-                                <div v-if="inscripcion.fecha_pago">
-                                  <span class="text-slate-500">Data pagament:</span>
-                                  <span class="ml-2">{{
-                                    formatearFecha(inscripcion.fecha_pago)
-                                  }}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <!-- Opciones contratadas -->
-                            <div class="rounded-lg border bg-slate-50 p-4">
-                              <h3 class="mb-3 font-semibold text-slate-900">Opcions</h3>
-                              <div class="grid grid-cols-2 gap-3 text-sm">
-                                <div class="flex items-center gap-2">
-                                  <span
-                                    :class="
-                                      inscripcion.es_socio_uec ? 'text-green-600' : 'text-slate-400'
-                                    "
-                                  >
-                                    {{ inscripcion.es_socio_uec ? '✓' : '✗' }}
-                                  </span>
-                                  <span>Soci UEC</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                  <span
-                                    :class="
-                                      inscripcion.esta_federado
-                                        ? 'text-green-600'
-                                        : 'text-slate-400'
-                                    "
-                                  >
-                                    {{ inscripcion.esta_federado ? '✓' : '✗' }}
-                                  </span>
-                                  <span>Federat</span>
-                                  <span
-                                    v-if="inscripcion.numero_licencia"
-                                    class="text-xs text-slate-500"
-                                    >({{ inscripcion.numero_licencia }})</span
-                                  >
-                                </div>
-                                <div class="flex items-center gap-2">
-                                  <span
-                                    :class="
-                                      inscripcion.necesita_autobus
-                                        ? 'text-green-600'
-                                        : 'text-slate-400'
-                                    "
-                                  >
-                                    {{ inscripcion.necesita_autobus ? '✓' : '✗' }}
-                                  </span>
-                                  <span>Autobús</span>
-                                  <span
-                                    v-if="inscripcion.parada_autobus"
-                                    class="text-xs text-slate-500"
-                                    >({{ inscripcion.parada_autobus }})</span
-                                  >
-                                </div>
-                                <div class="flex items-center gap-2">
-                                  <span
-                                    :class="
-                                      inscripcion.seguro_anulacion
-                                        ? 'text-green-600'
-                                        : 'text-slate-400'
-                                    "
-                                  >
-                                    {{ inscripcion.seguro_anulacion ? '✓' : '✗' }}
-                                  </span>
-                                  <span>Assegurança</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <!-- Tallas -->
-                            <div class="rounded-lg border bg-slate-50 p-4">
-                              <h3 class="mb-3 font-semibold text-slate-900">Samarretes</h3>
-                              <div class="flex justify-around text-center">
-                                <div>
-                                  <span class="text-xs text-slate-500">Caro</span>
-                                  <div class="text-lg font-bold">
-                                    {{ inscripcion.talla_camiseta_caro?.toUpperCase() }}
-                                  </div>
-                                </div>
-                                <div>
-                                  <span class="text-xs text-slate-500">Paüls</span>
-                                  <div class="text-lg font-bold">
-                                    {{ inscripcion.talla_camiseta_pauls?.toUpperCase() }}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </TabsContent>
-
-                          <!-- Tab Editar -->
-                          <TabsContent value="editar" class="mt-4">
-                            <div class="mb-4 flex justify-end">
-                              <Button
-                                variant="default"
-                                size="sm"
-                                :disabled="saving"
-                                @click="saveChanges(inscripcion)"
-                              >
-                                <Save class="mr-2 h-4 w-4" />
-                                {{ saving ? 'Guardando...' : 'Guardar' }}
-                              </Button>
-                            </div>
-                            <div v-if="editingData[inscripcion.id]" class="space-y-6 text-sm">
-                              <!-- Datos personales -->
-                              <div class="space-y-3">
-                                <h3 class="font-semibold text-slate-900">Datos Personales</h3>
-                                <div
-                                  class="grid grid-cols-2 gap-4 rounded-lg border bg-slate-50 p-4"
-                                >
-                                  <!-- Nombre -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Nombre</Label>
-                                    <Input
-                                      v-model="editingData[inscripcion.id].nombre"
-                                      class="mt-1"
-                                    />
-                                  </div>
-                                  <!-- Apellidos -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Apellidos</Label>
-                                    <Input
-                                      v-model="editingData[inscripcion.id].apellidos"
-                                      class="mt-1"
-                                    />
-                                  </div>
-                                  <!-- DNI -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">DNI</Label>
-                                    <Input v-model="editingData[inscripcion.id].dni" class="mt-1" />
-                                  </div>
-                                  <!-- Género -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Género</Label>
-                                    <select
-                                      v-model="editingData[inscripcion.id].genero"
-                                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                                    >
-                                      <option value="masculino">Masculino</option>
-                                      <option value="femenino">Femenino</option>
-                                    </select>
-                                  </div>
-                                  <!-- Email -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Email</Label>
-                                    <Input
-                                      v-model="editingData[inscripcion.id].email"
-                                      type="email"
-                                      class="mt-1"
-                                    />
-                                  </div>
-                                  <!-- Teléfono -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Teléfono</Label>
-                                    <Input
-                                      v-model="editingData[inscripcion.id].telefono"
-                                      class="mt-1"
-                                    />
-                                  </div>
-                                  <!-- Fecha Nacimiento -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Fecha Nacimiento</Label>
-                                    <Input
-                                      v-model="editingData[inscripcion.id].fecha_nacimiento"
-                                      type="date"
-                                      class="mt-1"
-                                    />
-                                  </div>
-                                  <!-- Dirección (col-span-2) -->
-                                  <div class="col-span-2">
-                                    <Label class="text-xs text-slate-500">Dirección</Label>
-                                    <Input
-                                      v-model="editingData[inscripcion.id].direccion"
-                                      class="mt-1"
-                                    />
-                                  </div>
-                                  <!-- Código Postal -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Código Postal</Label>
-                                    <Input
-                                      v-model="editingData[inscripcion.id].codigo_postal"
-                                      class="mt-1"
-                                    />
-                                  </div>
-                                  <!-- Población -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Población</Label>
-                                    <Input
-                                      v-model="editingData[inscripcion.id].poblacion"
-                                      class="mt-1"
-                                    />
-                                  </div>
-                                  <!-- Provincia -->
-                                  <div class="col-span-2">
-                                    <Label class="text-xs text-slate-500">Provincia</Label>
-                                    <Input
-                                      v-model="editingData[inscripcion.id].provincia"
-                                      class="mt-1"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-
-                              <!-- Detalles Inscripción -->
-                              <div class="space-y-3">
-                                <h3 class="font-semibold text-slate-900">Detalles Inscripción</h3>
-                                <div
-                                  class="grid grid-cols-2 gap-4 rounded-lg border bg-slate-50 p-4"
-                                >
-                                  <!-- Estado Pago -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Estado Pago</Label>
-                                    <select
-                                      v-model="editingData[inscripcion.id].estado_pago"
-                                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                                    >
-                                      <option value="pendiente">Pendiente</option>
-                                      <option value="pagado">Pagado</option>
-                                      <option value="cancelado">Cancelado</option>
-                                      <option value="devuelto">Devuelto</option>
-                                      <option value="invitado">Invitado</option>
-                                    </select>
-                                  </div>
-                                  <!-- Precio Actual (solo lectura) -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Precio Registrado</Label>
-                                    <span class="block font-medium text-slate-500"
-                                      >{{ inscripcion.precio_total }}€</span
-                                    >
-                                  </div>
-
-                                  <!-- Datos de pago Redsys -->
-                                  <div
-                                    v-if="inscripcion.numero_pedido"
-                                    class="col-span-2 mt-2 border-t pt-3"
-                                  >
-                                    <Label class="text-xs font-semibold text-slate-500"
-                                      >Datos de Pago Redsys</Label
-                                    >
-                                    <div class="mt-2 grid grid-cols-3 gap-2 text-sm">
-                                      <div>
-                                        <span class="text-xs text-slate-400">Nº Pedido:</span>
-                                        <span class="block font-mono text-slate-700">{{
-                                          inscripcion.numero_pedido
-                                        }}</span>
-                                      </div>
-                                      <div>
-                                        <span class="text-xs text-slate-400">Cód. Auth:</span>
-                                        <span class="block font-mono text-slate-700">{{
-                                          inscripcion.numero_autorizacion || '-'
-                                        }}</span>
-                                      </div>
-                                      <div>
-                                        <span class="text-xs text-slate-400">Fecha Pago:</span>
-                                        <span class="block text-slate-700">{{
-                                          inscripcion.fecha_pago
-                                            ? formatearFecha(inscripcion.fecha_pago)
-                                            : '-'
-                                        }}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <!-- Socio UEC -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Socio UEC</Label>
-                                    <div class="mt-1">
-                                      <input
-                                        type="checkbox"
-                                        v-model="editingData[inscripcion.id].es_socio_uec"
-                                        class="h-4 w-4 rounded border-slate-300"
-                                      />
-                                    </div>
-                                  </div>
-                                  <!-- Federado -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Federado</Label>
-                                    <div class="mt-1">
-                                      <input
-                                        type="checkbox"
-                                        v-model="editingData[inscripcion.id].esta_federado"
-                                        class="h-4 w-4 rounded border-slate-300"
-                                      />
-                                    </div>
-                                  </div>
-                                  <!-- Número Licencia -->
-                                  <div v-if="editingData[inscripcion.id]?.esta_federado">
-                                    <Label class="text-xs text-slate-500">Nº Licencia</Label>
-                                    <Input
-                                      v-model="editingData[inscripcion.id].numero_licencia"
-                                      class="mt-1"
-                                    />
-                                  </div>
-                                  <!-- Club -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Club</Label>
-                                    <Input
-                                      v-model="editingData[inscripcion.id].club"
-                                      class="mt-1"
-                                    />
-                                  </div>
-                                  <!-- Autobús -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Necesita Autobús</Label>
-                                    <div class="mt-1">
-                                      <input
-                                        type="checkbox"
-                                        v-model="editingData[inscripcion.id].necesita_autobus"
-                                        class="h-4 w-4 rounded border-slate-300"
-                                      />
-                                    </div>
-                                  </div>
-                                  <!-- Parada Autobús -->
-                                  <div v-if="editingData[inscripcion.id]?.necesita_autobus">
-                                    <Label class="text-xs text-slate-500">Parada Autobús</Label>
-                                    <select
-                                      v-model="editingData[inscripcion.id].parada_autobus"
-                                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                                    >
-                                      <option value="">Selecciona parada...</option>
-                                      <option
-                                        v-for="parada in PARADAS"
-                                        :key="parada.value"
-                                        :value="parada.value"
-                                      >
-                                        {{ parada.label }} ({{ parada.descripcion }})
-                                      </option>
-                                    </select>
-                                  </div>
-                                  <!-- Seguro Anulación -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Seguro Anulación</Label>
-                                    <div class="mt-1">
-                                      <input
-                                        type="checkbox"
-                                        v-model="editingData[inscripcion.id].seguro_anulacion"
-                                        class="h-4 w-4 rounded border-slate-300"
-                                      />
-                                    </div>
-                                  </div>
-                                  <!-- Camiseta Caro -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Camiseta Caro</Label>
-                                    <select
-                                      v-model="editingData[inscripcion.id].talla_camiseta_caro"
-                                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                                    >
-                                      <option value="XS">XS</option>
-                                      <option value="S">S</option>
-                                      <option value="M">M</option>
-                                      <option value="L">L</option>
-                                      <option value="XL">XL</option>
-                                      <option value="XXL">XXL</option>
-                                    </select>
-                                  </div>
-                                  <!-- Camiseta Paüls -->
-                                  <div>
-                                    <Label class="text-xs text-slate-500">Camiseta Paüls</Label>
-                                    <select
-                                      v-model="editingData[inscripcion.id].talla_camiseta_pauls"
-                                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                                    >
-                                      <option value="XS">XS</option>
-                                      <option value="S">S</option>
-                                      <option value="M">M</option>
-                                      <option value="L">L</option>
-                                      <option value="XL">XL</option>
-                                      <option value="XXL">XXL</option>
-                                    </select>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <!-- Resumen de Precio Calculado -->
-                              <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                                <h3 class="mb-3 font-semibold text-slate-900">
-                                  Resum de l'inscripció (segons opcions)
-                                </h3>
-                                <div class="space-y-2 text-sm">
-                                  <div class="flex justify-between text-slate-700">
-                                    <span>Inscripció:</span>
-                                    <span
-                                      >{{
-                                        calcularPrecio(
-                                          editingData[inscripcion.id],
-                                          false,
-                                          inscripcion.descuento_cupon
-                                        ).tarifa_base
-                                      }}€</span
-                                    >
-                                  </div>
-                                  <div
-                                    v-if="editingData[inscripcion.id]?.necesita_autobus"
-                                    class="flex justify-between text-slate-700"
-                                  >
-                                    <span>Autobús:</span>
-                                    <span
-                                      >{{
-                                        calcularPrecio(
-                                          editingData[inscripcion.id],
-                                          false,
-                                          inscripcion.descuento_cupon
-                                        ).precio_autobus
-                                      }}€</span
-                                    >
-                                  </div>
-                                  <div
-                                    v-if="editingData[inscripcion.id]?.seguro_anulacion"
-                                    class="flex justify-between text-slate-700"
-                                  >
-                                    <span>Assegurança:</span>
-                                    <span
-                                      >{{
-                                        calcularPrecio(
-                                          editingData[inscripcion.id],
-                                          false,
-                                          inscripcion.descuento_cupon
-                                        ).precio_seguro
-                                      }}€</span
-                                    >
-                                  </div>
-                                  <div
-                                    v-if="
-                                      inscripcion.descuento_cupon && inscripcion.descuento_cupon > 0
-                                    "
-                                    class="flex justify-between text-green-600"
-                                  >
-                                    <span>Descompte cupó:</span>
-                                    <span>-{{ inscripcion.descuento_cupon }}€</span>
-                                  </div>
-                                  <div class="mt-2 border-t border-blue-300 pt-2">
-                                    <div
-                                      class="flex justify-between text-base font-bold text-slate-900"
-                                    >
-                                      <span>TOTAL CALCULAT:</span>
-                                      <span
-                                        >{{
-                                          calcularPrecio(
-                                            editingData[inscripcion.id],
-                                            false,
-                                            inscripcion.descuento_cupon
-                                          ).precio_total
-                                        }}€</span
-                                      >
-                                    </div>
-                                  </div>
-                                  <p
-                                    v-if="
-                                      calcularPrecio(
-                                        editingData[inscripcion.id],
-                                        false,
-                                        inscripcion.descuento_cupon
-                                      ).precio_total !== Number(inscripcion.precio_total)
-                                    "
-                                    class="mt-2 text-xs text-amber-600"
-                                  >
-                                    * El preu calculat ({{
-                                      calcularPrecio(
-                                        editingData[inscripcion.id],
-                                        false,
-                                        inscripcion.descuento_cupon
-                                      ).precio_total
-                                    }}€) és diferent del preu registrat ({{
-                                      inscripcion.precio_total
-                                    }}€)
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </TabsContent>
-                        </Tabs>
-                      </SheetContent>
-                    </Sheet>
+                    <InscripcionSheetEdit
+                      :inscripcion="inscripcion"
+                      :editing-data="editingData[inscripcion.id]"
+                      :saving="saving"
+                      :calcular-precio="calcularPrecio"
+                      :formatear-fecha="formatearFecha"
+                      @open="startEditing(inscripcion)"
+                      @close="cancelEditing(inscripcion.id)"
+                      @save="saveChanges(inscripcion)"
+                      @reenviar-correo="reenviarCorreo(inscripcion.id)"
+                    />
 
                     <Button
                       v-if="inscripcion.estado_pago === 'pagado'"
                       variant="default"
-                      size="sm"
+                      size="icon-sm"
                       :disabled="processingRefund === inscripcion.id"
                       @click="abrirDialogoDevolucion(inscripcion)"
                       title="Procesar devolución"
@@ -1346,7 +801,7 @@ const getEstadoPagoBadgeClass = (estado: string) => {
 
                     <Button
                       variant="destructive"
-                      size="sm"
+                      size="icon-sm"
                       @click="eliminarInscripcion(inscripcion.id)"
                     >
                       <Trash2 class="h-4 w-4" />
@@ -1464,6 +919,52 @@ const getEstadoPagoBadgeClass = (estado: string) => {
             <Button :disabled="processingRefund !== null" @click="confirmarDevolucion">
               <RotateCcw v-if="processingRefund" class="mr-2 h-4 w-4 animate-spin" />
               Confirmar devolución
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <!-- Diálogo de confirmación dorsal -->
+      <Dialog v-model:open="dorsalDialogOpen">
+        <DialogContent class="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {{
+                dorsalInscripcion?.dorsal_recogido
+                  ? 'Desmarcar dorsal'
+                  : 'Marcar dorsal como recogido'
+              }}
+            </DialogTitle>
+            <DialogDescription v-if="dorsalInscripcion">
+              <span class="font-medium">
+                {{ dorsalInscripcion.participante.nombre }}
+                {{ dorsalInscripcion.participante.apellidos }}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div class="py-4">
+            <p class="text-sm text-slate-600">
+              {{
+                dorsalInscripcion?.dorsal_recogido
+                  ? '¿Estás seguro de que deseas desmarcar el dorsal como no recogido?'
+                  : '¿Confirmas que este participante ha recogido su dorsal?'
+              }}
+            </p>
+            <p class="mt-2 text-xs text-slate-400">
+              Presiona
+              <kbd class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-slate-700">Enter</kbd>
+              para confirmar
+            </p>
+          </div>
+
+          <DialogFooter class="flex gap-2 sm:gap-0">
+            <Button variant="outline" @click="dorsalDialogOpen = false"> Cancelar </Button>
+            <Button
+              :variant="dorsalInscripcion?.dorsal_recogido ? 'destructive' : 'default'"
+              @click="confirmarToggleDorsal"
+            >
+              {{ dorsalInscripcion?.dorsal_recogido ? 'Desmarcar' : 'Confirmar entrega' }}
             </Button>
           </DialogFooter>
         </DialogContent>

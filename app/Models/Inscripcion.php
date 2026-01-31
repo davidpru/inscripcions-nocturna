@@ -33,6 +33,7 @@ class Inscripcion extends Model
         'fecha_pago',
         'fecha_devolucion',
         'importe_devolucion',
+        'dorsal_recogido',
     ];
 
     protected $casts = [
@@ -41,6 +42,7 @@ class Inscripcion extends Model
         'necesita_autobus' => 'boolean',
         'seguro_anulacion' => 'boolean',
         'es_celiaco' => 'boolean',
+        'dorsal_recogido' => 'boolean',
         'tarifa_aplicada' => 'string',
         'precio_total' => 'decimal:2',
         'descuento_cupon' => 'decimal:2',
