@@ -192,7 +192,8 @@ const handleOpenChange = (open: boolean) => {
                     'bg-red-100 text-red-800': inscripcion.estado_pago === 'cancelado',
                     'bg-blue-100 text-blue-800': inscripcion.estado_pago === 'invitado',
                     'bg-purple-100 text-purple-800': inscripcion.estado_pago === 'devuelto',
-                    'bg-orange-100 text-orange-800': inscripcion.estado_pago === 'devolucion_parcial',
+                    'bg-orange-100 text-orange-800':
+                      inscripcion.estado_pago === 'devolucion_parcial',
                   }"
                   class="ml-2 rounded-full px-2 py-0.5 text-xs font-semibold"
                 >

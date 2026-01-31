@@ -411,7 +411,7 @@ const exportarInscripciones = () => {
   if (edicionSeleccionada.value) {
     url += `?edicion_id=${edicionSeleccionada.value}`;
   }
-  
+
   // Abrir en nueva pestaña para descargar
   window.open(url, '_blank');
 };

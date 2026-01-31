@@ -272,7 +272,10 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
               }}
             </span>
             <button
-              v-if="inscripcion.necesita_autobus && (inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado')"
+              v-if="
+                inscripcion.necesita_autobus &&
+                (inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado')
+              "
               type="button"
               class="text-xs text-blue-600 hover:text-blue-800 hover:underline"
               @click="mostrarFormularioCambiarParada = true"
@@ -297,7 +300,10 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
 
       <!-- Opción de contratar autobús si está pagado y no tiene bus -->
       <div
-        v-if="(inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado') && !inscripcion.necesita_autobus"
+        v-if="
+          (inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado') &&
+          !inscripcion.necesita_autobus
+        "
         class="mb-6 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 p-6"
       >
         <div class="flex items-start gap-4">
@@ -398,7 +404,9 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
           </div>
           <div v-if="inscripcion.importe_devolucion">
             <span class="block text-sm text-slate-500">Import devolt</span>
-            <span class="text-lg font-bold text-purple-600">{{ inscripcion.importe_devolucion }}€</span>
+            <span class="text-lg font-bold text-purple-600"
+              >{{ inscripcion.importe_devolucion }}€</span
+            >
           </div>
         </div>
       </div>
@@ -485,7 +493,11 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
         <Link href="/">
           <Button variant="outline">Tornar a l'inici</Button>
         </Link>
-        <Button v-if="inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado'" @click="reenviarCorreo" class="gap-2">
+        <Button
+          v-if="inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado'"
+          @click="reenviarCorreo"
+          class="gap-2"
+        >
           <Mail class="h-4 w-4" />
           Reenviar correu de confirmació
         </Button>
