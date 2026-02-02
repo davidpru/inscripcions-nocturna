@@ -38,7 +38,7 @@ import {
   UserPlus,
   X,
 } from 'lucide-vue-next';
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 interface Participante {
   id: number;
@@ -141,18 +141,25 @@ const getNumeroInscripcion = (inscripcion: Inscripcion, index: number): number |
 
   // Calcular offset base de páginas anteriores
   const offset = (props.inscripciones.current_page - 1) * props.inscripciones.per_page;
-  
+
   // Contar inscripciones pagadas desde el inicio de la lista hasta esta posición
   let numeroInscripcion = 1; // Empezamos desde 1
-  
+
   // Sumar todas las inscripciones pagadas en páginas anteriores + las de esta página hasta esta posición
   for (let i = 0; i <= index; i++) {
     if (i < index && inscripcionesFiltradas.value[i].estado_pago === 'pagado') {
       numeroInscripcion++;
     }
   }
-  
+
   return offset + numeroInscripcion;
+};
+
+// Modal para nueva inscripción
+const modalNuevaInscripcion = ref(false);
+const buscandoParticipante = ref(false);
+const participanteEncontrado = ref(false);
+
 const nuevaInscripcionForm = useForm({
   dni: '',
   nombre: '',
@@ -259,7 +266,6 @@ const calcularPrecioNuevo = async () => {
 };
 
 // Calcular precio cuando cambian opciones
-import { watch } from 'vue';
 watch(
   () => [
     nuevaInscripcionForm.es_socio_uec,
