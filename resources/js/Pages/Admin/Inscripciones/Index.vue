@@ -106,6 +106,7 @@ const props = defineProps<{
   filtros: {
     edicion_id?: number;
   };
+  totalInscripcionesPagadas: number;
 }>();
 
 const edicionSeleccionada = ref(props.filtros.edicion_id || '');
@@ -130,10 +131,8 @@ const inscripcionesFiltradas = computed(() => {
   });
 });
 
-// Computed para contar solo inscripciones pagadas
-const totalInscripcionesPagadas = computed(() => {
-  return props.inscripciones.data.filter((i) => i.estado_pago === 'pagado').length;
-});
+// Total de inscripciones pagadas (viene del backend)
+const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas);
 
 // Modal para nueva inscripción
 const modalNuevaInscripcion = ref(false);

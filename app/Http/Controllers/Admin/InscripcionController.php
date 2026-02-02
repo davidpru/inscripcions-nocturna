@@ -27,11 +27,19 @@ class InscripcionController extends Controller
 
         $inscripciones = $query->paginate(50);
         $ediciones = Edicion::orderBy('anio', 'desc')->get();
+        
+        // Calcular total de inscripciones pagadas (respetando filtros)
+        $totalPagadasQuery = Inscripcion::where('estado_pago', 'pagado');
+        if ($request->filled('edicion_id')) {
+            $totalPagadasQuery->where('edicion_id', $request->edicion_id);
+        }
+        $totalInscripcionesPagadas = $totalPagadasQuery->count();
 
         return Inertia::render('Admin/Inscripciones/Index', [
             'inscripciones' => $inscripciones,
             'ediciones' => $ediciones,
             'filtros' => $request->only('edicion_id'),
+            'totalInscripcionesPagadas' => $totalInscripcionesPagadas,
         ]);
     }
 
