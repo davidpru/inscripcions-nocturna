@@ -109,6 +109,7 @@ const props = defineProps<{
     busqueda?: string;
   };
   totalInscripcionesPagadas: number;
+  pagadasAntesDeEstaPagina: number;
 }>();
 
 const edicionSeleccionada = ref(props.filtros.edicion_id || '');
@@ -126,20 +127,16 @@ const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas
 const getNumeroInscripcion = (inscripcion: Inscripcion, index: number): number | null => {
   if (inscripcion.estado_pago !== 'pagado') return null;
 
-  // Contar cuántas inscripciones pagadas hay en esta página DESPUÉS de esta posición
-  let pagadasDespues = 0;
-  for (let i = index + 1; i < inscripcionesFiltradas.value.length; i++) {
+  // Contar cuántas inscripciones pagadas hay en esta página ANTES de esta posición
+  let pagadasAntes = 0;
+  for (let i = 0; i < index; i++) {
     if (inscripcionesFiltradas.value[i].estado_pago === 'pagado') {
-      pagadasDespues++;
+      pagadasAntes++;
     }
   }
 
-  // Calcular cuántas páginas quedan después de esta
-  const paginasRestantes = props.inscripciones.last_page - props.inscripciones.current_page;
-  const registrosPorPaginaRestante = paginasRestantes * props.inscripciones.per_page;
-
-  // El número es: total - (registros en páginas posteriores + registros después en esta página)
-  return totalInscripcionesPagadas.value - (registrosPorPaginaRestante + pagadasDespues);
+  // En orden DESC: el número = total - (pagadas en páginas anteriores) - (pagadas antes en esta página)
+  return totalInscripcionesPagadas.value - props.pagadasAntesDeEstaPagina - pagadasAntes;
 };
 
 const modalNuevaInscripcion = ref(false);

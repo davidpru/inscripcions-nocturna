@@ -36,21 +36,51 @@ class InscripcionController extends Controller
             });
         }
 
+        // Clonar query para contar pagadas
+        $queryPagadas = clone $query;
+        $queryPagadas->where('estado_pago', 'pagado');
+        
         $inscripciones = $query->paginate(50);
         $ediciones = Edicion::orderBy('anio', 'desc')->get();
         
         // Calcular total de inscripciones pagadas (respetando filtros)
-        $totalPagadasQuery = Inscripcion::where('estado_pago', 'pagado');
-        if ($request->filled('edicion_id')) {
-            $totalPagadasQuery->where('edicion_id', $request->edicion_id);
+        $totalInscripcionesPagadas = $queryPagadas->count();
+        
+        // Calcular cuántas inscripciones pagadas hay ANTES de la página actual
+        // Esto es necesario para numerar correctamente en orden DESC
+        $currentPage = $inscripciones->currentPage();
+        $pagadasAntesDeEstaPagina = 0;
+        
+        if ($currentPage > 1) {
+            // Contar inscripciones pagadas en las páginas anteriores
+            $idsEnPaginasAnteriores = Inscripcion::with(['participante', 'edicion'])
+                ->orderBy('created_at', 'desc');
+            
+            if ($request->filled('edicion_id')) {
+                $idsEnPaginasAnteriores->where('edicion_id', $request->edicion_id);
+            }
+            if ($request->filled('busqueda')) {
+                $busqueda = $request->busqueda;
+                $idsEnPaginasAnteriores->whereHas('participante', function ($q) use ($busqueda) {
+                    $q->where('nombre', 'like', "%{$busqueda}%")
+                        ->orWhere('apellidos', 'like', "%{$busqueda}%")
+                        ->orWhere('dni', 'like', "%{$busqueda}%")
+                        ->orWhere('email', 'like', "%{$busqueda}%");
+                });
+            }
+            
+            $pagadasAntesDeEstaPagina = $idsEnPaginasAnteriores
+                ->where('estado_pago', 'pagado')
+                ->take(($currentPage - 1) * 50)
+                ->count();
         }
-        $totalInscripcionesPagadas = $totalPagadasQuery->count();
 
         return Inertia::render('Admin/Inscripciones/Index', [
             'inscripciones' => $inscripciones,
             'ediciones' => $ediciones,
             'filtros' => $request->only(['edicion_id', 'busqueda']),
             'totalInscripcionesPagadas' => $totalInscripcionesPagadas,
+            'pagadasAntesDeEstaPagina' => $pagadasAntesDeEstaPagina,
         ]);
     }
 
