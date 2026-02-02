@@ -106,31 +106,18 @@ const props = defineProps<{
   ediciones: Edicion[];
   filtros: {
     edicion_id?: number;
+    busqueda?: string;
   };
   totalInscripcionesPagadas: number;
 }>();
 
 const edicionSeleccionada = ref(props.filtros.edicion_id || '');
+const busqueda = ref(props.filtros.busqueda || '');
 const saving = ref(false);
 const editingData = reactive<Record<number, any>>({});
 
-// Buscador de participantes
-const busqueda = ref('');
-const inscripcionesFiltradas = computed(() => {
-  if (!busqueda.value.trim()) {
-    return props.inscripciones.data;
-  }
-
-  const termino = busqueda.value.toLowerCase().trim();
-  return props.inscripciones.data.filter((inscripcion) => {
-    const nombreCompleto =
-      `${inscripcion.participante.nombre} ${inscripcion.participante.apellidos}`.toLowerCase();
-    const dni = inscripcion.participante.dni.toLowerCase();
-    const email = inscripcion.participante.email.toLowerCase();
-
-    return nombreCompleto.includes(termino) || dni.includes(termino) || email.includes(termino);
-  });
-});
+// Mostrar todas las inscripciones sin filtrado local (la búsqueda se hace en backend)
+const inscripcionesFiltradas = computed(() => props.inscripciones.data);
 
 // Total de inscripciones pagadas (viene del backend)
 const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas);
@@ -139,23 +126,22 @@ const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas
 const getNumeroInscripcion = (inscripcion: Inscripcion, index: number): number | null => {
   if (inscripcion.estado_pago !== 'pagado') return null;
 
-  // Calcular offset base de páginas anteriores
-  const offset = (props.inscripciones.current_page - 1) * props.inscripciones.per_page;
-
-  // Contar inscripciones pagadas desde el inicio de la lista hasta esta posición
-  let numeroInscripcion = 1; // Empezamos desde 1
-
-  // Sumar todas las inscripciones pagadas en páginas anteriores + las de esta página hasta esta posición
-  for (let i = 0; i <= index; i++) {
-    if (i < index && inscripcionesFiltradas.value[i].estado_pago === 'pagado') {
-      numeroInscripcion++;
+  // Contar cuántas inscripciones pagadas hay en esta página DESPUÉS de esta posición
+  let pagadasDespues = 0;
+  for (let i = index + 1; i < inscripcionesFiltradas.value.length; i++) {
+    if (inscripcionesFiltradas.value[i].estado_pago === 'pagado') {
+      pagadasDespues++;
     }
   }
 
-  return offset + numeroInscripcion;
+  // Calcular cuántas páginas quedan después de esta
+  const paginasRestantes = props.inscripciones.last_page - props.inscripciones.current_page;
+  const registrosPorPaginaRestante = paginasRestantes * props.inscripciones.per_page;
+
+  // El número es: total - (registros en páginas posteriores + registros después en esta página)
+  return totalInscripcionesPagadas.value - (registrosPorPaginaRestante + pagadasDespues);
 };
 
-// Modal para nueva inscripción
 const modalNuevaInscripcion = ref(false);
 const buscandoParticipante = ref(false);
 const participanteEncontrado = ref(false);
@@ -423,15 +409,37 @@ const filtrarPorEdicion = () => {
   window.location.href = `/uec-admin/inscripciones?edicion_id=${edicionSeleccionada.value}`;
 };
 
+const aplicarBusqueda = () => {
+  const params = new URLSearchParams();
+  if (edicionSeleccionada.value) {
+    params.append('edicion_id', edicionSeleccionada.value.toString());
+  }
+  if (busqueda.value.trim()) {
+    params.append('busqueda', busqueda.value.trim());
+  }
+  window.location.href = `/uec-admin/inscripciones${params.toString() ? '?' + params.toString() : ''}`;
+};
+
+// Debounce para búsqueda automática
+let busquedaTimeout: number;
+watch(busqueda, () => {
+  clearTimeout(busquedaTimeout);
+  busquedaTimeout = setTimeout(() => {
+    aplicarBusqueda();
+  }, 500);
+});
+
 // Exportar inscripciones confirmadas a CSV
 const exportarInscripciones = () => {
-  // Construir URL con parámetro de edición si está seleccionada
-  let url = '/uec-admin/inscripciones/exportar';
+  // Construir URL con parámetros de edición y búsqueda si están seleccionados
+  const params = new URLSearchParams();
   if (edicionSeleccionada.value) {
-    url += `?edicion_id=${edicionSeleccionada.value}`;
+    params.append('edicion_id', edicionSeleccionada.value.toString());
   }
-
-  // Abrir en nueva pestaña para descargar
+  if (busqueda.value.trim()) {
+    params.append('busqueda', busqueda.value.trim());
+  }
+  const url = `/uec-admin/inscripciones/exportar${params.toString() ? '?' + params.toString() : ''}`;
   window.open(url, '_blank');
 };
 

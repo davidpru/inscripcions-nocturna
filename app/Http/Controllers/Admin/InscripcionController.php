@@ -18,11 +18,22 @@ class InscripcionController extends Controller
     public function index(Request $request): Response
     {
         $query = Inscripcion::with(['participante', 'edicion'])
-            ->orderBy('created_at', 'asc');
+            ->orderBy('created_at', 'desc');
 
         // Filtrar por edición si se especifica y tiene valor
         if ($request->filled('edicion_id')) {
             $query->where('edicion_id', $request->edicion_id);
+        }
+
+        // Filtrar por búsqueda (nombre, apellidos, DNI, email)
+        if ($request->filled('busqueda')) {
+            $busqueda = $request->busqueda;
+            $query->whereHas('participante', function ($q) use ($busqueda) {
+                $q->where('nombre', 'like', "%{$busqueda}%")
+                    ->orWhere('apellidos', 'like', "%{$busqueda}%")
+                    ->orWhere('dni', 'like', "%{$busqueda}%")
+                    ->orWhere('email', 'like', "%{$busqueda}%");
+            });
         }
 
         $inscripciones = $query->paginate(50);
@@ -38,7 +49,7 @@ class InscripcionController extends Controller
         return Inertia::render('Admin/Inscripciones/Index', [
             'inscripciones' => $inscripciones,
             'ediciones' => $ediciones,
-            'filtros' => $request->only('edicion_id'),
+            'filtros' => $request->only(['edicion_id', 'busqueda']),
             'totalInscripcionesPagadas' => $totalInscripcionesPagadas,
         ]);
     }
