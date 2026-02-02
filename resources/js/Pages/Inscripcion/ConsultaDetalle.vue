@@ -12,9 +12,9 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PARADAS, getParadaLabel } from '@/constants/paradas';
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { Bus, CheckCircle, Clock, Mail, XCircle } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { AlertCircle, Bus, CheckCircle, Clock, Mail, XCircle } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface Participante {
   nombre: string;
@@ -64,8 +64,13 @@ const props = defineProps<{
   precioAutobus?: number;
 }>();
 
+const page = usePage();
 const mostrarFormularioAutobus = ref(false);
 const mostrarFormularioCambiarParada = ref(false);
+const enviandoCorreo = ref(false);
+
+const flash = computed(() => page.props.flash as { success?: string; error?: string });
+
 const autobusForm = useForm({
   parada_autobus: '',
 });
@@ -87,11 +92,15 @@ const cambiarParada = () => {
 };
 
 const reenviarCorreo = () => {
+  enviandoCorreo.value = true;
   router.post(
     `/inscripcio/${props.inscripcion.id}/reenviar-correo`,
     {},
     {
       preserveScroll: true,
+      onFinish: () => {
+        enviandoCorreo.value = false;
+      },
     }
   );
 };
@@ -488,6 +497,16 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
         </div>
       </div>
 
+      <!-- Mensajes de feedback -->
+      <div v-if="flash.success" class="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
+        <CheckCircle class="h-5 w-5 shrink-0 text-green-600" />
+        <p class="text-sm text-green-800">{{ flash.success }}</p>
+      </div>
+      <div v-if="flash.error" class="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+        <AlertCircle class="h-5 w-5 shrink-0 text-red-600" />
+        <p class="text-sm text-red-800">{{ flash.error }}</p>
+      </div>
+
       <!-- Botones de navegación -->
       <div class="flex flex-wrap justify-center gap-4">
         <Link href="/">
@@ -496,10 +515,12 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
         <Button
           v-if="inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado'"
           @click="reenviarCorreo"
+          :disabled="enviandoCorreo"
           class="gap-2"
         >
-          <Mail class="h-4 w-4" />
-          Reenviar correu de confirmació
+          <Mail v-if="!enviandoCorreo" class="h-4 w-4" />
+          <span v-if="enviandoCorreo" class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+          {{ enviandoCorreo ? 'Enviant...' : 'Reenviar correu de confirmació' }}
         </Button>
       </div>
     </div>
