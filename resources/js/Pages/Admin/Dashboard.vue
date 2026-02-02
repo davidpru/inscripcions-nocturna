@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { GroupedBar } from '@unovis/ts';
 import { VisAxis, VisGroupedBar, VisTooltip, VisXYContainer } from '@unovis/vue';
-import { Calendar, ClipboardList, Euro, TrendingUp, Users } from 'lucide-vue-next';
+import { BarChart3, Calendar, ClipboardList, Euro, TrendingUp, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Stats {
@@ -26,9 +34,30 @@ interface InscripcionPorDia {
   total: number;
 }
 
+interface EstadistiqueRow {
+  total: number;
+  importTotal: number;
+  importInscr?: number;
+  importBus?: number;
+  importAsseg?: number;
+}
+
+interface Estadistiques {
+  totals: EstadistiqueRow;
+  publicNoFederat: EstadistiqueRow;
+  publicFederat: EstadistiqueRow;
+  sociNoFederat: EstadistiqueRow;
+  sociFederat: EstadistiqueRow;
+  placesBus: { total: number; importTotal: number };
+  busTortosa: { total: number; importTotal: number };
+  busPauls: { total: number; importTotal: number };
+  assegurances: { total: number; importTotal: number };
+}
+
 const props = defineProps<{
   stats: Stats;
   inscripcionesPorDia: InscripcionPorDia[];
+  estadistiques: Estadistiques | null;
 }>();
 
 const formatCurrency = (amount: number) => {
@@ -68,6 +97,9 @@ const tooltipTriggers = {
     `;
   },
 };
+
+// Accés a estadistiques
+const estadistiques = computed(() => props.estadistiques);
 </script>
 
 <template>
@@ -193,6 +225,165 @@ const tooltipTriggers = {
               <VisAxis type="y" label="Inscripcions" />
               <VisTooltip :triggers="tooltipTriggers" />
             </VisXYContainer>
+          </CardContent>
+        </Card>
+
+        <!-- Taula d'Estadístiques -->
+        <Card v-if="estadistiques" class="mb-8">
+          <CardHeader class="rounded-t-lg p-4">
+            <CardTitle class="flex items-center gap-2">
+              <BarChart3 class="h-5 w-5" />
+              Estadístiques
+            </CardTitle>
+          </CardHeader>
+          <CardContent class="p-0">
+            <div class="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow class="bg-slate-50">
+                  <TableHead class="font-semibold"></TableHead>
+                  <TableHead class="text-center font-semibold">Total</TableHead>
+                  <TableHead class="text-center font-semibold">Import total</TableHead>
+                  <TableHead class="text-center font-semibold">Import inscr.</TableHead>
+                  <TableHead class="text-center font-semibold">Import bus</TableHead>
+                  <TableHead class="text-center font-semibold">Import asseg.</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <!-- Inscrits (tots) -->
+                <TableRow>
+                  <TableCell class="font-semibold">Inscrits (tots)</TableCell>
+                  <TableCell class="text-center">{{ estadistiques.totals.total }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.totals.importTotal)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.totals.importInscr ?? 0)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.totals.importBus ?? 0)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.totals.importAsseg ?? 0)
+                  }}</TableCell>
+                </TableRow>
+                <!-- Públic no federat -->
+                <TableRow>
+                  <TableCell class="font-medium">Públic no federat</TableCell>
+                  <TableCell class="text-center">{{
+                    estadistiques.publicNoFederat.total
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.publicNoFederat.importTotal)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.publicNoFederat.importInscr ?? 0)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.publicNoFederat.importBus ?? 0)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.publicNoFederat.importAsseg ?? 0)
+                  }}</TableCell>
+                </TableRow>
+                <!-- Públic federat -->
+                <TableRow>
+                  <TableCell class="font-medium">Públic federat</TableCell>
+                  <TableCell class="text-center">{{ estadistiques.publicFederat.total }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.publicFederat.importTotal)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.publicFederat.importInscr ?? 0)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.publicFederat.importBus ?? 0)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.publicFederat.importAsseg ?? 0)
+                  }}</TableCell>
+                </TableRow>
+                <!-- Soci no federat -->
+                <TableRow>
+                  <TableCell class="font-medium">Soci no federat</TableCell>
+                  <TableCell class="text-center">{{ estadistiques.sociNoFederat.total }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.sociNoFederat.importTotal)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.sociNoFederat.importInscr ?? 0)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.sociNoFederat.importBus ?? 0)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.sociNoFederat.importAsseg ?? 0)
+                  }}</TableCell>
+                </TableRow>
+                <!-- Soci federat -->
+                <TableRow>
+                  <TableCell class="font-medium">Soci federat</TableCell>
+                  <TableCell class="text-center">{{ estadistiques.sociFederat.total }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.sociFederat.importTotal)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.sociFederat.importInscr ?? 0)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.sociFederat.importBus ?? 0)
+                  }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.sociFederat.importAsseg ?? 0)
+                  }}</TableCell>
+                </TableRow>
+                <!-- Places de bus -->
+                <TableRow>
+                  <TableCell class="font-medium">Places de bus</TableCell>
+                  <TableCell class="text-center">{{ estadistiques.placesBus.total }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.placesBus.importTotal)
+                  }}</TableCell>
+                  <TableCell class="text-center"></TableCell>
+                  <TableCell class="text-center"></TableCell>
+                  <TableCell class="text-center"></TableCell>
+                </TableRow>
+                <!-- Bus Tortosa -->
+                <TableRow>
+                  <TableCell class="font-medium pl-6">↳ Bus Tortosa</TableCell>
+                  <TableCell class="text-center">{{ estadistiques.busTortosa.total }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.busTortosa.importTotal)
+                  }}</TableCell>
+                  <TableCell class="text-center"></TableCell>
+                  <TableCell class="text-center"></TableCell>
+                  <TableCell class="text-center"></TableCell>
+                </TableRow>
+                <!-- Bus Paüls -->
+                <TableRow>
+                  <TableCell class="font-medium pl-6">↳ Bus Paüls</TableCell>
+                  <TableCell class="text-center">{{ estadistiques.busPauls.total }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.busPauls.importTotal)
+                  }}</TableCell>
+                  <TableCell class="text-center"></TableCell>
+                  <TableCell class="text-center"></TableCell>
+                  <TableCell class="text-center"></TableCell>
+                </TableRow>
+                <!-- Assegurances contractades -->
+                <TableRow>
+                  <TableCell class="font-medium">Assegurances contr.</TableCell>
+                  <TableCell class="text-center">{{ estadistiques.assegurances.total }}</TableCell>
+                  <TableCell class="text-center">{{
+                    formatCurrency(estadistiques.assegurances.importTotal)
+                  }}</TableCell>
+                  <TableCell class="text-center"></TableCell>
+                  <TableCell class="text-center"></TableCell>
+                  <TableCell class="text-center"></TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+            </div>
           </CardContent>
         </Card>
 
