@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Head, useForm } from '@inertiajs/vue3';
-import { AlertCircle, Lock, Mail, Mountain } from 'lucide-vue-next';
+import { AlertCircle, Loader2, Lock, Mail, Mountain } from 'lucide-vue-next';
 
 const form = useForm({
   email: '',
@@ -14,7 +14,7 @@ const form = useForm({
 });
 
 const submit = () => {
-  form.post('/admin/login', {
+  form.post('/uec-admin/login', {
     onFinish: () => {
       form.password = '';
     },
@@ -35,7 +35,7 @@ const submit = () => {
           <Mountain class="text-primary-foreground h-10 w-10" />
         </div>
         <h1 class="text-2xl font-bold text-slate-900">Administració Nocturna</h1>
-        <p class="mt-1 text-slate-500">Accedeix al panell d'administració</p>
+        <!-- <p class="mt-1 text-slate-500">Accedeix al panell d'administració</p> -->
       </div>
 
       <Card class="border-0 shadow-xl">
@@ -93,33 +93,22 @@ const submit = () => {
 
             <!-- Remember me -->
             <div class="flex items-center gap-2">
-              <Checkbox
-                id="remember"
-                :checked="form.remember"
-                @update:checked="form.remember = $event"
-              />
-              <Label for="remember" class="cursor-pointer text-sm font-normal"> Recorda'm </Label>
+              <Checkbox id="remember" v-model="form.remember" />
+              <Label for="remember" class="cursor-pointer text-sm font-normal select-none">
+                Recorda'm
+              </Label>
             </div>
 
             <!-- Submit -->
-            <Button type="submit" class="w-full" :disabled="form.processing">
+            <Button
+              type="submit"
+              class="w-full"
+              size="xl"
+              variant="destructive"
+              :disabled="form.processing"
+            >
               <span v-if="form.processing" class="flex items-center gap-2">
-                <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24">
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                    fill="none"
-                  />
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
+                <Loader2 class="h-4 w-4 animate-spin" />
                 Accedint...
               </span>
               <span v-else>Accedir</span>

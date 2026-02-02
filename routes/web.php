@@ -81,14 +81,14 @@ Route::get('/preview-email', function () {
 });
 
 // Rutas de autenticación admin
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('uec-admin')->name('admin.')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
 // Rutas de administración (protegidas)
-Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function () {
+Route::prefix('uec-admin')->name('admin.')->middleware('admin.auth')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
