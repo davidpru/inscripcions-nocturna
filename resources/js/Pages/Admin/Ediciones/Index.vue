@@ -42,7 +42,7 @@ const getEstadoBadgeClass = (estado: string) => {
             <h1 class="text-3xl font-bold text-slate-900">Gestión de Ediciones</h1>
             <p class="mt-1 text-slate-600">Administra las ediciones de la Nocturna Fredes Paüls</p>
           </div>
-          <Link href="/admin/ediciones/create">
+          <Link href="/uec-admin/ediciones/create">
             <Button>Nueva Edición</Button>
           </Link>
         </div>
@@ -116,10 +116,10 @@ const getEstadoBadgeClass = (estado: string) => {
                     </span>
                   </td>
                   <td class="space-x-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                    <Link :href="`/admin/ediciones/${edicion.id}/edit`">
+                    <Link :href="`/uec-admin/ediciones/${edicion.id}/edit`">
                       <Button variant="outline" size="sm">Editar</Button>
                     </Link>
-                    <Link :href="`/admin/inscripciones?edicion_id=${edicion.id}`">
+                    <Link :href="`/uec-admin/inscripciones?edicion_id=${edicion.id}`">
                       <Button variant="outline" size="sm">Ver Inscritos</Button>
                     </Link>
                   </td>
@@ -130,7 +130,7 @@ const getEstadoBadgeClass = (estado: string) => {
 
           <div v-if="ediciones.length === 0" class="py-12 text-center">
             <p class="text-slate-500">No hay ediciones creadas</p>
-            <Link href="/admin/ediciones/create" class="mt-4 inline-block">
+            <Link href="/uec-admin/ediciones/create" class="mt-4 inline-block">
               <Button>Crear Primera Edición</Button>
             </Link>
           </div>
