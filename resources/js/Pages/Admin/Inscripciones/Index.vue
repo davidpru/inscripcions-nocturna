@@ -139,27 +139,20 @@ const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas
 const getNumeroInscripcion = (inscripcion: Inscripcion, index: number): number | null => {
   if (inscripcion.estado_pago !== 'pagado') return null;
 
-  // Contar cuántas inscripciones pagadas hay antes de esta en la lista filtrada
-  let numeroInscripcion = 0;
-  for (let i = 0; i < index; i++) {
-    if (inscripcionesFiltradas.value[i].estado_pago === 'pagado') {
+  // Calcular offset base de páginas anteriores
+  const offset = (props.inscripciones.current_page - 1) * props.inscripciones.per_page;
+  
+  // Contar inscripciones pagadas desde el inicio de la lista hasta esta posición
+  let numeroInscripcion = 1; // Empezamos desde 1
+  
+  // Sumar todas las inscripciones pagadas en páginas anteriores + las de esta página hasta esta posición
+  for (let i = 0; i <= index; i++) {
+    if (i < index && inscripcionesFiltradas.value[i].estado_pago === 'pagado') {
       numeroInscripcion++;
     }
   }
-
-  // Sumar el offset de la página actual
-  const offset = (props.inscripciones.current_page - 1) * props.inscripciones.per_page;
-
-  // Contar inscripciones pagadas en páginas anteriores (aproximación)
-  // Esto asume que las inscripciones están ordenadas de forma consistente
-  return offset + numeroInscripcion + 1;
-};
-
-// Modal para nueva inscripción
-const modalNuevaInscripcion = ref(false);
-const buscandoParticipante = ref(false);
-const participanteEncontrado = ref(false);
-
+  
+  return offset + numeroInscripcion;
 const nuevaInscripcionForm = useForm({
   dni: '',
   nombre: '',

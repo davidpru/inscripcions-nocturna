@@ -18,7 +18,7 @@ class InscripcionController extends Controller
     public function index(Request $request): Response
     {
         $query = Inscripcion::with(['participante', 'edicion'])
-            ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'asc');
 
         // Filtrar por edición si se especifica y tiene valor
         if ($request->filled('edicion_id')) {
