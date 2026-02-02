@@ -20,12 +20,22 @@ cd /home/appuectortosa/www
 # Obtener últimos cambios
 git pull origin main
 
-# Limpiar cachés de Laravel
-php artisan optimize:clear
+# Limpiar cachés de Laravel (IMPORTANTE: usar PHP 8.2)
+/usr/local/bin/php82 artisan optimize:clear
 
 # Ejecutar migraciones si hay
-php artisan migrate --force
+/usr/local/bin/php82 artisan migrate --force
 ```
+
+#### Comando rápido desde local
+
+```bash
+# Limpiar cachés desde tu máquina local (sin SSH interactivo)
+ssh appuectortosa@app.uectortosa.cat "cd /home/appuectortosa/www && /usr/local/bin/php82 artisan optimize:clear"
+```
+
+**Nota importante:** El servidor tiene PHP 7.0.33 por defecto, pero Laravel 12 requiere PHP 8.2+.
+Siempre usa `/usr/local/bin/php82` para ejecutar comandos de Artisan.
 
 ### 3. Verificación
 

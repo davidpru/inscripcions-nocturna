@@ -10,11 +10,11 @@ const page = usePage();
 const currentPath = computed(() => page.url);
 
 const navItems = [
-  { name: 'Dashboard', href: '/admin', icon: Home, exact: true },
-  { name: 'Inscripcions', href: '/admin/inscripciones', icon: ClipboardList },
-  { name: 'Edicions', href: '/admin/ediciones', icon: Calendar },
-  { name: 'Cupons', href: '/admin/cupones', icon: Ticket },
-  { name: 'Usuaris', href: '/admin/usuarios', icon: UserCog },
+  { name: 'Dashboard', href: '/uec-admin', icon: Home, exact: true },
+  { name: 'Inscripcions', href: '/uec-admin/inscripciones', icon: ClipboardList },
+  { name: 'Edicions', href: '/uec-admin/ediciones', icon: Calendar },
+  { name: 'Cupons', href: '/uec-admin/cupones', icon: Ticket },
+  { name: 'Usuaris', href: '/uec-admin/usuarios', icon: UserCog },
 ];
 
 const isActiveItem = (item: (typeof navItems)[0]) => {
@@ -25,7 +25,7 @@ const isActiveItem = (item: (typeof navItems)[0]) => {
 };
 
 const logout = () => {
-  router.post('/admin/logout');
+  router.post('/uec-admin/logout');
 };
 </script>
 
@@ -35,7 +35,7 @@ const logout = () => {
       <div class="flex h-16 items-center justify-between">
         <!-- Logo y navegación desktop -->
         <div class="flex items-center">
-          <Link href="/admin" class="shrink-0">
+          <Link href="/uec-admin" class="shrink-0">
             <span class="text-xl font-bold text-red-600 dark:text-red-500"> Nocturna Admin </span>
           </Link>
 
