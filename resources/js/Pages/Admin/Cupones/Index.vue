@@ -108,7 +108,7 @@ const submitForm = () => {
       },
     });
   } else {
-    form.post('/admin/cupones', {
+    form.post('/uec-admin/cupones', {
       onSuccess: () => {
         showDialog.value = false;
         form.reset();
@@ -119,7 +119,7 @@ const submitForm = () => {
 
 const deleteCupon = () => {
   if (deletingCupon.value) {
-    router.delete(`/admin/cupones/${deletingCupon.value.id}`, {
+    router.delete(`/uec-admin/cupones/${deletingCupon.value.id}`, {
       onSuccess: () => {
         showDeleteDialog.value = false;
         deletingCupon.value = null;
@@ -130,7 +130,7 @@ const deleteCupon = () => {
 
 const resetUsos = (cupon: Cupon) => {
   if (confirm(`¿Resetear los usos del cupón ${cupon.codigo}?`)) {
-    router.post(`/admin/cupones/${cupon.id}/reset-usos`);
+    router.post(`/uec-admin/cupones/${cupon.id}/reset-usos`);
   }
 };
 

@@ -88,7 +88,7 @@ const cambiarParada = () => {
 
 const reenviarCorreo = () => {
   router.post(
-    `/admin/inscripciones/${props.inscripcion.id}/reenviar-correo`,
+    `/inscripcio/${props.inscripcion.id}/reenviar-correo`,
     {},
     {
       preserveScroll: true,

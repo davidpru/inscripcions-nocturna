@@ -200,19 +200,19 @@ const tooltipTriggers = {
         <div class="rounded-lg bg-white p-6 shadow">
           <h2 class="mb-4 text-lg font-semibold text-slate-900">Acciones Rápidas</h2>
           <div class="flex flex-wrap gap-4">
-            <Link href="/admin/inscripciones">
+            <Link href="/uec-admin/inscripciones">
               <Button>
                 <ClipboardList class="mr-2 h-4 w-4" />
                 Ver Inscripciones
               </Button>
             </Link>
-            <Link href="/admin/ediciones">
+            <Link href="/uec-admin/ediciones">
               <Button variant="outline">
                 <Calendar class="mr-2 h-4 w-4" />
                 Gestionar Ediciones
               </Button>
             </Link>
-            <Link href="/admin/ediciones/create">
+            <Link href="/uec-admin/ediciones/create">
               <Button variant="outline"> Nueva Edición </Button>
             </Link>
           </div>

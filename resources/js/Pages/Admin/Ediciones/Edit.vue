@@ -961,7 +961,7 @@ const calcularAsientosOcupados = computed(() => {
 
           <!-- Botones de acción (fuera de los tabs) -->
           <div class="mt-6 flex justify-end gap-4">
-            <Button variant="outline" as="a" href="/admin/ediciones"> Cancel·lar </Button>
+            <Button variant="outline" as="a" href="/uec-admin/ediciones"> Cancel·lar </Button>
             <Button type="submit" :disabled="form.processing">
               {{ form.processing ? 'Guardant...' : 'Guardar Canvis' }}
             </Button>

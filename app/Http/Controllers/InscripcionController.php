@@ -439,4 +439,21 @@ class InscripcionController extends Controller
             'inscripcion' => $inscripcion,
         ]);
     }
+
+    public function reenviarCorreo(Inscripcion $inscripcion)
+    {
+        $inscripcion->load(['participante', 'edicion']);
+
+        if (!$inscripcion->participante->email) {
+            return back()->with('error', 'El participante no tiene un correo electrónico asociado.');
+        }
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($inscripcion->participante->email)
+                ->send(new \App\Mail\InscripcionConfirmada($inscripcion));
+            return back()->with('success', 'Correo de confirmación reenviado con éxito.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al enviar el correo: ' . $e->getMessage());
+        }
+    }
 }

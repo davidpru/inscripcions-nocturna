@@ -130,7 +130,7 @@ const submit = () => {
       },
     });
   } else {
-    form.post('/admin/usuarios', {
+    form.post('/uec-admin/usuarios', {
       onSuccess: () => {
         showDialog.value = false;
         form.reset();
@@ -141,7 +141,7 @@ const submit = () => {
 
 const confirmDelete = () => {
   if (deletingUser.value) {
-    router.delete(`/admin/usuarios/${deletingUser.value.id}`, {
+    router.delete(`/uec-admin/usuarios/${deletingUser.value.id}`, {
       onSuccess: () => {
         showDeleteDialog.value = false;
         deletingUser.value = null;

@@ -133,7 +133,7 @@ const enviarFormulario = () => {
             </div>
 
             <div class="flex justify-end gap-4 pt-4">
-              <Button variant="outline" as="a" href="/admin/ediciones"> Cancelar </Button>
+              <Button variant="outline" as="a" href="/uec-admin/ediciones"> Cancelar </Button>
               <Button type="submit" :disabled="form.processing">
                 {{ form.processing ? 'Guardando...' : 'Crear Edición' }}
               </Button>

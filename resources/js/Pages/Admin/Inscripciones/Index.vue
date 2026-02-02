@@ -222,7 +222,7 @@ const buscarParticipanteManual = async () => {
 };
 
 const crearInscripcionManual = () => {
-  nuevaInscripcionForm.post('/admin/inscripciones', {
+  nuevaInscripcionForm.post('/uec-admin/inscripciones', {
     preserveScroll: true,
     onSuccess: () => {
       modalNuevaInscripcion.value = false;
@@ -408,7 +408,7 @@ const cancelEditing = (inscripcionId: number) => {
 
 const saveChanges = (inscripcion: Inscripcion) => {
   saving.value = true;
-  router.put(`/admin/inscripciones/${inscripcion.id}`, editingData[inscripcion.id], {
+  router.put(`/uec-admin/inscripciones/${inscripcion.id}`, editingData[inscripcion.id], {
     preserveScroll: true,
     onSuccess: () => {
       // No eliminar editingData, solo actualizar el estado
@@ -421,13 +421,13 @@ const saveChanges = (inscripcion: Inscripcion) => {
 };
 
 const filtrarPorEdicion = () => {
-  window.location.href = `/admin/inscripciones?edicion_id=${edicionSeleccionada.value}`;
+  window.location.href = `/uec-admin/inscripciones?edicion_id=${edicionSeleccionada.value}`;
 };
 
 // Exportar inscripciones confirmadas a CSV
 const exportarInscripciones = () => {
   // Construir URL con parámetro de edición si está seleccionada
-  let url = '/admin/inscripciones/exportar';
+  let url = '/uec-admin/inscripciones/exportar';
   if (edicionSeleccionada.value) {
     url += `?edicion_id=${edicionSeleccionada.value}`;
   }
@@ -439,7 +439,7 @@ const exportarInscripciones = () => {
 const reenviarCorreo = (id: number) => {
   if (confirm('¿Estás seguro de que deseas reenviar el correo de confirmación?')) {
     router.post(
-      `/admin/inscripciones/${id}/reenviar-correo`,
+      `/uec-admin/inscripciones/${id}/reenviar-correo`,
       {},
       {
         preserveScroll: true,
@@ -457,7 +457,7 @@ const eliminarInscripcion = (id: number) => {
       '¿Estás seguro de que deseas eliminar esta inscripción? Esta acción no se puede deshacer.'
     )
   ) {
-    router.delete(`/admin/inscripciones/${id}`, {
+    router.delete(`/uec-admin/inscripciones/${id}`, {
       preserveScroll: true,
       onSuccess: () => {
         // Opcional: mostrar notificación
@@ -500,8 +500,8 @@ const confirmarDevolucion = () => {
   processingRefund.value = refundInscripcion.value.id;
   const ruta =
     refundTipo.value === 'manual'
-      ? `/admin/inscripciones/${refundInscripcion.value.id}/devolucion-manual`
-      : `/admin/inscripciones/${refundInscripcion.value.id}/devolucion`;
+      ? `/uec-admin/inscripciones/${refundInscripcion.value.id}/devolucion-manual`
+      : `/uec-admin/inscripciones/${refundInscripcion.value.id}/devolucion`;
 
   router.post(
     ruta,
@@ -584,7 +584,7 @@ const confirmarToggleDorsal = () => {
   const inscripcionId = dorsalInscripcion.value.id;
 
   router.post(
-    `/admin/inscripciones/${inscripcionId}/toggle-dorsal`,
+    `/uec-admin/inscripciones/${inscripcionId}/toggle-dorsal`,
     {},
     {
       preserveScroll: true,
@@ -996,7 +996,7 @@ const confirmarToggleDorsal = () => {
                   variant="outline"
                   size="sm"
                   as="a"
-                  :href="`/admin/inscripciones?page=${inscripciones.current_page - 1}${filtros.edicion_id ? '&edicion_id=' + filtros.edicion_id : ''}`"
+                  :href="`/uec-admin/inscripciones?page=${inscripciones.current_page - 1}${filtros.edicion_id ? '&edicion_id=' + filtros.edicion_id : ''}`"
                 >
                   Anterior
                 </Button>
@@ -1005,7 +1005,7 @@ const confirmarToggleDorsal = () => {
                   variant="outline"
                   size="sm"
                   as="a"
-                  :href="`/admin/inscripciones?page=${inscripciones.current_page + 1}${filtros.edicion_id ? '&edicion_id=' + filtros.edicion_id : ''}`"
+                  :href="`/uec-admin/inscripciones?page=${inscripciones.current_page + 1}${filtros.edicion_id ? '&edicion_id=' + filtros.edicion_id : ''}`"
                 >
                   Siguiente
                 </Button>
