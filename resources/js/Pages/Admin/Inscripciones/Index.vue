@@ -32,6 +32,7 @@ import {
   Mail,
   RotateCcw,
   Search,
+  ShieldCheck,
   ShieldUser,
   Trash2,
   UserPlus,
@@ -133,6 +134,26 @@ const inscripcionesFiltradas = computed(() => {
 
 // Total de inscripciones pagadas (viene del backend)
 const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas);
+
+// Calcular el índice de inscripción para inscripciones pagadas
+const getNumeroInscripcion = (inscripcion: Inscripcion, index: number): number | null => {
+  if (inscripcion.estado_pago !== 'pagado') return null;
+
+  // Contar cuántas inscripciones pagadas hay antes de esta en la lista filtrada
+  let numeroInscripcion = 0;
+  for (let i = 0; i < index; i++) {
+    if (inscripcionesFiltradas.value[i].estado_pago === 'pagado') {
+      numeroInscripcion++;
+    }
+  }
+
+  // Sumar el offset de la página actual
+  const offset = (props.inscripciones.current_page - 1) * props.inscripciones.per_page;
+
+  // Contar inscripciones pagadas en páginas anteriores (aproximación)
+  // Esto asume que las inscripciones están ordenadas de forma consistente
+  return offset + numeroInscripcion + 1;
+};
 
 // Modal para nueva inscripción
 const modalNuevaInscripcion = ref(false);
@@ -654,6 +675,11 @@ const confirmarToggleDorsal = () => {
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
+                    Nº
+                  </th>
+                  <th
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
                     #
                   </th>
                   <th
@@ -704,7 +730,16 @@ const confirmarToggleDorsal = () => {
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 bg-white">
-                <tr v-for="inscripcion in inscripcionesFiltradas" :key="inscripcion.id">
+                <tr v-for="(inscripcion, index) in inscripcionesFiltradas" :key="inscripcion.id">
+                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
+                    <span
+                      v-if="getNumeroInscripcion(inscripcion, index)"
+                      class="font-semibold text-blue-600"
+                    >
+                      {{ getNumeroInscripcion(inscripcion, index) }}
+                    </span>
+                    <span v-else class="text-slate-400">-</span>
+                  </td>
                   <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ inscripcion.id }}
                   </td>
@@ -782,6 +817,26 @@ const confirmarToggleDorsal = () => {
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Bus: {{ inscripcion.necesita_autobus ? 'Sí' : 'No' }}</p>
+                          </TooltipContent>
+                        </Tooltip>
+
+                        <!-- Seguro de Anulación -->
+                        <Tooltip>
+                          <TooltipTrigger as-child>
+                            <span
+                              class="flex h-6 w-6 cursor-help items-center justify-center rounded"
+                              :class="
+                                inscripcion.seguro_anulacion
+                                  ? 'bg-violet-100 text-violet-600'
+                                  : 'bg-red-100 text-red-600'
+                              "
+                            >
+                              <ShieldCheck v-if="inscripcion.seguro_anulacion" class="h-4 w-4" />
+                              <ShieldCheck v-else class="h-4 w-4" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Seguro: {{ inscripcion.seguro_anulacion ? 'Sí' : 'No' }}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
