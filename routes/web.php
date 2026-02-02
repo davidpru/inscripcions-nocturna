@@ -64,6 +64,11 @@ Route::prefix('inscripcio')->group(function () {
     Route::get('/{inscripcion}/verificar', [InscripcionPdfController::class, 'verificar'])->name('inscripcion.verificar');
 });
 
+// Redirección para URLs antiguas de PDF (correos ya enviados)
+Route::get('/inscripcion/{inscripcion}/pdf', function ($inscripcion) {
+    return redirect("/inscripcio/{$inscripcion}/pdf", 301);
+});
+
 // Rutas de pago con Redsys
 Route::prefix('pago')->name('redsys.')->group(function () {
     // Rutas específicas primero (antes de la ruta con parámetro)

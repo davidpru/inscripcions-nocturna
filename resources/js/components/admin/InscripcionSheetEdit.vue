@@ -135,7 +135,7 @@ const handleOpenChange = (open: boolean) => {
             <QrCode class="mb-2 h-32 w-32 text-slate-300" />
             <p class="text-sm text-slate-500">Codi QR de verificació</p>
             <div class="mt-4 flex gap-2">
-              <a :href="`/inscripcion/${inscripcion.id}/pdf`" target="_blank">
+              <a :href="`/inscripcio/${inscripcion.id}/pdf`" target="_blank">
                 <Button variant="outline" size="sm" class="gap-2">
                   <Download class="h-4 w-4" />
                   PDF
