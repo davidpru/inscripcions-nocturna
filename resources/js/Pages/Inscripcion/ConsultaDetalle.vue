@@ -498,11 +498,17 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
       </div>
 
       <!-- Mensajes de feedback -->
-      <div v-if="flash.success" class="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
+      <div
+        v-if="flash.success"
+        class="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4"
+      >
         <CheckCircle class="h-5 w-5 shrink-0 text-green-600" />
         <p class="text-sm text-green-800">{{ flash.success }}</p>
       </div>
-      <div v-if="flash.error" class="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+      <div
+        v-if="flash.error"
+        class="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4"
+      >
         <AlertCircle class="h-5 w-5 shrink-0 text-red-600" />
         <p class="text-sm text-red-800">{{ flash.error }}</p>
       </div>
@@ -519,7 +525,10 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
           class="gap-2"
         >
           <Mail v-if="!enviandoCorreo" class="h-4 w-4" />
-          <span v-if="enviandoCorreo" class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+          <span
+            v-if="enviandoCorreo"
+            class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+          ></span>
           {{ enviandoCorreo ? 'Enviant...' : 'Reenviar correu de confirmació' }}
         </Button>
       </div>
