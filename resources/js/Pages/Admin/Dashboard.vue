@@ -253,7 +253,7 @@ const estadistiques = computed(() => props.estadistiques);
                 </TableHeader>
                 <TableBody>
                   <!-- Inscrits (tots) -->
-                  <TableRow>
+                  <TableRow class="bg-green-200">
                     <TableCell class="font-semibold">Inscrits (tots)</TableCell>
                     <TableCell class="text-center">{{ estadistiques.totals.total }}</TableCell>
                     <TableCell class="text-right">{{
@@ -270,7 +270,7 @@ const estadistiques = computed(() => props.estadistiques);
                     }}</TableCell>
                   </TableRow>
                   <!-- Públic no federat -->
-                  <TableRow>
+                  <TableRow class="bg-green-100">
                     <TableCell class="font-medium">Públic no federat</TableCell>
                     <TableCell class="text-center">{{
                       estadistiques.publicNoFederat.total
@@ -289,7 +289,7 @@ const estadistiques = computed(() => props.estadistiques);
                     }}</TableCell>
                   </TableRow>
                   <!-- Públic federat -->
-                  <TableRow>
+                  <TableRow class="bg-green-100">
                     <TableCell class="font-medium">Públic federat</TableCell>
                     <TableCell class="text-center">{{
                       estadistiques.publicFederat.total
@@ -308,7 +308,7 @@ const estadistiques = computed(() => props.estadistiques);
                     }}</TableCell>
                   </TableRow>
                   <!-- Soci no federat -->
-                  <TableRow>
+                  <TableRow class="bg-green-100">
                     <TableCell class="font-medium">Soci no federat</TableCell>
                     <TableCell class="text-center">{{
                       estadistiques.sociNoFederat.total
@@ -327,7 +327,7 @@ const estadistiques = computed(() => props.estadistiques);
                     }}</TableCell>
                   </TableRow>
                   <!-- Soci federat -->
-                  <TableRow>
+                  <TableRow class="bg-green-100">
                     <TableCell class="font-medium">Soci federat</TableCell>
                     <TableCell class="text-center">{{ estadistiques.sociFederat.total }}</TableCell>
                     <TableCell class="text-right">{{
@@ -344,7 +344,7 @@ const estadistiques = computed(() => props.estadistiques);
                     }}</TableCell>
                   </TableRow>
                   <!-- Places de bus -->
-                  <TableRow>
+                  <TableRow class="bg-purple-200">
                     <TableCell class="font-medium">Places de bus</TableCell>
                     <TableCell class="text-center">{{ estadistiques.placesBus.total }}</TableCell>
                     <TableCell class="text-right">{{
@@ -355,7 +355,7 @@ const estadistiques = computed(() => props.estadistiques);
                     <TableCell class="text-right"></TableCell>
                   </TableRow>
                   <!-- Bus Tortosa -->
-                  <TableRow>
+                  <TableRow class="bg-purple-100">
                     <TableCell class="pl-6 font-medium">↳ Bus Tortosa</TableCell>
                     <TableCell class="text-center">{{ estadistiques.busTortosa.total }}</TableCell>
                     <TableCell class="text-right">{{
@@ -366,7 +366,7 @@ const estadistiques = computed(() => props.estadistiques);
                     <TableCell class="text-right"></TableCell>
                   </TableRow>
                   <!-- Bus Paüls -->
-                  <TableRow>
+                  <TableRow class="bg-purple-100">
                     <TableCell class="pl-6 font-medium">↳ Bus Paüls</TableCell>
                     <TableCell class="text-center">{{ estadistiques.busPauls.total }}</TableCell>
                     <TableCell class="text-right">{{
