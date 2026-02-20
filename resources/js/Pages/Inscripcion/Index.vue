@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import logoRedsys from '@/assets/logos/logo-redsys-simple.svg?url';
+import logoSabadell from '@/assets/logos/logo-sabadell.svg?url';
 import Footer from '@/components/ui-layout/footer.vue';
 import Header from '@/components/ui-layout/header.vue';
 import { Button } from '@/components/ui/button';
@@ -768,6 +770,9 @@ const enviarInscripcion = () => {
                       <Checkbox id="seguro" v-model="form.seguro_anulacion" />
                       <div>
                         <Label for="seguro">Assegurança d'anul·lació</Label>
+                        <p class="text-xs">
+                          Vàlida per anul·lar fins abans del 10 de maig de 2026.
+                        </p>
                         <p class="text-sm text-slate-500">9€</p>
                       </div>
                     </Field>
@@ -805,7 +810,10 @@ const enviarInscripcion = () => {
                   </Field>
 
                   <Field>
-                    <Label for="talla_pauls">Talla Samarreta Paüls *</Label>
+                    <Label for="talla_pauls">
+                      Talla Samarreta Paüls
+                      <span class="font-semibold text-red-800">Jo tota! per a Finishers</span> *
+                    </Label>
                     <NativeSelect
                       id="talla_pauls"
                       v-model="form.talla_camiseta_pauls"
@@ -1077,12 +1085,8 @@ const enviarInscripcion = () => {
                   Seràs redirigit a la passarel·la de pagament segura Redsys del Banc Sabadell
                 </div>
                 <div class="mt-4 flex justify-center gap-4">
-                  <img
-                    src="@/assets/logos/logo-redsys-simple.svg"
-                    alt="Logo Redsys"
-                    class="h-6.5"
-                  />
-                  <img src="@/assets/logos/logo-sabadell.svg" alt="Logo Sabadell" class="h-5" />
+                  <img :src="logoRedsys" alt="Logo Redsys" class="h-6.5" />
+                  <img :src="logoSabadell" alt="Logo Sabadell" class="h-5" />
                 </div>
               </div>
             </div>
