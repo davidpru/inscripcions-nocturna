@@ -19,7 +19,7 @@ La teva inscripció per a la Nocturna Fredes-Paüls {{ $inscripcion->edicion->an
 === SERVEIS CONTRACTATS ===
 
 - Samarreta Caro: Talla {{ strtoupper($inscripcion->talla_camiseta_caro) }}
-- Samarreta Paüls: Talla {{ strtoupper($inscripcion->talla_camiseta_pauls) }}
+- Samarreta Paüls - Finishers: Talla {{ strtoupper($inscripcion->talla_camiseta_pauls) }}
 @if($inscripcion->necesita_autobus)
 - Autobús: Sí (Parada: {{ $inscripcion->parada_autobus ?? 'No especificada' }})
 @endif

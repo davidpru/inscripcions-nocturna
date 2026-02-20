@@ -19,6 +19,7 @@ interface Edicion {
 
 interface Inscripcion {
   id: number;
+  hash_token: string;
   precio_total: number;
   estado_pago: string;
   talla_camiseta_caro: string;
@@ -38,7 +39,7 @@ const imprimir = () => {
 };
 
 const descargarPdf = () => {
-  window.location.href = `/inscripcio/${props.inscripcion.id}/pdf`;
+  window.location.href = `/inscripcio/d/${props.inscripcion.hash_token}/pdf`;
 };
 </script>
 

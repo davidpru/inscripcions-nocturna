@@ -60,13 +60,23 @@ Route::prefix('inscripcio')->group(function () {
     Route::post('/{inscripcion}/contratar-autobus', [InscripcionController::class, 'contratarAutobus'])->name('inscripcion.contratar-autobus');
     Route::post('/{inscripcion}/cambiar-parada', [InscripcionController::class, 'cambiarParada'])->name('inscripcion.cambiar-parada');
     Route::post('/{inscripcion}/reenviar-correo', [InscripcionController::class, 'reenviarCorreo'])->name('inscripcion.reenviar-correo');
-    Route::get('/{inscripcion}/pdf', [InscripcionPdfController::class, 'descargar'])->name('inscripcion.pdf');
-    Route::get('/{inscripcion}/verificar', [InscripcionPdfController::class, 'verificar'])->name('inscripcion.verificar');
+
+    // Rutas públicas con hash_token (seguras)
+    Route::get('/d/{hash}/pdf', [InscripcionPdfController::class, 'descargarPorHash'])->name('inscripcion.pdf.hash');
+    Route::get('/d/{hash}/verificar', [InscripcionPdfController::class, 'verificarPorHash'])->name('inscripcion.verificar.hash');
+
+    // Rutas legacy por ID: redirigen a la URL con hash (para correos ya enviados)
+    Route::get('/{inscripcion}/pdf', function (App\Models\Inscripcion $inscripcion) {
+        return redirect()->route('inscripcion.pdf.hash', $inscripcion->hash_token, 301);
+    })->name('inscripcion.pdf');
+    Route::get('/{inscripcion}/verificar', function (App\Models\Inscripcion $inscripcion) {
+        return redirect()->route('inscripcion.verificar.hash', $inscripcion->hash_token, 301);
+    })->name('inscripcion.verificar');
 });
 
-// Redirección para URLs antiguas de PDF (correos ya enviados)
-Route::get('/inscripcion/{inscripcion}/pdf', function ($inscripcion) {
-    return redirect("/inscripcio/{$inscripcion}/pdf", 301);
+// Redirección para URLs antiguas de PDF (correos ya enviados con prefijo /inscripcion/)
+Route::get('/inscripcion/{inscripcion}/pdf', function (App\Models\Inscripcion $inscripcion) {
+    return redirect()->route('inscripcion.pdf.hash', $inscripcion->hash_token, 301);
 });
 
 // Rutas de pago con Redsys

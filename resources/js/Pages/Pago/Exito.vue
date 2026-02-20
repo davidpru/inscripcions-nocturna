@@ -18,6 +18,7 @@ interface Edicion {
 
 interface Inscripcion {
   id: number;
+  hash_token: string;
   precio_total: number;
   numero_autorizacion: string | null;
   talla_camiseta_caro: string;
@@ -49,7 +50,7 @@ const props = defineProps<{
 }>();
 
 const descargarPdf = () => {
-  window.location.href = `/inscripcio/${props.inscripcion.id}/pdf`;
+  window.location.href = `/inscripcio/d/${props.inscripcion.hash_token}/pdf`;
 };
 
 // Enviar evento de conversión a Google Analytics 4

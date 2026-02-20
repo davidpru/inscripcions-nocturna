@@ -41,7 +41,7 @@ La teva inscripció per a la **Nocturna Fredes-Paüls {{ $inscripcion->edicion->
 @if($inscripcion->estado_pago === 'pagado' || $inscripcion->estado_pago === 'invitado')
 Enhorabona estàs inscrit! Ens veiem a la sortida.
 
-<x-mail::button :url="config('app.url') . '/inscripcio/' . $inscripcion->id . '/pdf'">
+<x-mail::button :url="config('app.url') . '/inscripcio/d/' . $inscripcion->hash_token . '/pdf'">
 Descarregar PDF amb codi QR
 </x-mail::button>
 @else

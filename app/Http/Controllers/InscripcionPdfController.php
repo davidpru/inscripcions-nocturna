@@ -8,18 +8,39 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class InscripcionPdfController extends Controller
 {
+    /**
+     * Descargar PDF por hash_token (ruta pública segura).
+     */
+    public function descargarPorHash(string $hash)
+    {
+        $inscripcion = Inscripcion::where('hash_token', $hash)->firstOrFail();
+
+        return $this->generarPdf($inscripcion);
+    }
+
+    /**
+     * Descargar PDF por ID (mantenida para admin y compatibilidad interna).
+     */
     public function descargar(Inscripcion $inscripcion)
     {
+        return $this->generarPdf($inscripcion);
+    }
+
+    /**
+     * Genera y descarga el PDF de la inscripción.
+     */
+    private function generarPdf(Inscripcion $inscripcion)
+    {
         // Verificar que la inscripción está pagada
-        if ($inscripcion->estado_pago !== 'pagado') {
+        if (!in_array($inscripcion->estado_pago, ['pagado', 'invitado'])) {
             abort(403, 'La inscripció no està pagada');
         }
 
         // Cargar relaciones
         $inscripcion->load(['participante', 'edicion']);
 
-        // Generar URL de verificación
-        $verificationUrl = route('inscripcion.verificar', $inscripcion->id);
+        // Generar URL de verificación (usa hash para seguridad)
+        $verificationUrl = route('inscripcion.verificar.hash', $inscripcion->hash_token);
         
         // Generar QR como SVG base64
         $qrCode = base64_encode(QrCode::format('svg')
@@ -44,6 +65,24 @@ class InscripcionPdfController extends Controller
         return $pdf->download($filename);
     }
 
+    /**
+     * Verificar inscripción por hash_token (ruta pública segura).
+     */
+    public function verificarPorHash(string $hash)
+    {
+        $inscripcion = Inscripcion::where('hash_token', $hash)->firstOrFail();
+        $inscripcion->load(['participante', 'edicion']);
+
+        return inertia('Inscripcion/Verificar', [
+            'inscripcion' => $inscripcion,
+            'participante' => $inscripcion->participante,
+            'edicion' => $inscripcion->edicion,
+        ]);
+    }
+
+    /**
+     * Verificar inscripción por ID (mantenida para compatibilidad).
+     */
     public function verificar(Inscripcion $inscripcion)
     {
         $inscripcion->load(['participante', 'edicion']);

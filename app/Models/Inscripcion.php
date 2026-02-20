@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class Inscripcion extends Model
 {
@@ -12,6 +13,7 @@ class Inscripcion extends Model
     protected $fillable = [
         'participante_id',
         'edicion_id',
+        'hash_token',
         'cupon_id',
         'es_socio_uec',
         'esta_federado',
@@ -50,6 +52,15 @@ class Inscripcion extends Model
         'fecha_pago' => 'datetime',
         'fecha_devolucion' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Inscripcion $inscripcion) {
+            if (empty($inscripcion->hash_token)) {
+                $inscripcion->hash_token = Str::random(32);
+            }
+        });
+    }
 
     public function participante(): BelongsTo
     {
