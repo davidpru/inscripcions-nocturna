@@ -14,7 +14,7 @@ import { PARADAS, getParadaShortLabel } from '@/constants/paradas';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 interface Edicion {
   id: number;
@@ -337,6 +337,24 @@ watch(
   }
 );
 
+// Computed para verificar si es menor de edad en la fecha del evento
+const esMenorDeEdad = computed(() => {
+  if (!form.fecha_nacimiento) return false;
+
+  const fechaNacimiento = new Date(form.fecha_nacimiento);
+  const fechaEvento = new Date(props.edicion.fecha_evento); // 30/05/2026
+
+  // Calcular edad en la fecha del evento
+  let edad = fechaEvento.getFullYear() - fechaNacimiento.getFullYear();
+  const mes = fechaEvento.getMonth() - fechaNacimiento.getMonth();
+
+  if (mes < 0 || (mes === 0 && fechaEvento.getDate() < fechaNacimiento.getDate())) {
+    edad--;
+  }
+
+  return edad < 18;
+});
+
 const enviarInscripcion = () => {
   form.post('/inscripcio', {
     preserveScroll: true, // Mantener scroll para que vea el error si está cerca, o dejar false si queremos que suba.
@@ -559,6 +577,28 @@ const enviarInscripcion = () => {
                       required
                     />
                   </Field>
+
+                  <div
+                    v-if="esMenorDeEdad"
+                    class="rounded-md border border-dashed border-yellow-300 bg-yellow-50 p-4 md:col-span-2"
+                  >
+                    <p class="text-sm text-yellow-800">
+                      Si el dia de la Nocturna Fredes - Paüls (30/05/2026) encara no hauràs complert
+                      18 anys, hauràs d'enviar
+                      <a
+                        href="https://nocturna.uectortosa.cat/wp-content/uploads/sites/6/2026/02/autoritzacio-menors-2025.pdf"
+                        class="font-medium text-yellow-800 underline"
+                        >aquest document</a
+                      >
+                      degudament signat per un tutor legal a
+                      <a
+                        href="mailto:activitats@uectortosa.cat"
+                        class="font-medium text-yellow-800 underline"
+                      >
+                        activitats@uectortosa.cat</a
+                      >
+                    </p>
+                  </div>
 
                   <Field>
                     <Label for="telefono">Telèfon *</Label>
