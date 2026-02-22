@@ -36,6 +36,7 @@ import {
   ShieldUser,
   Trash2,
   UserPlus,
+  WheatOff,
   X,
 } from 'lucide-vue-next';
 import { computed, reactive, ref, watch } from 'vue';
@@ -695,7 +696,7 @@ const confirmarToggleDorsal = () => {
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Participant
+                    Nom
                   </th>
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
@@ -705,7 +706,7 @@ const confirmarToggleDorsal = () => {
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Edició
+                    Ed.
                   </th>
                   <th
                     class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
@@ -720,7 +721,7 @@ const confirmarToggleDorsal = () => {
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Pagament
+                    Estat
                   </th>
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
@@ -730,7 +731,7 @@ const confirmarToggleDorsal = () => {
                   <th
                     class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Lliurat
+                    Check
                   </th>
                   <th
                     class="px-3 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
@@ -849,6 +850,26 @@ const confirmarToggleDorsal = () => {
                             <p>Seguro: {{ inscripcion.seguro_anulacion ? 'Sí' : 'No' }}</p>
                           </TooltipContent>
                         </Tooltip>
+
+                        <!-- Celíaco -->
+                        <Tooltip>
+                          <TooltipTrigger as-child>
+                            <span
+                              class="flex h-6 w-6 cursor-help items-center justify-center rounded"
+                              :class="
+                                inscripcion.es_celiaco
+                                  ? 'bg-amber-100 text-amber-600'
+                                  : 'bg-red-100 text-red-600'
+                              "
+                            >
+                              <WheatOff v-if="inscripcion.es_celiaco" class="h-4 w-4" />
+                              <WheatOff v-else class="h-4 w-4" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Celíac: {{ inscripcion.es_celiaco ? 'Sí' : 'No' }}</p>
+                          </TooltipContent>
+                        </Tooltip>
                       </TooltipProvider>
                     </div>
                   </td>
@@ -861,7 +882,8 @@ const confirmarToggleDorsal = () => {
                             : 'text-slate-900'
                         "
                       >
-                        {{ Number(inscripcion.precio_total).toFixed(2) }}€
+                        {{ Number(inscripcion.precio_total).toFixed(2)
+                        }}<sup class="text-[10px]"> €</sup>
                       </span>
                       <TooltipProvider
                         v-if="inscripcion.descuento_cupon && inscripcion.descuento_cupon > 0"
@@ -871,12 +893,18 @@ const confirmarToggleDorsal = () => {
                             <span
                               class="inline-flex h-5 items-center rounded bg-green-100 px-1.5 text-xs font-medium text-green-700"
                             >
-                              -{{ inscripcion.descuento_cupon }}€
+                              -{{ inscripcion.descuento_cupon }}
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Preu amb cupó: {{ Number(inscripcion.precio_total).toFixed(2) }}€</p>
-                            <p>Descompte aplicat: -{{ inscripcion.descuento_cupon }}€</p>
+                            <p>
+                              Preu amb cupó: {{ Number(inscripcion.precio_total).toFixed(2)
+                              }}<sup class="text-[10px]"> €</sup>
+                            </p>
+                            <p>
+                              Descompte aplicat: -{{ inscripcion.descuento_cupon
+                              }}<sup class="text-[10px]">€</sup>
+                            </p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -1177,7 +1205,10 @@ const confirmarToggleDorsal = () => {
                   </Button>
                 </div>
               </div>
-              <p v-if="participanteEncontrado && !participanteYaInscrito" class="mt-2 text-sm text-green-600">
+              <p
+                v-if="participanteEncontrado && !participanteYaInscrito"
+                class="mt-2 text-sm text-green-600"
+              >
                 ✓ Participant trobat. Verifica les dades.
               </p>
               <p v-if="participanteYaInscrito" class="mt-2 text-sm font-medium text-red-600">
@@ -1501,7 +1532,10 @@ const confirmarToggleDorsal = () => {
               >
                 Cancel·lar
               </Button>
-              <Button type="submit" :disabled="nuevaInscripcionForm.processing || participanteYaInscrito">
+              <Button
+                type="submit"
+                :disabled="nuevaInscripcionForm.processing || participanteYaInscrito"
+              >
                 <RotateCcw
                   v-if="nuevaInscripcionForm.processing"
                   class="mr-2 h-4 w-4 animate-spin"
