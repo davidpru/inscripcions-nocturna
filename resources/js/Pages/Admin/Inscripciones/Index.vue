@@ -127,12 +127,12 @@ const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas
 
 // Calcular el índice de inscripción para inscripciones pagadas
 const getNumeroInscripcion = (inscripcion: Inscripcion, index: number): number | null => {
-  if (inscripcion.estado_pago !== 'pagado') return null;
+  if (!['pagado', 'invitado'].includes(inscripcion.estado_pago)) return null;
 
   // Contar cuántas inscripciones pagadas hay en esta página ANTES de esta posición
   let pagadasAntes = 0;
   for (let i = 0; i < index; i++) {
-    if (inscripcionesFiltradas.value[i].estado_pago === 'pagado') {
+    if (['pagado', 'invitado'].includes(inscripcionesFiltradas.value[i].estado_pago)) {
       pagadasAntes++;
     }
   }
@@ -911,10 +911,10 @@ const confirmarToggleDorsal = () => {
                     </div>
                   </td>
                   <td class="px-3 py-3 whitespace-nowrap">
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-col items-center gap-2">
                       <span
                         :class="getEstadoPagoBadgeClass(inscripcion.estado_pago)"
-                        class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold"
+                        class="text-dark inline-flex rounded-full bg-gray-100 px-2 text-xs leading-5 font-semibold"
                       >
                         {{ getEstadoPagoTexto(inscripcion.estado_pago) }}
                       </span>

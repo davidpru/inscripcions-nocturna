@@ -36,9 +36,9 @@ class InscripcionController extends Controller
             });
         }
 
-        // Clonar query para contar pagadas
+        // Clonar query para contar pagadas (incluye invitadas)
         $queryPagadas = clone $query;
-        $queryPagadas->where('estado_pago', 'pagado');
+        $queryPagadas->whereIn('estado_pago', ['pagado', 'invitado']);
         
         $inscripciones = $query->paginate(50);
         $ediciones = Edicion::orderBy('anio', 'desc')->get();
@@ -70,7 +70,7 @@ class InscripcionController extends Controller
             }
             
             $pagadasAntesDeEstaPagina = $idsEnPaginasAnteriores
-                ->where('estado_pago', 'pagado')
+                ->whereIn('estado_pago', ['pagado', 'invitado'])
                 ->take(($currentPage - 1) * 50)
                 ->count();
         }
