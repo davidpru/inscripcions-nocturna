@@ -81,6 +81,7 @@ interface Inscripcion {
   necesita_autobus: boolean;
   parada_autobus: string | null;
   seguro_anulacion: boolean;
+  es_celiaco: boolean;
   talla_camiseta_caro: string;
   talla_camiseta_pauls: string;
   club: string | null;
@@ -174,7 +175,7 @@ const buscarParticipanteManual = async () => {
 
   buscandoParticipante.value = true;
   try {
-    const response = await axios.post('/inscripcion/buscar-participante', {
+    const response = await axios.post('/inscripcio/buscar-participante', {
       dni: nuevaInscripcionForm.dni,
       edicion_id: nuevaInscripcionForm.edicion_id,
     });
@@ -379,6 +380,7 @@ const startEditing = (inscripcion: Inscripcion) => {
     necesita_autobus: inscripcion.necesita_autobus,
     parada_autobus: inscripcion.parada_autobus || '',
     seguro_anulacion: inscripcion.seguro_anulacion,
+    es_celiaco: inscripcion.es_celiaco,
     talla_camiseta_caro: inscripcion.talla_camiseta_caro,
     talla_camiseta_pauls: inscripcion.talla_camiseta_pauls,
   };

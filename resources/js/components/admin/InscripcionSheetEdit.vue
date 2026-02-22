@@ -55,6 +55,7 @@ interface Inscripcion {
   necesita_autobus: boolean;
   parada_autobus: string | null;
   seguro_anulacion: boolean;
+  es_celiaco: boolean;
   talla_camiseta_caro: string;
   talla_camiseta_pauls: string;
   club: string | null;
@@ -251,6 +252,12 @@ const handleOpenChange = (open: boolean) => {
                 </span>
                 <span>Assegurança</span>
               </div>
+              <div class="flex items-center gap-2">
+                <span :class="inscripcion.es_celiaco ? 'text-green-600' : 'text-slate-400'">
+                  {{ inscripcion.es_celiaco ? '✓' : '✗' }}
+                </span>
+                <span>Celíac</span>
+              </div>
             </div>
           </div>
 
@@ -403,14 +410,21 @@ const handleOpenChange = (open: boolean) => {
                 </div>
 
                 <!-- Socio UEC -->
-                <div>
-                  <Label class="text-xs text-slate-500">Socio UEC</Label>
-                  <div class="mt-1">
-                    <input
-                      type="checkbox"
-                      v-model="editingData.es_socio_uec"
-                      class="h-4 w-4 rounded border-slate-300"
-                    />
+                <div class="col-span-2 mt-2 grid grid-cols-2 gap-4 border-t pt-3">
+                  <div>
+                    <Label class="text-xs text-slate-500">Socio UEC</Label>
+                    <div class="mt-1">
+                      <input
+                        type="checkbox"
+                        v-model="editingData.es_socio_uec"
+                        class="h-4 w-4 rounded border-slate-300"
+                      />
+                    </div>
+                  </div>
+                  <!-- Club -->
+                  <div>
+                    <Label class="text-xs text-slate-500">Club</Label>
+                    <Input v-model="editingData.club" class="mt-1" />
                   </div>
                 </div>
                 <!-- Federado -->
@@ -429,77 +443,89 @@ const handleOpenChange = (open: boolean) => {
                   <Label class="text-xs text-slate-500">Nº Licencia</Label>
                   <Input v-model="editingData.numero_licencia" class="mt-1" />
                 </div>
-                <!-- Club -->
-                <div>
-                  <Label class="text-xs text-slate-500">Club</Label>
-                  <Input v-model="editingData.club" class="mt-1" />
-                </div>
+
                 <!-- Autobús -->
-                <div>
-                  <Label class="text-xs text-slate-500">Necesita Autobús</Label>
-                  <div class="mt-1">
-                    <input
-                      type="checkbox"
-                      v-model="editingData.necesita_autobus"
-                      class="h-4 w-4 rounded border-slate-300"
-                    />
+                <div class="col-span-2 mt-2 grid grid-cols-2 gap-4 border-t pt-3">
+                  <div>
+                    <Label class="text-xs text-slate-500">Necesita Autobús</Label>
+                    <div class="mt-1">
+                      <input
+                        type="checkbox"
+                        v-model="editingData.necesita_autobus"
+                        class="h-4 w-4 rounded border-slate-300"
+                      />
+                    </div>
+                  </div>
+                  <!-- Parada Autobús -->
+                  <div v-if="editingData.necesita_autobus">
+                    <Label class="text-xs text-slate-500">Parada Autobús</Label>
+                    <select
+                      v-model="editingData.parada_autobus"
+                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">Selecciona parada...</option>
+                      <option v-for="parada in PARADAS" :key="parada.value" :value="parada.value">
+                        {{ parada.label }} ({{ parada.descripcion }})
+                      </option>
+                    </select>
                   </div>
                 </div>
-                <!-- Parada Autobús -->
-                <div v-if="editingData.necesita_autobus">
-                  <Label class="text-xs text-slate-500">Parada Autobús</Label>
-                  <select
-                    v-model="editingData.parada_autobus"
-                    class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="">Selecciona parada...</option>
-                    <option v-for="parada in PARADAS" :key="parada.value" :value="parada.value">
-                      {{ parada.label }} ({{ parada.descripcion }})
-                    </option>
-                  </select>
-                </div>
-                <!-- Seguro Anulación -->
-                <div>
-                  <Label class="text-xs text-slate-500">Seguro Anulación</Label>
-                  <div class="mt-1">
-                    <input
-                      type="checkbox"
-                      v-model="editingData.seguro_anulacion"
-                      class="h-4 w-4 rounded border-slate-300"
-                    />
+                <!-- Seguro Anulación y Celíaco -->
+                <div class="col-span-2 mt-2 grid grid-cols-2 gap-4 border-t pt-3">
+                  <div>
+                    <Label class="text-xs text-slate-500">Seguro Anulación</Label>
+                    <div class="mt-1">
+                      <input
+                        type="checkbox"
+                        v-model="editingData.seguro_anulacion"
+                        class="h-4 w-4 rounded border-slate-300"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label class="text-xs text-slate-500">Celíaco</Label>
+                    <div class="mt-1">
+                      <input
+                        type="checkbox"
+                        v-model="editingData.es_celiaco"
+                        class="h-4 w-4 rounded border-slate-300"
+                      />
+                    </div>
                   </div>
                 </div>
                 <!-- Camiseta Caro -->
-                <div>
-                  <Label class="text-xs text-slate-500">Camiseta Caro</Label>
-                  <select
-                    v-model="editingData.talla_camiseta_caro"
-                    class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="XS">XS</option>
-                    <option value="S">S</option>
-                    <option value="M">M</option>
-                    <option value="L">L</option>
-                    <option value="XL">XL</option>
-                    <option value="XXL">XXL</option>
-                    <option value="XXXL">XXXL</option>
-                  </select>
-                </div>
-                <!-- Camiseta Paüls -->
-                <div>
-                  <Label class="text-xs text-slate-500">Camiseta Paüls</Label>
-                  <select
-                    v-model="editingData.talla_camiseta_pauls"
-                    class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="XS">XS</option>
-                    <option value="S">S</option>
-                    <option value="M">M</option>
-                    <option value="L">L</option>
-                    <option value="XL">XL</option>
-                    <option value="XXL">XXL</option>
-                    <option value="XXXL">XXXL</option>
-                  </select>
+                <div class="col-span-2 mt-2 grid grid-cols-2 gap-4 border-t pt-3">
+                  <div>
+                    <Label class="text-xs text-slate-500">Camiseta Caro</Label>
+                    <select
+                      v-model="editingData.talla_camiseta_caro"
+                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="XS">XS</option>
+                      <option value="S">S</option>
+                      <option value="M">M</option>
+                      <option value="L">L</option>
+                      <option value="XL">XL</option>
+                      <option value="XXL">XXL</option>
+                      <option value="XXXL">XXXL</option>
+                    </select>
+                  </div>
+                  <!-- Camiseta Paüls -->
+                  <div>
+                    <Label class="text-xs text-slate-500">Camiseta Paüls</Label>
+                    <select
+                      v-model="editingData.talla_camiseta_pauls"
+                      class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="XS">XS</option>
+                      <option value="S">S</option>
+                      <option value="M">M</option>
+                      <option value="L">L</option>
+                      <option value="XL">XL</option>
+                      <option value="XXL">XXL</option>
+                      <option value="XXXL">XXXL</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>

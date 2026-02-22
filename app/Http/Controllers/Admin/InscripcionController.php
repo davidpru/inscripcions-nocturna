@@ -225,6 +225,7 @@ class InscripcionController extends Controller
             'necesita_autobus' => 'boolean',
             'parada_autobus' => 'nullable|string|max:100',
             'seguro_anulacion' => 'boolean',
+            'es_celiaco' => 'boolean',
             'talla_camiseta_caro' => 'required|string|max:10',
             'talla_camiseta_pauls' => 'required|string|max:10',
         ]);
@@ -290,6 +291,7 @@ class InscripcionController extends Controller
             'necesita_autobus' => $validated['necesita_autobus'] ?? false,
             'parada_autobus' => $validated['parada_autobus'],
             'seguro_anulacion' => $validated['seguro_anulacion'] ?? false,
+            'es_celiaco' => $validated['es_celiaco'] ?? false,
             'talla_camiseta_caro' => $validated['talla_camiseta_caro'],
             'talla_camiseta_pauls' => $validated['talla_camiseta_pauls'],
             'precio_total' => $precioTotal,
