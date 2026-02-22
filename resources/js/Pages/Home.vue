@@ -200,7 +200,7 @@ onUnmounted(() => {
         </Card>
 
         <!-- Selección -->
-        <div v-if="inscripcionesAbiertas" class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div v-if="inscripcionesAbiertas" class="grid grid-cols-1 gap-8 md:grid-cols-2">
           <div class="">
             <Card>
               <CardHeader class="pb-2">
@@ -230,8 +230,8 @@ onUnmounted(() => {
               </CardContent>
             </Card>
           </div>
-          <div class="flex flex-col gap-4">
-            <Card class="cursor-pointer transition-all hover:shadow-xl">
+          <div class="flex flex-col gap-8">
+            <Card class="transition-all hover:shadow-xl">
               <CardHeader>
                 <CardTitle class="text-2xl">Consultar inscripció</CardTitle>
                 <CardDescription
@@ -240,18 +240,18 @@ onUnmounted(() => {
               </CardHeader>
               <CardContent class="">
                 <Link href="/inscripcions/consulta">
-                  <Button class="w-full"> Consultar Inscripció </Button>
+                  <Button> Consultar Inscripció </Button>
                 </Link>
               </CardContent>
             </Card>
-            <Card class="cursor-pointer transition-all hover:shadow-xl">
+            <Card class="transition-all hover:shadow-xl">
               <CardHeader>
                 <CardTitle class="text-2xl">Llistat d'inscrits</CardTitle>
                 <CardDescription>Comprova el llistat general d'inscrits</CardDescription>
               </CardHeader>
               <CardContent class="">
                 <Link href="/inscripcions/inscrits">
-                  <Button class="w-full"> Veure llistat </Button>
+                  <Button> Veure llistat </Button>
                 </Link>
               </CardContent>
             </Card>

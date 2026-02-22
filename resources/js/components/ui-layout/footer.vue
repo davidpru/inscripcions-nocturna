@@ -1,5 +1,6 @@
 <script setup lang="ts">
 // Footer component con logos de sponsors
+import { Separator } from '@/components/ui/separator';
 </script>
 
 <template>
@@ -7,9 +8,11 @@
     <section
       class="mb-6 flex flex-wrap items-center justify-center gap-4 border-t pt-6 mix-blend-multiply grayscale"
     >
-      <img src="@/assets/logos/logo-suport-uec.png" alt="Logo UEC" class="h-7.5" />
+      <img src="@/assets/logos/logo-suport-uec.png" alt="Logo UEC" class="h-9" />
+      <Separator orientation="vertical" class="mx-4 hidden h-7.5 md:flex" />
       <img src="@/assets/logos/logo-suport-caro.png" alt="Logo Caro" class="h-6.5" />
       <img src="@/assets/logos/logo-suport-gencat.png" alt="Logo Gencat" class="h-6" />
+      <Separator orientation="vertical" class="mx-4 hidden h-8 md:flex" />
       <img src="@/assets/logos/logo-suport-pnports.png" alt="Logo PNPorts" class="h-6" />
       <img src="@/assets/logos/logo-suport-tinenca.jpg" alt="Logo Tinença" class="h-8" />
     </section>

@@ -394,7 +394,7 @@ const enviarInscripcion = () => {
       <Card class="mx-4 mb-10">
         <CardContent class="p-4 md:p-8">
           <Link href="/">
-            <Button variant="ghost" class="mb-4"> ← Tornar </Button>
+            <Button variant="ghost" size="sm" class="mb-6"> ← Tornar </Button>
           </Link>
 
           <!-- Countdown - inscripciones no abiertas -->
@@ -783,7 +783,7 @@ const enviarInscripcion = () => {
               <!-- Tallas de Camisetas -->
               <div>
                 <h3 class="mb-4 border-b border-gray-200 pb-2 text-lg font-semibold text-red-700">
-                  Talles de samarretes
+                  Talla de samarretes
                 </h3>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <Field>
@@ -861,6 +861,8 @@ const enviarInscripcion = () => {
                   </Field>
                 </div>
               </div>
+
+              <Separator />
 
               <!-- Política de devolución y protección de datos -->
               <div class="">
@@ -1024,7 +1026,10 @@ const enviarInscripcion = () => {
               </div>
 
               <!-- Resumen de Precio -->
-              <div v-if="precioCalculado" class="rounded-lg bg-slate-50 p-6">
+              <div
+                v-if="precioCalculado"
+                class="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-6"
+              >
                 <h3 class="text-md mb-4 font-semibold text-slate-900">
                   Resum de la teva inscripció
                 </h3>

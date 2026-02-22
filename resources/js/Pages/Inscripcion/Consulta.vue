@@ -50,7 +50,7 @@ const consultarInscripcion = () => {
       <Card class="mx-4">
         <CardContent class="space-y-3 p-8">
           <Link href="/">
-            <Button variant="ghost" class="mb-4">← Tornar</Button>
+            <Button variant="ghost" size="sm" class="mb-6"> ← Tornar </Button>
           </Link>
 
           <form @submit.prevent="consultarInscripcion" class="space-y-6">

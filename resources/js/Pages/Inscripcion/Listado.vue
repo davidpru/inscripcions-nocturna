@@ -70,7 +70,7 @@ const inscritosFiltrados = computed(() => {
       <!-- Header -->
       <div class="mb-8">
         <Link href="/">
-          <Button variant="ghost" class="mb-4"> ← Tornar </Button>
+          <Button variant="ghost" size="sm" class="mb-6"> ← Tornar </Button>
         </Link>
         <h1 class="font-expanded mb-2 text-2xl font-bold text-slate-900 md:text-3xl">
           Llistat d'inscrits - Nocturna Fredes Paüls {{ edicion.anio }}
@@ -110,16 +110,16 @@ const inscritosFiltrados = computed(() => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow
-                class="text-uppercase"
-                v-for="(inscrito, index) in inscritosFiltrados"
-                :key="inscrito.id"
-              >
-                <TableCell class="font-medium text-slate-500">{{ index + 1 }}</TableCell>
-                <TableCell>{{ inscrito.participante.nombre }}</TableCell>
-                <TableCell>{{ inscrito.participante.apellidos }}</TableCell>
-                <TableCell>{{ inscrito.participante.poblacion || '-' }}</TableCell>
-                <TableCell>{{ inscrito.club || '-' }}</TableCell>
+              <TableRow class="" v-for="(inscrito, index) in inscritosFiltrados" :key="inscrito.id">
+                <TableCell class="text-uppercase font-medium text-slate-500">{{
+                  index + 1
+                }}</TableCell>
+                <TableCell class="text-uppercase">{{ inscrito.participante.nombre }}</TableCell>
+                <TableCell class="text-uppercase">{{ inscrito.participante.apellidos }}</TableCell>
+                <TableCell class="text-uppercase">{{
+                  inscrito.participante.poblacion || '-'
+                }}</TableCell>
+                <TableCell class="text-uppercase">{{ inscrito.club || '-' }}</TableCell>
               </TableRow>
               <TableRow v-if="inscritosFiltrados.length === 0">
                 <TableCell colspan="5" class="py-8 text-center text-slate-500">
