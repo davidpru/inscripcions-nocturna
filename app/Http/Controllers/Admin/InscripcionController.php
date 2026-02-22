@@ -196,6 +196,7 @@ class InscripcionController extends Controller
             'tarifa_aplicada' => $tarifaAplicada,
             'estado_pago' => $validated['estado_pago'],
             'fecha_pago' => in_array($validated['estado_pago'], ['pagado', 'invitado']) ? now() : null,
+            'hash_token' => \Illuminate\Support\Str::random(32),
         ]);
 
         return back()->with('success', 'Inscripció creada correctament');
