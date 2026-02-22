@@ -545,7 +545,7 @@ const formatearFecha = (fecha: string) => {
 
 const getEstadoPagoBadgeClass = (estado: string) => {
   if (estado === 'pagado') {
-    return 'bg-green-100 text-green-800';
+    return 'bg-teal-500 text-teal-100';
   } else if (estado === 'cancelado') {
     return 'bg-red-100 text-red-800';
   } else if (estado === 'devuelto') {
@@ -553,9 +553,9 @@ const getEstadoPagoBadgeClass = (estado: string) => {
   } else if (estado === 'devolucion_parcial') {
     return 'bg-orange-100 text-orange-800';
   } else if (estado === 'invitado') {
-    return 'bg-blue-100 text-blue-800';
+    return 'bg-purple-500 text-purple-100';
   } else {
-    return 'bg-amber-100 text-amber-800';
+    return 'bg-gray-100 text-gray-700';
   }
 };
 
