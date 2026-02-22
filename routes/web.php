@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EdicionController;
 use App\Http\Controllers\Admin\InscripcionController as AdminInscripcionController;
+use App\Http\Controllers\Admin\RedsysTransaccionController;
 use App\Http\Controllers\Admin\CuponController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -125,6 +126,9 @@ Route::prefix('uec-admin')->name('admin.')->middleware('admin.auth')->group(func
     Route::post('inscripciones/{inscripcion}/toggle-dorsal', [AdminInscripcionController::class, 'toggleDorsalRecogido'])->name('inscripciones.toggle-dorsal');
     Route::post('inscripciones/{inscripcion}/devolucion', [RedsysController::class, 'procesarDevolucion'])->name('inscripciones.devolucion');
     Route::post('inscripciones/{inscripcion}/devolucion-manual', [RedsysController::class, 'devolucionManual'])->name('inscripciones.devolucion-manual');
+
+    // Transacciones Redsys
+    Route::get('transacciones', [RedsysTransaccionController::class, 'index'])->name('transacciones.index');
 
     // Gestión de cupones
     Route::get('cupones', [CuponController::class, 'index'])->name('cupones.index');

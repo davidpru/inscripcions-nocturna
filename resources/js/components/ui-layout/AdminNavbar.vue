@@ -1,7 +1,17 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Calendar, ClipboardList, Home, LogOut, Menu, Ticket, UserCog, X } from 'lucide-vue-next';
+import {
+  Calendar,
+  ClipboardList,
+  CreditCard,
+  Home,
+  LogOut,
+  Menu,
+  Ticket,
+  UserCog,
+  X,
+} from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const mobileMenuOpen = ref(false);
@@ -12,6 +22,7 @@ const currentPath = computed(() => page.url);
 const navItems = [
   { name: 'Dashboard', href: '/uec-admin', icon: Home, exact: true },
   { name: 'Inscripcions', href: '/uec-admin/inscripciones', icon: ClipboardList },
+  { name: 'Transaccions', href: '/uec-admin/transacciones', icon: CreditCard },
   { name: 'Edicions', href: '/uec-admin/ediciones', icon: Calendar },
   { name: 'Cupons', href: '/uec-admin/cupones', icon: Ticket },
   { name: 'Usuaris', href: '/uec-admin/usuarios', icon: UserCog },

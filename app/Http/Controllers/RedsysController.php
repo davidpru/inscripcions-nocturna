@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inscripcion;
+use App\Models\RedsysTransaccion;
 use App\Mail\InscripcionConfirmada;
 use Creagia\Redsys\RedsysClient;
 use Creagia\Redsys\RedsysRequest;
@@ -65,6 +66,33 @@ class RedsysController extends Controller
         ];
 
         return $errors[$code] ?? 'Error desconegut';
+    }
+
+    private function registrarTransaccion(
+        string $tipo,
+        string $estado,
+        ?Inscripcion $inscripcion,
+        array $payload,
+        ?string $numeroPedido,
+        ?string $numeroAutorizacion,
+        ?string $responseCode,
+        ?string $descripcionError,
+        ?float $importe,
+        bool $esAutobus
+    ): void {
+        RedsysTransaccion::create([
+            'inscripcion_id' => $inscripcion?->id,
+            'tipo' => $tipo,
+            'estado' => $estado,
+            'numero_pedido' => $numeroPedido,
+            'numero_autorizacion' => $numeroAutorizacion,
+            'importe' => $importe,
+            'moneda' => 'EUR',
+            'response_code' => $responseCode,
+            'descripcion_error' => $descripcionError,
+            'es_autobus' => $esAutobus,
+            'payload' => $payload,
+        ]);
     }
 
     /**
@@ -241,6 +269,8 @@ class RedsysController extends Controller
 
             // Verificar si es un pago de autobús
             $esAutobus = isset($params->merchantData) && str_starts_with($params->merchantData, 'BUS_');
+            $importe = isset($params->amount) ? ((int) $params->amount) / 100 : null;
+            $importe = isset($params->amount) ? ((int) $params->amount) / 100 : null;
             
             if ($esAutobus) {
                 // Extraer ID de inscripción del merchantData
@@ -249,6 +279,18 @@ class RedsysController extends Controller
                 
                 if (!$inscripcion) {
                     Log::error('Redsys notification: Inscripcion not found for bus payment', ['merchantData' => $params->merchantData]);
+                    $this->registrarTransaccion(
+                        'notification',
+                        'error',
+                        null,
+                        $request->all(),
+                        $params->order ?? null,
+                        $params->responseAuthorisationCode ?? null,
+                        $params->responseCode ?? null,
+                        'Inscripcion no encontrada',
+                        $importe,
+                        true
+                    );
                     return response('Inscripcion not found', 404);
                 }
 
@@ -271,6 +313,19 @@ class RedsysController extends Controller
                     Log::info('Redsys notification: Bus already activated, skipping', ['inscripcion_id' => $inscripcion->id]);
                 }
 
+                $this->registrarTransaccion(
+                    'notification',
+                    'pagado',
+                    $inscripcion,
+                    $request->all(),
+                    $params->order ?? null,
+                    $params->responseAuthorisationCode ?? null,
+                    $params->responseCode ?? null,
+                    null,
+                    $importe,
+                    true
+                );
+
                 return response('OK');
             }
 
@@ -285,6 +340,18 @@ class RedsysController extends Controller
                 Log::error('Redsys notification: Inscripcion not found', [
                     'order' => $params->order
                 ]);
+                $this->registrarTransaccion(
+                    'notification',
+                    'error',
+                    null,
+                    $request->all(),
+                    $params->order ?? null,
+                    $params->responseAuthorisationCode ?? null,
+                    $params->responseCode ?? null,
+                    'Inscripcion no encontrada',
+                    $importe,
+                    false
+                );
                 return response('Inscripcion not found', 404);
             }
 
@@ -314,18 +381,55 @@ class RedsysController extends Controller
                 Log::info('Redsys notification: Already paid, skipping', ['inscripcion_id' => $inscripcion->id]);
             }
 
+            $this->registrarTransaccion(
+                'notification',
+                'pagado',
+                $inscripcion,
+                $request->all(),
+                $params->order ?? null,
+                $params->responseAuthorisationCode ?? null,
+                $params->responseCode ?? null,
+                null,
+                $importe,
+                false
+            );
+
             return response('OK', 200);
         } catch (\Creagia\Redsys\Exceptions\DeniedRedsysPaymentResponseException $e) {
             Log::warning('Redsys notification: Payment denied', [
                 'code' => $e->getCode(),
                 'message' => $e->getMessage(),
             ]);
+            $this->registrarTransaccion(
+                'notification',
+                'denegado',
+                null,
+                $request->all(),
+                null,
+                null,
+                (string) $e->getCode(),
+                $e->getMessage(),
+                null,
+                false
+            );
             return response('Payment denied', 200);
         } catch (\Exception $e) {
             Log::error('Redsys notification error', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            $this->registrarTransaccion(
+                'notification',
+                'error',
+                null,
+                $request->all(),
+                null,
+                null,
+                null,
+                $e->getMessage(),
+                null,
+                false
+            );
             return response('Error', 500);
         }
     }
@@ -367,6 +471,18 @@ class RedsysController extends Controller
                 
                 if (!$inscripcion) {
                     Log::error('Redsys success: Inscripcion not found for bus payment', ['merchantData' => $params->merchantData]);
+                    $this->registrarTransaccion(
+                        'success',
+                        'error',
+                        null,
+                        $request->all(),
+                        $params->order ?? null,
+                        $params->responseAuthorisationCode ?? null,
+                        $params->responseCode ?? null,
+                        'Inscripcion no encontrada',
+                        $importe,
+                        true
+                    );
                     return redirect()->route('home')->with('error', 'Inscripción no encontrada');
                 }
 
@@ -390,6 +506,19 @@ class RedsysController extends Controller
                 } else {
                     Log::info('Redsys success: Bus already activated, skipping', ['inscripcion_id' => $inscripcion->id]);
                 }
+
+                $this->registrarTransaccion(
+                    'success',
+                    'pagado',
+                    $inscripcion,
+                    $request->all(),
+                    $params->order ?? null,
+                    $params->responseAuthorisationCode ?? null,
+                    $params->responseCode ?? null,
+                    null,
+                    $importe,
+                    true
+                );
 
                 return Inertia::render('Pago/ExitoAutobus', [
                     'inscripcion' => $inscripcion->load(['participante', 'edicion']),
@@ -418,6 +547,18 @@ class RedsysController extends Controller
 
             if (!$inscripcion) {
                 Log::error('Redsys success: Inscripcion not found', ['order' => $params->order]);
+                $this->registrarTransaccion(
+                    'success',
+                    'error',
+                    null,
+                    $request->all(),
+                    $params->order ?? null,
+                    $params->responseAuthorisationCode ?? null,
+                    $params->responseCode ?? null,
+                    'Inscripcion no encontrada',
+                    $importe,
+                    false
+                );
                 return redirect()->route('home')->with('error', 'Inscripción no encontrada');
             }
 
@@ -441,6 +582,19 @@ class RedsysController extends Controller
                 }
             }
 
+            $this->registrarTransaccion(
+                'success',
+                'pagado',
+                $inscripcion,
+                $request->all(),
+                $params->order ?? null,
+                $params->responseAuthorisationCode ?? null,
+                $params->responseCode ?? null,
+                null,
+                $importe,
+                false
+            );
+
             return Inertia::render('Pago/Exito', [
                 'inscripcion' => $inscripcion->load(['participante', 'edicion']),
                 'transaction' => [
@@ -458,6 +612,18 @@ class RedsysController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Redsys success error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            $this->registrarTransaccion(
+                'success',
+                'error',
+                null,
+                $request->all(),
+                null,
+                null,
+                null,
+                $e->getMessage(),
+                null,
+                false
+            );
             return redirect()->route('home')->with('error', 'Error procesando el pago');
         }
     }
@@ -469,6 +635,10 @@ class RedsysController extends Controller
     {
         $errorMessage = 'El pago no pudo ser procesado.';
         $inscripcion = null;
+        $responseCode = null;
+        $numeroPedido = null;
+        $importe = null;
+        $esAutobus = false;
 
         try {
             $redsysClient = new RedsysClient(
@@ -481,13 +651,32 @@ class RedsysController extends Controller
             $redsysResponse = new RedsysResponse($redsysClient);
             $redsysResponse->setParametersFromResponse($request->all());
             
-            $inscripcion = Inscripcion::where('numero_pedido', $redsysResponse->parameters->order)->first();
-            $errorCode = $redsysResponse->parameters->responseCode;
-            $errorDescription = $this->getErrorDescription($errorCode);
-            $errorMessage = "El pagament ha estat rebutjat.\n\nCodi: {$errorCode}\n{$errorDescription}";
+            $numeroPedido = $redsysResponse->parameters->order ?? null;
+            $responseCode = $redsysResponse->parameters->responseCode ?? null;
+            $importe = isset($redsysResponse->parameters->amount)
+                ? ((int) $redsysResponse->parameters->amount) / 100
+                : null;
+            $inscripcion = $numeroPedido
+                ? Inscripcion::where('numero_pedido', $numeroPedido)->first()
+                : null;
+            $errorDescription = $responseCode ? $this->getErrorDescription($responseCode) : 'Error desconocido';
+            $errorMessage = "El pagament ha estat rebutjat.\n\nCodi: {$responseCode}\n{$errorDescription}";
         } catch (\Exception $e) {
             Log::error('Redsys error page', ['error' => $e->getMessage()]);
         }
+
+        $this->registrarTransaccion(
+            'error',
+            'denegado',
+            $inscripcion,
+            $request->all(),
+            $numeroPedido,
+            null,
+            $responseCode,
+            $errorMessage,
+            $importe,
+            $esAutobus
+        );
 
         return Inertia::render('Pago/Error', [
             'inscripcion' => $inscripcion,

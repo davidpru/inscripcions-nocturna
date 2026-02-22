@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Inscripcion extends Model
@@ -75,5 +76,10 @@ class Inscripcion extends Model
     public function cupon(): BelongsTo
     {
         return $this->belongsTo(Cupon::class);
+    }
+
+    public function redsysTransacciones(): HasMany
+    {
+        return $this->hasMany(RedsysTransaccion::class);
     }
 }
