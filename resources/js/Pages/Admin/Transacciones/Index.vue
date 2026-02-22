@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -185,38 +185,56 @@ const transacciones = computed(() => props.transacciones.data);
             <table class="min-w-full divide-y divide-slate-200">
               <thead class="bg-white">
                 <tr>
-                  <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <th
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
                     Fecha
                   </th>
-                  <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <th
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
                     Inscripcion
                   </th>
-                  <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <th
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
                     Pedido
                   </th>
-                  <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <th
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
                     Autorizacion
                   </th>
-                  <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <th
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
                     Importe
                   </th>
-                  <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <th
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
                     Estado
                   </th>
-                  <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <th
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
                     Tipo
                   </th>
-                  <th class="px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <th
+                    class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
                     Autobus
                   </th>
-                  <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <th
+                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
                     Detalle
                   </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 bg-white">
                 <tr v-for="tx in transacciones" :key="tx.id">
-                  <td class="px-3 py-3 text-sm text-slate-900 whitespace-nowrap">
+                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ formatDate(tx.created_at) }}
                   </td>
                   <td class="px-3 py-3 text-sm text-slate-900">
@@ -232,13 +250,13 @@ const transacciones = computed(() => props.transacciones.data);
                     </div>
                     <span v-else class="text-slate-400">-</span>
                   </td>
-                  <td class="px-3 py-3 text-sm text-slate-900 whitespace-nowrap">
+                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ tx.numero_pedido || '-' }}
                   </td>
-                  <td class="px-3 py-3 text-sm text-slate-900 whitespace-nowrap">
+                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ tx.numero_autorizacion || '-' }}
                   </td>
-                  <td class="px-3 py-3 text-sm text-slate-900 whitespace-nowrap">
+                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
                     <span v-if="tx.importe">{{ tx.importe }} {{ tx.moneda }}</span>
                     <span v-else class="text-slate-400">-</span>
                   </td>
@@ -262,7 +280,9 @@ const transacciones = computed(() => props.transacciones.data);
                   <td class="px-3 py-3 text-center text-sm whitespace-nowrap">
                     <span
                       class="inline-flex rounded-full px-2 text-xs font-semibold"
-                      :class="tx.es_autobus ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'"
+                      :class="
+                        tx.es_autobus ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'
+                      "
                     >
                       {{ tx.es_autobus ? 'Si' : 'No' }}
                     </span>
@@ -270,8 +290,8 @@ const transacciones = computed(() => props.transacciones.data);
                   <td class="px-3 py-3 text-xs text-slate-700">
                     <details v-if="tx.payload" class="max-w-xl">
                       <summary class="cursor-pointer text-blue-600">Ver</summary>
-                      <pre class="mt-2 max-h-64 overflow-auto rounded bg-slate-50 p-2">
-{{ payloadTexto(tx.payload) }}
+                      <pre class="mt-2 max-h-64 overflow-auto rounded bg-slate-50 p-2"
+                        >{{ payloadTexto(tx.payload) }}
                       </pre>
                     </details>
                     <span v-else class="text-slate-400">-</span>
@@ -285,10 +305,14 @@ const transacciones = computed(() => props.transacciones.data);
             <p class="text-slate-500">No hay transacciones</p>
           </div>
 
-          <div v-if="props.transacciones.last_page > 1" class="border-t border-slate-200 bg-white px-4 py-3">
+          <div
+            v-if="props.transacciones.last_page > 1"
+            class="border-t border-slate-200 bg-white px-4 py-3"
+          >
             <div class="flex items-center justify-between">
               <div class="text-sm text-slate-700">
-                Mostrando {{ (props.transacciones.current_page - 1) * props.transacciones.per_page + 1 }} -
+                Mostrando
+                {{ (props.transacciones.current_page - 1) * props.transacciones.per_page + 1 }} -
                 {{
                   Math.min(
                     props.transacciones.current_page * props.transacciones.per_page,
