@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head } from '@inertiajs/vue3';
@@ -59,6 +66,13 @@ const tipo = ref(props.filtros.tipo || '');
 const desde = ref(props.filtros.desde || '');
 const hasta = ref(props.filtros.hasta || '');
 const busqueda = ref(props.filtros.busqueda || '');
+const detalleDialogOpen = ref(false);
+const detalleTransaccion = ref<RedsysTransaccion | null>(null);
+
+const abrirDetalle = (tx: RedsysTransaccion) => {
+  detalleTransaccion.value = tx;
+  detalleDialogOpen.value = true;
+};
 
 const aplicarFiltros = () => {
   const params = new URLSearchParams();
@@ -288,12 +302,9 @@ const transacciones = computed(() => props.transacciones.data);
                     </span>
                   </td>
                   <td class="px-3 py-3 text-xs text-slate-700">
-                    <details v-if="tx.payload" class="max-w-xl">
-                      <summary class="cursor-pointer text-blue-600">Ver</summary>
-                      <pre class="mt-2 max-h-64 overflow-auto rounded bg-slate-50 p-2"
-                        >{{ payloadTexto(tx.payload) }}
-                      </pre>
-                    </details>
+                    <Button v-if="tx.payload" variant="outline" size="sm" @click="abrirDetalle(tx)">
+                      Ver
+                    </Button>
                     <span v-else class="text-slate-400">-</span>
                   </td>
                 </tr>
@@ -346,5 +357,21 @@ const transacciones = computed(() => props.transacciones.data);
         </div>
       </div>
     </div>
+
+    <Dialog v-model:open="detalleDialogOpen">
+      <DialogContent class="max-h-[80vh] max-w-3xl overflow-auto">
+        <DialogHeader>
+          <DialogTitle>Detalle Redsys</DialogTitle>
+          <DialogDescription v-if="detalleTransaccion">
+            Pedido {{ detalleTransaccion.numero_pedido || '-' }} ·
+            {{ formatDate(detalleTransaccion.created_at) }}
+          </DialogDescription>
+        </DialogHeader>
+        <pre
+          v-if="detalleTransaccion"
+          class="mt-4 max-h-[60vh] overflow-auto rounded bg-slate-50 p-3 text-xs text-slate-800"
+        >{{ payloadTexto(detalleTransaccion.payload) }}</pre>
+      </DialogContent>
+    </Dialog>
   </AdminLayout>
 </template>
