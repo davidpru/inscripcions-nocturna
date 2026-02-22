@@ -68,6 +68,26 @@ class RedsysController extends Controller
         return $errors[$code] ?? 'Error desconegut';
     }
 
+    private function buildPayload(Request $request, mixed $params = null): array
+    {
+        $decoded = null;
+
+        if ($params !== null) {
+            if (is_array($params)) {
+                $decoded = $params;
+            } elseif (is_object($params) && method_exists($params, 'toArray')) {
+                $decoded = $params->toArray();
+            } else {
+                $decoded = (array) $params;
+            }
+        }
+
+        return [
+            'raw' => $request->all(),
+            'decoded' => $decoded,
+        ];
+    }
+
     private function registrarTransaccion(
         string $tipo,
         string $estado,
@@ -270,7 +290,7 @@ class RedsysController extends Controller
             // Verificar si es un pago de autobús
             $esAutobus = isset($params->merchantData) && str_starts_with($params->merchantData, 'BUS_');
             $importe = isset($params->amount) ? ((int) $params->amount) / 100 : null;
-            $importe = isset($params->amount) ? ((int) $params->amount) / 100 : null;
+            $payload = $this->buildPayload($request, $params);
             
             if ($esAutobus) {
                 // Extraer ID de inscripción del merchantData
@@ -283,7 +303,7 @@ class RedsysController extends Controller
                         'notification',
                         'error',
                         null,
-                        $request->all(),
+                        $payload,
                         $params->order ?? null,
                         $params->responseAuthorisationCode ?? null,
                         $params->responseCode ?? null,
@@ -317,7 +337,7 @@ class RedsysController extends Controller
                     'notification',
                     'pagado',
                     $inscripcion,
-                    $request->all(),
+                    $payload,
                     $params->order ?? null,
                     $params->responseAuthorisationCode ?? null,
                     $params->responseCode ?? null,
@@ -344,7 +364,7 @@ class RedsysController extends Controller
                     'notification',
                     'error',
                     null,
-                    $request->all(),
+                    $payload,
                     $params->order ?? null,
                     $params->responseAuthorisationCode ?? null,
                     $params->responseCode ?? null,
@@ -385,7 +405,7 @@ class RedsysController extends Controller
                 'notification',
                 'pagado',
                 $inscripcion,
-                $request->all(),
+                $payload,
                 $params->order ?? null,
                 $params->responseAuthorisationCode ?? null,
                 $params->responseCode ?? null,
@@ -404,7 +424,7 @@ class RedsysController extends Controller
                 'notification',
                 'denegado',
                 null,
-                $request->all(),
+                $this->buildPayload($request),
                 null,
                 null,
                 (string) $e->getCode(),
@@ -422,7 +442,7 @@ class RedsysController extends Controller
                 'notification',
                 'error',
                 null,
-                $request->all(),
+                $this->buildPayload($request),
                 null,
                 null,
                 null,
@@ -463,6 +483,8 @@ class RedsysController extends Controller
 
             // Verificar si es un pago de autobús
             $esAutobus = isset($params->merchantData) && str_starts_with($params->merchantData, 'BUS_');
+            $importe = isset($params->amount) ? ((int) $params->amount) / 100 : null;
+            $payload = $this->buildPayload($request, $params);
             
             if ($esAutobus) {
                 // Extraer ID de inscripción del merchantData
@@ -475,7 +497,7 @@ class RedsysController extends Controller
                         'success',
                         'error',
                         null,
-                        $request->all(),
+                        $payload,
                         $params->order ?? null,
                         $params->responseAuthorisationCode ?? null,
                         $params->responseCode ?? null,
@@ -511,7 +533,7 @@ class RedsysController extends Controller
                     'success',
                     'pagado',
                     $inscripcion,
-                    $request->all(),
+                    $payload,
                     $params->order ?? null,
                     $params->responseAuthorisationCode ?? null,
                     $params->responseCode ?? null,
@@ -551,7 +573,7 @@ class RedsysController extends Controller
                     'success',
                     'error',
                     null,
-                    $request->all(),
+                    $payload,
                     $params->order ?? null,
                     $params->responseAuthorisationCode ?? null,
                     $params->responseCode ?? null,
@@ -586,7 +608,7 @@ class RedsysController extends Controller
                 'success',
                 'pagado',
                 $inscripcion,
-                $request->all(),
+                $payload,
                 $params->order ?? null,
                 $params->responseAuthorisationCode ?? null,
                 $params->responseCode ?? null,
@@ -616,7 +638,7 @@ class RedsysController extends Controller
                 'success',
                 'error',
                 null,
-                $request->all(),
+                $this->buildPayload($request),
                 null,
                 null,
                 null,
@@ -639,6 +661,7 @@ class RedsysController extends Controller
         $numeroPedido = null;
         $importe = null;
         $esAutobus = false;
+        $payload = $this->buildPayload($request);
 
         try {
             $redsysClient = new RedsysClient(
@@ -651,6 +674,7 @@ class RedsysController extends Controller
             $redsysResponse = new RedsysResponse($redsysClient);
             $redsysResponse->setParametersFromResponse($request->all());
             
+            $payload = $this->buildPayload($request, $redsysResponse->parameters ?? null);
             $numeroPedido = $redsysResponse->parameters->order ?? null;
             $responseCode = $redsysResponse->parameters->responseCode ?? null;
             $importe = isset($redsysResponse->parameters->amount)
@@ -669,7 +693,7 @@ class RedsysController extends Controller
             'error',
             'denegado',
             $inscripcion,
-            $request->all(),
+            $payload,
             $numeroPedido,
             null,
             $responseCode,

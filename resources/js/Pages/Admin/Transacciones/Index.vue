@@ -370,7 +370,8 @@ const transacciones = computed(() => props.transacciones.data);
         <pre
           v-if="detalleTransaccion"
           class="mt-4 max-h-[60vh] overflow-auto rounded bg-slate-50 p-3 text-xs text-slate-800"
-        >{{ payloadTexto(detalleTransaccion.payload) }}</pre>
+          >{{ payloadTexto(detalleTransaccion.payload) }}</pre
+        >
       </DialogContent>
     </Dialog>
   </AdminLayout>
