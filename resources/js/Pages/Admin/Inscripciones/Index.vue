@@ -143,6 +143,7 @@ const getNumeroInscripcion = (inscripcion: Inscripcion, index: number): number |
 const modalNuevaInscripcion = ref(false);
 const buscandoParticipante = ref(false);
 const participanteEncontrado = ref(false);
+const participanteYaInscrito = ref(false);
 
 const nuevaInscripcionForm = useForm({
   dni: '',
@@ -195,8 +196,10 @@ const buscarParticipanteManual = async () => {
       nuevaInscripcionForm.poblacion = datos.poblacion || '';
       nuevaInscripcionForm.provincia = datos.provincia || '';
       participanteEncontrado.value = true;
+      participanteYaInscrito.value = response.data.ya_inscrito || false;
     } else {
       participanteEncontrado.value = false;
+      participanteYaInscrito.value = false;
     }
   } catch (error) {
     console.error('Error al buscar participante:', error);
@@ -218,6 +221,7 @@ const crearInscripcionManual = () => {
 const resetFormNuevaInscripcion = () => {
   nuevaInscripcionForm.reset();
   participanteEncontrado.value = false;
+  participanteYaInscrito.value = false;
 };
 
 const abrirModalNuevaInscripcion = () => {
@@ -1173,8 +1177,11 @@ const confirmarToggleDorsal = () => {
                   </Button>
                 </div>
               </div>
-              <p v-if="participanteEncontrado" class="mt-2 text-sm text-green-600">
+              <p v-if="participanteEncontrado && !participanteYaInscrito" class="mt-2 text-sm text-green-600">
                 ✓ Participant trobat. Verifica les dades.
+              </p>
+              <p v-if="participanteYaInscrito" class="mt-2 text-sm font-medium text-red-600">
+                ⚠️ Aquest participant ja està inscrit en aquesta edició.
               </p>
             </div>
 
@@ -1494,7 +1501,7 @@ const confirmarToggleDorsal = () => {
               >
                 Cancel·lar
               </Button>
-              <Button type="submit" :disabled="nuevaInscripcionForm.processing">
+              <Button type="submit" :disabled="nuevaInscripcionForm.processing || participanteYaInscrito">
                 <RotateCcw
                   v-if="nuevaInscripcionForm.processing"
                   class="mr-2 h-4 w-4 animate-spin"
