@@ -9,8 +9,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import { Trash2 } from 'lucide-vue-next';
 
 interface Participante {
   nombre: string;
@@ -59,6 +60,10 @@ const props = defineProps<{
     hasta?: string;
     busqueda?: string;
   };
+  undo?: {
+    numero_pedido?: string | null;
+    created_at?: string | null;
+  } | null;
 }>();
 
 const estado = ref(props.filtros.estado || '');
@@ -72,6 +77,18 @@ const detalleTransaccion = ref<RedsysTransaccion | null>(null);
 const abrirDetalle = (tx: RedsysTransaccion) => {
   detalleTransaccion.value = tx;
   detalleDialogOpen.value = true;
+};
+
+const eliminarTransaccion = (tx: RedsysTransaccion) => {
+  if (!window.confirm('Eliminar esta transaccion de error?')) return;
+
+  router.delete(`/uec-admin/transacciones/${tx.id}`, {
+    preserveScroll: true,
+  });
+};
+
+const deshacerEliminacion = () => {
+  router.post('/uec-admin/transacciones/undo', {}, { preserveScroll: true });
 };
 
 const aplicarFiltros = () => {
@@ -147,6 +164,25 @@ const transacciones = computed(() => props.transacciones.data);
         </div>
 
         <section class="mb-6 rounded-lg bg-white p-4 shadow">
+          <div
+            v-if="props.undo"
+            class="mb-4 flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              S'ha eliminat una transaccio d'error.
+              <span v-if="props.undo.numero_pedido" class="ml-1 font-medium">
+                Pedido {{ props.undo.numero_pedido }}
+              </span>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              class="border-amber-300"
+              @click="deshacerEliminacion"
+            >
+              Desfer
+            </Button>
+          </div>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
             <div>
               <label class="mb-2 block text-sm font-medium text-slate-700">Estado</label>
@@ -244,6 +280,11 @@ const transacciones = computed(() => props.transacciones.data);
                   >
                     Detalle
                   </th>
+                  <th
+                    class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 bg-white">
@@ -304,6 +345,17 @@ const transacciones = computed(() => props.transacciones.data);
                   <td class="px-3 py-3 text-xs text-slate-700">
                     <Button v-if="tx.payload" variant="outline" size="sm" @click="abrirDetalle(tx)">
                       Ver
+                    </Button>
+                    <span v-else class="text-slate-400">-</span>
+                  </td>
+                  <td class="px-3 py-3 text-center text-sm whitespace-nowrap">
+                    <Button
+                      v-if="tx.estado === 'error'"
+                      variant="destructive"
+                      size="icon-sm"
+                      @click="eliminarTransaccion(tx)"
+                    >
+                      <Trash2 class="h-4 w-4" />
                     </Button>
                     <span v-else class="text-slate-400">-</span>
                   </td>

@@ -129,6 +129,10 @@ Route::prefix('uec-admin')->name('admin.')->middleware('admin.auth')->group(func
 
     // Transacciones Redsys
     Route::get('transacciones', [RedsysTransaccionController::class, 'index'])->name('transacciones.index');
+    Route::delete('transacciones/{transaccion}', [RedsysTransaccionController::class, 'destroy'])
+        ->name('transacciones.destroy');
+    Route::post('transacciones/undo', [RedsysTransaccionController::class, 'restore'])
+        ->name('transacciones.undo');
 
     // Gestión de cupones
     Route::get('cupones', [CuponController::class, 'index'])->name('cupones.index');
