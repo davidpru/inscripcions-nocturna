@@ -76,7 +76,6 @@ const abrirDetalle = (tx: RedsysTransaccion) => {
   detalleDialogOpen.value = true;
 };
 
-
 const aplicarFiltros = () => {
   const params = new URLSearchParams();
   if (estado.value) params.append('estado', estado.value);
@@ -284,27 +283,27 @@ const transacciones = computed(() => props.transacciones.data);
                     >
                       {{ tx.estado }}
                     </span>
-                      <div class="mt-1 flex items-center gap-2 text-[11px] text-slate-500">
-                        <span v-if="tx.response_code">Codigo: {{ tx.response_code }}</span>
-                        <TooltipProvider v-if="tx.descripcion_error">
-                          <Tooltip>
-                            <TooltipTrigger as-child>
-                              <button
-                                type="button"
-                                class="inline-flex items-center gap-1 text-slate-500 hover:text-slate-700"
-                              >
-                                <Info class="h-3.5 w-3.5" />
-                                Detalle
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p class="max-w-xs text-xs">
-                                {{ tx.descripcion_error }}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
+                    <div class="mt-1 flex items-center gap-2 text-[11px] text-slate-500">
+                      <span v-if="tx.response_code">Codigo: {{ tx.response_code }}</span>
+                      <TooltipProvider v-if="tx.descripcion_error">
+                        <Tooltip>
+                          <TooltipTrigger as-child>
+                            <button
+                              type="button"
+                              class="inline-flex items-center gap-1 text-slate-500 hover:text-slate-700"
+                            >
+                              <Info class="h-3.5 w-3.5" />
+                              Detalle
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p class="max-w-xs text-xs">
+                              {{ tx.descripcion_error }}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </td>
                   <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ tipoTexto(tx.tipo) }}

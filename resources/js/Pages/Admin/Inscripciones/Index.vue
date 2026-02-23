@@ -543,6 +543,11 @@ const formatearFecha = (fecha: string) => {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
+  });
+};
+
+const formatearHora = (fecha: string) => {
+  return new Date(fecha).toLocaleTimeString('es-ES', {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -689,62 +694,62 @@ const confirmarToggleDorsal = () => {
               <thead class="bg-white">
                 <tr>
                   <th
-                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Nº
                   </th>
                   <th
-                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     #
                   </th>
                   <th
-                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Nom
                   </th>
                   <th
-                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     DNI
                   </th>
                   <th
-                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Ed.
                   </th>
                   <th
-                    class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Tipo
                   </th>
                   <th
-                    class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Compra
                   </th>
                   <th
-                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Preu
                   </th>
                   <th
-                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Estat
                   </th>
                   <th
-                    class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Data
                   </th>
                   <th
-                    class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Check
                   </th>
                   <th
-                    class="px-3 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
+                    class="px-2 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Accions
                   </th>
@@ -752,7 +757,7 @@ const confirmarToggleDorsal = () => {
               </thead>
               <tbody class="divide-y divide-slate-200 bg-white">
                 <tr v-for="(inscripcion, index) in inscripcionesFiltradas" :key="inscripcion.id">
-                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
+                  <td class="px-2 py-3 text-sm whitespace-nowrap text-slate-900">
                     <span
                       v-if="getNumeroInscripcion(inscripcion, index)"
                       class="font-semibold text-blue-600"
@@ -761,10 +766,10 @@ const confirmarToggleDorsal = () => {
                     </span>
                     <span v-else class="text-slate-400">-</span>
                   </td>
-                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
+                  <td class="px-2 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ inscripcion.id }}
                   </td>
-                  <td class="px-3 py-3 whitespace-nowrap">
+                  <td class="px-2 py-3 whitespace-nowrap">
                     <div class="text-sm font-medium text-slate-900">
                       {{ inscripcion.participante.nombre }} {{ inscripcion.participante.apellidos }}
                     </div>
@@ -772,13 +777,13 @@ const confirmarToggleDorsal = () => {
                       {{ inscripcion.participante.email }}
                     </div>
                   </td>
-                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
+                  <td class="px-2 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ inscripcion.participante.dni }}
                   </td>
-                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
+                  <td class="px-2 py-3 text-sm whitespace-nowrap text-slate-900">
                     {{ inscripcion.edicion.anio }}
                   </td>
-                  <td class="px-3 py-3 whitespace-nowrap">
+                  <td class="px-2 py-3 whitespace-nowrap">
                     <div class="flex items-center justify-center gap-1">
                       <TooltipProvider>
                         <!-- Federado -->
@@ -883,7 +888,9 @@ const confirmarToggleDorsal = () => {
                       </TooltipProvider>
                     </div>
                   </td>
-                  <td class="px-3 py-3 text-center text-xs font-medium whitespace-nowrap text-slate-700">
+                  <td
+                    class="px-2 py-3 text-center text-xs font-medium whitespace-nowrap text-slate-700"
+                  >
                     <span
                       class="inline-flex rounded-full px-2 py-0.5"
                       :class="
@@ -895,7 +902,7 @@ const confirmarToggleDorsal = () => {
                       {{ tieneAutobusAnadido(inscripcion) ? 'Autobus afegit' : 'Inscripcio' }}
                     </span>
                   </td>
-                  <td class="px-3 py-3 text-sm font-semibold whitespace-nowrap">
+                  <td class="px-2 py-3 text-sm font-semibold whitespace-nowrap">
                     <div class="flex items-center gap-2">
                       <span
                         :class="
@@ -932,7 +939,7 @@ const confirmarToggleDorsal = () => {
                       </TooltipProvider>
                     </div>
                   </td>
-                  <td class="px-3 py-3 whitespace-nowrap">
+                  <td class="px-2 py-3 whitespace-nowrap">
                     <div class="flex flex-col items-center gap-2">
                       <span
                         :class="getEstadoPagoBadgeClass(inscripcion.estado_pago)"
@@ -951,10 +958,15 @@ const confirmarToggleDorsal = () => {
                       </Link>
                     </div>
                   </td>
-                  <td class="px-3 py-3 text-sm whitespace-nowrap text-slate-900">
-                    {{ formatearFecha(inscripcion.created_at) }}
+                  <td class="px-2 py-3 text-sm text-slate-900">
+                    <div class="flex flex-col">
+                      <span>{{ formatearFecha(inscripcion.created_at) }}</span>
+                      <span class="text-xs text-slate-500">{{
+                        formatearHora(inscripcion.created_at)
+                      }}</span>
+                    </div>
                   </td>
-                  <td class="px-3 py-3 whitespace-nowrap">
+                  <td class="px-2 py-3 whitespace-nowrap">
                     <div class="flex justify-center">
                       <Button
                         variant="ghost"
@@ -974,7 +986,7 @@ const confirmarToggleDorsal = () => {
                       </Button>
                     </div>
                   </td>
-                  <td class="space-x-2 px-3 py-3 text-right text-sm font-medium whitespace-nowrap">
+                  <td class="space-x-2 px-2 py-3 text-right text-sm font-medium whitespace-nowrap">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger as-child>
