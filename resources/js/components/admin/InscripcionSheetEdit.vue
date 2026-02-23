@@ -111,14 +111,14 @@ const handleOpenChange = (open: boolean) => {
       </SheetHeader>
 
       <Tabs default-value="resumen" class="mt-6">
-        <TabsList>
-          <TabsTrigger value="resumen" class="px-10">
+        <TabsList class="grid w-full grid-cols-2">
+          <TabsTrigger value="resumen" class="px-4 text-sm">
             <span class="flex items-center gap-2">
               <Eye class="h-4 w-4" />
               Resum
             </span>
           </TabsTrigger>
-          <TabsTrigger value="editar" class="px-10">
+          <TabsTrigger value="editar" class="px-4 text-sm">
             <span class="flex items-center gap-2">
               <Pencil class="h-4 w-4" />
               Editar
@@ -131,11 +131,11 @@ const handleOpenChange = (open: boolean) => {
           <!-- QR Code -->
           <div
             v-if="inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado'"
-            class="flex flex-col items-center rounded-lg border bg-white p-6"
+            class="flex flex-col items-center rounded-lg border bg-white p-4 sm:p-6"
           >
-            <QrCode class="mb-2 h-32 w-32 text-slate-300" />
+            <QrCode class="mb-2 h-15 w-15 text-slate-300 sm:h-20 sm:w-20" />
             <p class="text-sm text-slate-500">Codi QR de verificació</p>
-            <div class="mt-4 flex gap-2">
+            <div class="mt-4 flex w-full justify-center gap-2">
               <a :href="`/inscripcio/${inscripcion.id}/pdf`" target="_blank">
                 <Button variant="outline" size="sm" class="gap-2">
                   <Download class="h-4 w-4" />
@@ -157,25 +157,24 @@ const handleOpenChange = (open: boolean) => {
           <!-- Datos del participante -->
           <div class="rounded-lg border bg-slate-50 p-4">
             <h3 class="mb-3 font-semibold text-slate-900">Participant</h3>
-            <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div>
-                <span class="text-slate-500">Nom:</span>
-                <span class="ml-2 font-medium"
-                  >{{ inscripcion.participante.nombre }}
-                  {{ inscripcion.participante.apellidos }}</span
-                >
+                <p class="text-xs text-slate-500">Nom</p>
+                <p class="font-medium break-words">
+                  {{ inscripcion.participante.nombre }} {{ inscripcion.participante.apellidos }}
+                </p>
               </div>
               <div>
-                <span class="text-slate-500">DNI:</span>
-                <span class="ml-2 font-medium">{{ inscripcion.participante.dni }}</span>
+                <p class="text-xs text-slate-500">DNI</p>
+                <p class="font-medium break-words">{{ inscripcion.participante.dni }}</p>
               </div>
               <div>
-                <span class="text-slate-500">Email:</span>
-                <span class="ml-2 font-medium">{{ inscripcion.participante.email }}</span>
+                <p class="text-xs text-slate-500">Email</p>
+                <p class="font-medium break-words">{{ inscripcion.participante.email }}</p>
               </div>
               <div>
-                <span class="text-slate-500">Telèfon:</span>
-                <span class="ml-2 font-medium">{{ inscripcion.participante.telefono }}</span>
+                <p class="text-xs text-slate-500">Telèfon</p>
+                <p class="font-medium break-words">{{ inscripcion.participante.telefono }}</p>
               </div>
             </div>
           </div>
@@ -183,7 +182,7 @@ const handleOpenChange = (open: boolean) => {
           <!-- Estado y Pago -->
           <div class="rounded-lg border bg-slate-50 p-4">
             <h3 class="mb-3 font-semibold text-slate-900">Estat i Pagament</h3>
-            <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div>
                 <span class="text-slate-500">Estat:</span>
                 <span
@@ -221,7 +220,7 @@ const handleOpenChange = (open: boolean) => {
           <!-- Opciones contratadas -->
           <div class="rounded-lg border bg-slate-50 p-4">
             <h3 class="mb-3 font-semibold text-slate-900">Opcions</h3>
-            <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div class="flex items-center gap-2">
                 <span :class="inscripcion.es_socio_uec ? 'text-green-600' : 'text-slate-400'">
                   {{ inscripcion.es_socio_uec ? '✓' : '✗' }}
@@ -264,7 +263,7 @@ const handleOpenChange = (open: boolean) => {
           <!-- Tallas -->
           <div class="rounded-lg border bg-slate-50 p-4">
             <h3 class="mb-3 font-semibold text-slate-900">Samarretes</h3>
-            <div class="flex justify-around text-center">
+            <div class="flex flex-col gap-4 text-center sm:flex-row sm:justify-around">
               <div>
                 <span class="text-xs text-slate-500">Caro</span>
                 <div class="text-lg font-bold">
@@ -293,7 +292,7 @@ const handleOpenChange = (open: boolean) => {
             <!-- Datos personales -->
             <div class="space-y-3">
               <h3 class="font-semibold text-slate-900">Datos Personales</h3>
-              <div class="grid grid-cols-2 gap-4 rounded-lg border bg-slate-50 p-4">
+              <div class="grid grid-cols-1 gap-4 rounded-lg border bg-slate-50 p-4 md:grid-cols-2">
                 <!-- Nombre -->
                 <div>
                   <Label class="text-xs text-slate-500">Nombre</Label>
@@ -336,7 +335,7 @@ const handleOpenChange = (open: boolean) => {
                   <Input v-model="editingData.fecha_nacimiento" type="date" class="mt-1" />
                 </div>
                 <!-- Dirección (col-span-2) -->
-                <div class="col-span-2">
+                <div class="md:col-span-2">
                   <Label class="text-xs text-slate-500">Dirección</Label>
                   <Input v-model="editingData.direccion" class="mt-1" />
                 </div>
@@ -351,7 +350,7 @@ const handleOpenChange = (open: boolean) => {
                   <Input v-model="editingData.poblacion" class="mt-1" />
                 </div>
                 <!-- Provincia -->
-                <div class="col-span-2">
+                <div class="md:col-span-2">
                   <Label class="text-xs text-slate-500">Provincia</Label>
                   <Input v-model="editingData.provincia" class="mt-1" />
                 </div>
@@ -361,7 +360,7 @@ const handleOpenChange = (open: boolean) => {
             <!-- Detalles Inscripción -->
             <div class="space-y-3">
               <h3 class="font-semibold text-slate-900">Detalles Inscripción</h3>
-              <div class="grid grid-cols-2 gap-4 rounded-lg border bg-slate-50 p-4">
+              <div class="grid grid-cols-1 gap-4 rounded-lg border bg-slate-50 p-4 sm:grid-cols-2">
                 <!-- Estado Pago -->
                 <div>
                   <Label class="text-xs text-slate-500">Estado Pago</Label>
@@ -385,9 +384,12 @@ const handleOpenChange = (open: boolean) => {
                 </div>
 
                 <!-- Datos de pago Redsys -->
-                <div v-if="inscripcion.numero_pedido" class="col-span-2 mt-2 border-t pt-3">
+                <div
+                  v-if="inscripcion.numero_pedido"
+                  class="col-span-1 mt-2 border-t pt-3 sm:col-span-2"
+                >
                   <Label class="text-xs font-semibold text-slate-500">Datos de Pago Redsys</Label>
-                  <div class="mt-2 grid grid-cols-3 gap-2 text-sm">
+                  <div class="mt-2 grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
                     <div>
                       <span class="text-xs text-slate-400">Nº Pedido:</span>
                       <span class="block font-mono text-slate-700">{{
@@ -410,7 +412,9 @@ const handleOpenChange = (open: boolean) => {
                 </div>
 
                 <!-- Socio UEC -->
-                <div class="col-span-2 mt-2 grid grid-cols-2 gap-4 border-t pt-3">
+                <div
+                  class="col-span-1 mt-2 grid grid-cols-1 gap-4 border-t pt-3 sm:col-span-2 sm:grid-cols-2"
+                >
                   <div>
                     <Label class="text-xs text-slate-500">Socio UEC</Label>
                     <div class="mt-1">
@@ -445,7 +449,9 @@ const handleOpenChange = (open: boolean) => {
                 </div>
 
                 <!-- Autobús -->
-                <div class="col-span-2 mt-2 grid grid-cols-2 gap-4 border-t pt-3">
+                <div
+                  class="col-span-1 mt-2 grid grid-cols-1 gap-4 border-t pt-3 sm:col-span-2 sm:grid-cols-2"
+                >
                   <div>
                     <Label class="text-xs text-slate-500">Necesita Autobús</Label>
                     <div class="mt-1">
@@ -471,7 +477,9 @@ const handleOpenChange = (open: boolean) => {
                   </div>
                 </div>
                 <!-- Seguro Anulación y Celíaco -->
-                <div class="col-span-2 mt-2 grid grid-cols-2 gap-4 border-t pt-3">
+                <div
+                  class="col-span-1 mt-2 grid grid-cols-1 gap-4 border-t pt-3 sm:col-span-2 sm:grid-cols-2"
+                >
                   <div>
                     <Label class="text-xs text-slate-500">Seguro Anulación</Label>
                     <div class="mt-1">
@@ -494,7 +502,9 @@ const handleOpenChange = (open: boolean) => {
                   </div>
                 </div>
                 <!-- Camiseta Caro -->
-                <div class="col-span-2 mt-2 grid grid-cols-2 gap-4 border-t pt-3">
+                <div
+                  class="col-span-1 mt-2 grid grid-cols-1 gap-4 border-t pt-3 sm:col-span-2 sm:grid-cols-2"
+                >
                   <div>
                     <Label class="text-xs text-slate-500">Camiseta Caro</Label>
                     <select
