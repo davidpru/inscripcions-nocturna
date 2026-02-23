@@ -656,7 +656,7 @@ const enviarInscripcion = () => {
                     <RadioGroup
                       :model-value="form.es_socio_uec ? 'si' : 'no'"
                       class="mt-2 flex space-x-6"
-                      @update:model-value="(val: string) => (form.es_socio_uec = val === 'si')"
+                      @update:model-value="(val) => (form.es_socio_uec = String(val) === 'si')"
                     >
                       <div class="flex items-center space-x-2">
                         <RadioGroupItem id="socio-no" value="no" />
@@ -681,7 +681,7 @@ const enviarInscripcion = () => {
                     <RadioGroup
                       :model-value="form.esta_federado ? 'si' : 'no'"
                       class="mt-2 flex space-x-6"
-                      @update:model-value="(val: string) => (form.esta_federado = val === 'si')"
+                      @update:model-value="(val) => (form.esta_federado = String(val) === 'si')"
                     >
                       <div class="flex items-center space-x-2">
                         <RadioGroupItem id="federado-no" value="no" />
