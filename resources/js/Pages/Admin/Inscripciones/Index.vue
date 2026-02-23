@@ -77,6 +77,7 @@ interface Inscripcion {
   created_at: string;
   participante: Participante;
   edicion: Edicion;
+  redsys_transacciones?: { es_autobus: boolean }[];
   es_socio_uec: boolean;
   esta_federado: boolean;
   necesita_autobus: boolean;
@@ -124,6 +125,10 @@ const inscripcionesFiltradas = computed(() => props.inscripciones.data);
 
 // Total de inscripciones pagadas (viene del backend)
 const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas);
+
+const tieneAutobusAnadido = (inscripcion: Inscripcion): boolean => {
+  return Boolean(inscripcion.redsys_transacciones?.some((tx) => tx.es_autobus));
+};
 
 // Calcular el índice de inscripción para inscripciones pagadas
 const getNumeroInscripcion = (inscripcion: Inscripcion, index: number): number | null => {
@@ -714,6 +719,11 @@ const confirmarToggleDorsal = () => {
                     Tipo
                   </th>
                   <th
+                    class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
+                    Compra
+                  </th>
+                  <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Preu
@@ -872,6 +882,18 @@ const confirmarToggleDorsal = () => {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
+                  </td>
+                  <td class="px-3 py-3 text-center text-xs font-medium whitespace-nowrap text-slate-700">
+                    <span
+                      class="inline-flex rounded-full px-2 py-0.5"
+                      :class="
+                        tieneAutobusAnadido(inscripcion)
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-slate-100 text-slate-600'
+                      "
+                    >
+                      {{ tieneAutobusAnadido(inscripcion) ? 'Autobus afegit' : 'Inscripcio' }}
+                    </span>
                   </td>
                   <td class="px-3 py-3 text-sm font-semibold whitespace-nowrap">
                     <div class="flex items-center gap-2">
