@@ -131,12 +131,22 @@ const inscripcionesFiltradas = computed(() => inscripcionesList.value);
 // Total de inscripciones pagadas (viene del backend)
 const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas);
 
-// Calcular el índice de inscripción para inscripciones pagadas
-const getNumeroInscripcion = (inscripcion: Inscripcion, index: number): number | null => {
-  if (!['pagado', 'invitado'].includes(inscripcion.estado_pago)) return null;
+const numeroInscripcionPorId = computed(() => {
+  const map = new Map<number, number>();
+  let pagadasVistas = 0;
 
-  // En orden DESC: el número = total - posición en el listado actual
-  return totalInscripcionesPagadas.value - index;
+  for (const inscripcion of inscripcionesFiltradas.value) {
+    if (['pagado', 'invitado'].includes(inscripcion.estado_pago)) {
+      map.set(inscripcion.id, totalInscripcionesPagadas.value - pagadasVistas);
+      pagadasVistas += 1;
+    }
+  }
+
+  return map;
+});
+
+const getNumeroInscripcion = (inscripcion: Inscripcion): number | null => {
+  return numeroInscripcionPorId.value.get(inscripcion.id) ?? null;
 };
 
 const hasMore = computed(() => currentPage.value < lastPage.value);
@@ -797,13 +807,13 @@ const confirmarToggleDorsal = () => {
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 bg-white">
-                <tr v-for="(inscripcion, index) in inscripcionesFiltradas" :key="inscripcion.id">
+                <tr v-for="inscripcion in inscripcionesFiltradas" :key="inscripcion.id">
                   <td class="px-2 py-3 text-sm whitespace-nowrap text-slate-900">
                     <span
-                      v-if="getNumeroInscripcion(inscripcion, index)"
+                      v-if="getNumeroInscripcion(inscripcion)"
                       class="font-semibold text-blue-600"
                     >
-                      {{ getNumeroInscripcion(inscripcion, index) }}
+                      {{ getNumeroInscripcion(inscripcion) }}
                     </span>
                     <span v-else class="text-slate-400">-</span>
                   </td>
