@@ -459,6 +459,11 @@ class RedsysController extends Controller
      */
     public function success(Request $request)
     {
+        if (!$request->has('Ds_MerchantParameters')) {
+            Log::warning('Redsys success: Missing parameters', ['data' => $request->all()]);
+            return redirect()->route('home');
+        }
+
         Log::info('Redsys success: Request received', ['data' => $request->all()]);
         
         try {
@@ -655,6 +660,11 @@ class RedsysController extends Controller
      */
     public function error(Request $request)
     {
+        if (!$request->has('Ds_MerchantParameters')) {
+            Log::warning('Redsys error: Missing parameters', ['data' => $request->all()]);
+            return redirect()->route('home')->with('error', 'Respuesta de Redsys incompleta.');
+        }
+
         $errorMessage = 'El pago no pudo ser procesado.';
         $inscripcion = null;
         $responseCode = null;
