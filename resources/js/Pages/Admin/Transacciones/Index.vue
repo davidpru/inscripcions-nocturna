@@ -239,7 +239,7 @@ const transacciones = computed(() => props.transacciones.data);
                   <th
                     class="px-3 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Autobus
+                    Compra
                   </th>
                   <th
                     class="px-3 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
@@ -312,10 +312,10 @@ const transacciones = computed(() => props.transacciones.data);
                     <span
                       class="inline-flex rounded-full px-2 text-xs font-semibold"
                       :class="
-                        tx.es_autobus ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'
+                        tx.es_autobus ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
                       "
                     >
-                      {{ tx.es_autobus ? 'Si' : 'No' }}
+                      {{ tx.es_autobus ? 'Autobus' : 'Inscripcio' }}
                     </span>
                   </td>
                   <td class="px-3 py-3 text-xs text-slate-700">

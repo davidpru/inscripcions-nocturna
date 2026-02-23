@@ -39,7 +39,7 @@ import {
   WheatOff,
   X,
 } from 'lucide-vue-next';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
 interface Participante {
   id: number;
@@ -77,7 +77,6 @@ interface Inscripcion {
   created_at: string;
   participante: Participante;
   edicion: Edicion;
-  redsys_transacciones?: { es_autobus: boolean }[];
   es_socio_uec: boolean;
   esta_federado: boolean;
   necesita_autobus: boolean;
@@ -112,7 +111,6 @@ const props = defineProps<{
     busqueda?: string;
   };
   totalInscripcionesPagadas: number;
-  pagadasAntesDeEstaPagina: number;
 }>();
 
 const edicionSeleccionada = ref(props.filtros.edicion_id || '');
@@ -120,30 +118,57 @@ const busqueda = ref(props.filtros.busqueda || '');
 const saving = ref(false);
 const editingData = reactive<Record<number, any>>({});
 
+const inscripcionesList = ref<Inscripcion[]>([...props.inscripciones.data]);
+const currentPage = ref(props.inscripciones.current_page);
+const lastPage = ref(props.inscripciones.last_page);
+const loadingMore = ref(false);
+const loadMoreTrigger = ref<HTMLElement | null>(null);
+let loadMoreObserver: IntersectionObserver | null = null;
+
 // Mostrar todas las inscripciones sin filtrado local (la búsqueda se hace en backend)
-const inscripcionesFiltradas = computed(() => props.inscripciones.data);
+const inscripcionesFiltradas = computed(() => inscripcionesList.value);
 
 // Total de inscripciones pagadas (viene del backend)
 const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas);
-
-const tieneAutobusAnadido = (inscripcion: Inscripcion): boolean => {
-  return Boolean(inscripcion.redsys_transacciones?.some((tx) => tx.es_autobus));
-};
 
 // Calcular el índice de inscripción para inscripciones pagadas
 const getNumeroInscripcion = (inscripcion: Inscripcion, index: number): number | null => {
   if (!['pagado', 'invitado'].includes(inscripcion.estado_pago)) return null;
 
-  // Contar cuántas inscripciones pagadas hay en esta página ANTES de esta posición
-  let pagadasAntes = 0;
-  for (let i = 0; i < index; i++) {
-    if (['pagado', 'invitado'].includes(inscripcionesFiltradas.value[i].estado_pago)) {
-      pagadasAntes++;
-    }
-  }
+  // En orden DESC: el número = total - posición en el listado actual
+  return totalInscripcionesPagadas.value - index;
+};
 
-  // En orden DESC: el número = total - (pagadas en páginas anteriores) - (pagadas antes en esta página)
-  return totalInscripcionesPagadas.value - props.pagadasAntesDeEstaPagina - pagadasAntes;
+const hasMore = computed(() => currentPage.value < lastPage.value);
+
+const cargarMas = () => {
+  if (loadingMore.value || !hasMore.value) return;
+
+  loadingMore.value = true;
+  const nextPage = currentPage.value + 1;
+  const url = new URL(window.location.href);
+  url.searchParams.set('page', nextPage.toString());
+
+  router.get(
+    url.toString(),
+    {},
+    {
+      preserveScroll: true,
+      preserveState: true,
+      only: ['inscripciones', 'totalInscripcionesPagadas'],
+      onSuccess: (page) => {
+        const nextData = (page.props as unknown as { inscripciones: Paginacion }).inscripciones;
+        if (nextData?.data?.length) {
+          inscripcionesList.value = [...inscripcionesList.value, ...nextData.data];
+          currentPage.value = nextData.current_page;
+          lastPage.value = nextData.last_page;
+        }
+      },
+      onFinish: () => {
+        loadingMore.value = false;
+      },
+    }
+  );
 };
 
 const modalNuevaInscripcion = ref(false);
@@ -438,6 +463,36 @@ watch(busqueda, () => {
   }, 500);
 });
 
+watch(
+  () => props.inscripciones.data,
+  (data) => {
+    inscripcionesList.value = [...data];
+    currentPage.value = props.inscripciones.current_page;
+    lastPage.value = props.inscripciones.last_page;
+  }
+);
+
+onMounted(() => {
+  loadMoreObserver = new IntersectionObserver(
+    (entries) => {
+      if (entries[0]?.isIntersecting) {
+        cargarMas();
+      }
+    },
+    { rootMargin: '200px' }
+  );
+
+  if (loadMoreTrigger.value) {
+    loadMoreObserver.observe(loadMoreTrigger.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (loadMoreObserver && loadMoreTrigger.value) {
+    loadMoreObserver.unobserve(loadMoreTrigger.value);
+  }
+});
+
 // Exportar inscripciones confirmadas a CSV
 const exportarInscripciones = () => {
   // Construir URL con parámetros de edición y búsqueda si están seleccionados
@@ -724,11 +779,6 @@ const confirmarToggleDorsal = () => {
                     Tipo
                   </th>
                   <th
-                    class="px-2 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
-                  >
-                    Compra
-                  </th>
-                  <th
                     class="px-2 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
                     Preu
@@ -888,20 +938,6 @@ const confirmarToggleDorsal = () => {
                       </TooltipProvider>
                     </div>
                   </td>
-                  <td
-                    class="px-2 py-3 text-center text-xs font-medium whitespace-nowrap text-slate-700"
-                  >
-                    <span
-                      class="inline-flex rounded-full px-2 py-0.5"
-                      :class="
-                        tieneAutobusAnadido(inscripcion)
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-slate-100 text-slate-600'
-                      "
-                    >
-                      {{ tieneAutobusAnadido(inscripcion) ? 'Autobus afegit' : 'Inscripcio' }}
-                    </span>
-                  </td>
                   <td class="px-2 py-3 text-sm font-semibold whitespace-nowrap">
                     <div class="flex items-center gap-2">
                       <span
@@ -1045,44 +1081,31 @@ const confirmarToggleDorsal = () => {
             </table>
           </div>
 
-          <div v-if="inscripciones.data.length === 0" class="py-12 text-center">
+          <div v-if="inscripcionesFiltradas.length === 0" class="py-12 text-center">
             <p class="text-slate-500">No hay inscripciones</p>
           </div>
 
-          <!-- Paginación -->
+          <!-- Carga incremental -->
           <div
-            v-if="inscripciones.last_page > 1"
+            v-if="inscripciones.total > 0"
             class="border-t border-slate-200 bg-white px-4 py-3"
           >
             <div class="flex items-center justify-between">
               <div class="text-sm text-slate-700">
-                Mostrando {{ (inscripciones.current_page - 1) * inscripciones.per_page + 1 }} -
-                {{
-                  Math.min(inscripciones.current_page * inscripciones.per_page, inscripciones.total)
-                }}
-                de {{ inscripciones.total }} resultados
+                Mostrando 1 - {{ inscripcionesFiltradas.length }} de {{ inscripciones.total }}
+                resultados
               </div>
-              <div class="flex gap-2">
-                <Button
-                  v-if="inscripciones.current_page > 1"
-                  variant="outline"
-                  size="sm"
-                  as="a"
-                  :href="`/uec-admin/inscripciones?page=${inscripciones.current_page - 1}${filtros.edicion_id ? '&edicion_id=' + filtros.edicion_id : ''}`"
-                >
-                  Anterior
-                </Button>
-                <Button
-                  v-if="inscripciones.current_page < inscripciones.last_page"
-                  variant="outline"
-                  size="sm"
-                  as="a"
-                  :href="`/uec-admin/inscripciones?page=${inscripciones.current_page + 1}${filtros.edicion_id ? '&edicion_id=' + filtros.edicion_id : ''}`"
-                >
-                  Siguiente
-                </Button>
-              </div>
+              <Button
+                v-if="hasMore"
+                variant="outline"
+                size="sm"
+                :disabled="loadingMore"
+                @click="cargarMas"
+              >
+                {{ loadingMore ? 'Carregant...' : 'Carregar mes' }}
+              </Button>
             </div>
+            <div ref="loadMoreTrigger" class="h-1"></div>
           </div>
         </div>
       </div>

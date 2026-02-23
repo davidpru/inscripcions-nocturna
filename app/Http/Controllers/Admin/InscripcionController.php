@@ -17,7 +17,7 @@ class InscripcionController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Inscripcion::with(['participante', 'edicion', 'redsysTransacciones'])
+        $query = Inscripcion::with(['participante', 'edicion'])
             ->orderBy('created_at', 'desc');
 
         // Filtrar por edición si se especifica y tiene valor
@@ -45,42 +45,12 @@ class InscripcionController extends Controller
         
         // Calcular total de inscripciones pagadas (respetando filtros)
         $totalInscripcionesPagadas = $queryPagadas->count();
-        
-        // Calcular cuántas inscripciones pagadas hay ANTES de la página actual
-        // Esto es necesario para numerar correctamente en orden DESC
-        $currentPage = $inscripciones->currentPage();
-        $pagadasAntesDeEstaPagina = 0;
-        
-        if ($currentPage > 1) {
-            // Contar inscripciones pagadas en las páginas anteriores
-            $idsEnPaginasAnteriores = Inscripcion::with(['participante', 'edicion'])
-                ->orderBy('created_at', 'desc');
-            
-            if ($request->filled('edicion_id')) {
-                $idsEnPaginasAnteriores->where('edicion_id', $request->edicion_id);
-            }
-            if ($request->filled('busqueda')) {
-                $busqueda = $request->busqueda;
-                $idsEnPaginasAnteriores->whereHas('participante', function ($q) use ($busqueda) {
-                    $q->where('nombre', 'like', "%{$busqueda}%")
-                        ->orWhere('apellidos', 'like', "%{$busqueda}%")
-                        ->orWhere('dni', 'like', "%{$busqueda}%")
-                        ->orWhere('email', 'like', "%{$busqueda}%");
-                });
-            }
-            
-            $pagadasAntesDeEstaPagina = $idsEnPaginasAnteriores
-                ->whereIn('estado_pago', ['pagado', 'invitado'])
-                ->take(($currentPage - 1) * 50)
-                ->count();
-        }
 
         return Inertia::render('Admin/Inscripciones/Index', [
             'inscripciones' => $inscripciones,
             'ediciones' => $ediciones,
             'filtros' => $request->only(['edicion_id', 'busqueda']),
             'totalInscripcionesPagadas' => $totalInscripcionesPagadas,
-            'pagadasAntesDeEstaPagina' => $pagadasAntesDeEstaPagina,
         ]);
     }
 
