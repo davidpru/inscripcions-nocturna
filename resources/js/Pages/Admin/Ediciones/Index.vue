@@ -32,22 +32,22 @@ const getEstadoBadgeClass = (estado: string) => {
 
 <template>
   <AdminLayout>
-    <Head title="Gestión de Ediciones" />
+    <Head title="Gestió d'Edicions" />
 
     <div class="px-4 py-8">
       <div class="mx-auto max-w-7xl">
         <!-- Header -->
         <div class="mb-8 flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold text-slate-900">Gestión de Ediciones</h1>
-            <p class="mt-1 text-slate-600">Administra las ediciones de la Nocturna Fredes Paüls</p>
+            <h1 class="text-3xl font-bold text-slate-900">Gestió d'Edicions</h1>
+            <p class="mt-1 text-slate-600">Administra les edicions de la Nocturna Fredes Paüls</p>
           </div>
           <Link href="/uec-admin/ediciones/create">
-            <Button>Nueva Edición</Button>
+            <Button>Nova Edició</Button>
           </Link>
         </div>
 
-        <!-- Lista de Ediciones -->
+        <!-- Llista d'Edicions -->
         <div class="overflow-hidden rounded-lg bg-white shadow">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
@@ -56,32 +56,32 @@ const getEstadoBadgeClass = (estado: string) => {
                   <th
                     class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Año
+                    Any
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Fecha Evento
+                    Data Esdeveniment
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Inscritos
+                    Inscrits
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Fecha Límite
+                    Data Límit
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Estado
+                    Estat
                   </th>
                   <th
                     class="px-6 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
-                    Acciones
+                    Accions
                   </th>
                 </tr>
               </thead>
@@ -120,7 +120,7 @@ const getEstadoBadgeClass = (estado: string) => {
                       <Button variant="outline" size="sm">Editar</Button>
                     </Link>
                     <Link :href="`/uec-admin/inscripciones?edicion_id=${edicion.id}`">
-                      <Button variant="outline" size="sm">Ver Inscritos</Button>
+                      <Button variant="outline" size="sm">Veure Inscrits</Button>
                     </Link>
                   </td>
                 </tr>
@@ -129,9 +129,9 @@ const getEstadoBadgeClass = (estado: string) => {
           </div>
 
           <div v-if="ediciones.length === 0" class="py-12 text-center">
-            <p class="text-slate-500">No hay ediciones creadas</p>
+            <p class="text-slate-500">No hi ha edicions creades</p>
             <Link href="/uec-admin/ediciones/create" class="mt-4 inline-block">
-              <Button>Crear Primera Edición</Button>
+              <Button>Crear Primera Edició</Button>
             </Link>
           </div>
         </div>

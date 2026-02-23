@@ -16,15 +16,16 @@ class DashboardController extends Controller
             ->first();
 
         $stats = [
-            'totalInscripciones' => Inscripcion::count(),
+            'totalInscripciones' => Inscripcion::whereIn('estado_pago', ['pagado', 'invitado'])->count(),
             'inscripcionesPagadas' => Inscripcion::where('estado_pago', 'pagado')->count(),
+            'inscripcionesInvitadas' => Inscripcion::where('estado_pago', 'invitado')->count(),
             'inscripcionesPendientes' => Inscripcion::where('estado_pago', 'pendiente')->count(),
             'totalRecaudado' => Inscripcion::where('estado_pago', 'pagado')->sum('precio_total'),
             'edicionActual' => $edicionActual ? [
                 'id' => $edicionActual->id,
                 'anio' => $edicionActual->anio,
                 'inscritos' => Inscripcion::where('edicion_id', $edicionActual->id)
-                    ->where('estado_pago', 'pagado')
+                    ->whereIn('estado_pago', ['pagado', 'invitado'])
                     ->count(),
                 'limite' => $edicionActual->limite_inscritos,
             ] : null,
@@ -38,7 +39,7 @@ class DashboardController extends Controller
         if ($edicionActual) {
             // Obtener inscripciones agrupadas por día
             $inscripciones = Inscripcion::where('edicion_id', $edicionActual->id)
-                ->where('estado_pago', 'pagado')
+                ->whereIn('estado_pago', ['pagado', 'invitado'])
                 ->selectRaw('DATE(fecha_pago) as fecha, COUNT(*) as total')
                 ->groupBy('fecha')
                 ->orderBy('fecha')

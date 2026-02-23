@@ -13,12 +13,13 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { GroupedBar } from '@unovis/ts';
 import { VisAxis, VisGroupedBar, VisTooltip, VisXYContainer } from '@unovis/vue';
-import { BarChart3, Calendar, ClipboardList, Euro, TrendingUp, Users } from 'lucide-vue-next';
+import { BarChart3, Calendar, ClipboardList, Euro, Gift, TrendingUp, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Stats {
   totalInscripciones: number;
   inscripcionesPagadas: number;
+  inscripcionesInvitadas: number;
   inscripcionesPendientes: number;
   totalRecaudado: number;
   edicionActual: {
@@ -113,18 +114,20 @@ const estadistiques = computed(() => props.estadistiques);
         <!-- Header -->
         <div class="mb-8">
           <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
-          <p class="mt-1 text-slate-600">Panel de administración de la Nocturna Fredes Paüls</p>
+          <p class="mt-1 text-balance text-slate-600">
+            Panel de administración de la Nocturna Fredes Paüls
+          </p>
         </div>
 
         <!-- Stats Grid -->
-        <div class="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-5">
           <!-- Total Inscripciones -->
-          <div class="rounded-lg bg-white p-6 shadow">
-            <div class="flex items-center">
-              <div class="rounded-full bg-blue-100 p-3">
-                <ClipboardList class="h-6 w-6 text-blue-600" />
+          <div class="rounded-lg bg-white p-4 shadow sm:p-6">
+            <div class="flex items-start">
+              <div class="rounded-full bg-blue-100 p-2 sm:p-3">
+                <ClipboardList class="h-4 w-4 text-blue-600 sm:h-6 sm:w-6" />
               </div>
-              <div class="ml-4">
+              <div class="ml-2 md:ml-4">
                 <p class="text-sm font-medium text-slate-500">Total Inscripciones</p>
                 <p class="text-2xl font-bold text-slate-900">
                   {{ stats.totalInscripciones }}
@@ -134,12 +137,12 @@ const estadistiques = computed(() => props.estadistiques);
           </div>
 
           <!-- Pagadas -->
-          <div class="rounded-lg bg-white p-6 shadow">
-            <div class="flex items-center">
-              <div class="rounded-full bg-green-100 p-3">
-                <TrendingUp class="h-6 w-6 text-green-600" />
+          <div class="rounded-lg bg-white p-4 shadow sm:p-6">
+            <div class="flex items-start">
+              <div class="rounded-full bg-green-100 p-2 sm:p-3">
+                <TrendingUp class="h-4 w-4 text-green-600 sm:h-6 sm:w-6" />
               </div>
-              <div class="ml-4">
+              <div class="ml-2 md:ml-4">
                 <p class="text-sm font-medium text-slate-500">Pagadas</p>
                 <p class="text-2xl font-bold text-slate-900">
                   {{ stats.inscripcionesPagadas }}
@@ -148,13 +151,28 @@ const estadistiques = computed(() => props.estadistiques);
             </div>
           </div>
 
-          <!-- Pendientes -->
-          <div class="rounded-lg bg-white p-6 shadow">
-            <div class="flex items-center">
-              <div class="rounded-full bg-amber-100 p-3">
-                <Users class="h-6 w-6 text-amber-600" />
+          <!-- Invitados -->
+          <div class="rounded-lg bg-white p-4 shadow sm:p-6">
+            <div class="flex items-start">
+              <div class="rounded-full bg-sky-100 p-2 sm:p-3">
+                <Gift class="h-4 w-4 text-sky-600 sm:h-6 sm:w-6" />
               </div>
-              <div class="ml-4">
+              <div class="ml-2 md:ml-4">
+                <p class="text-sm font-medium text-slate-500">Invitados</p>
+                <p class="text-2xl font-bold text-slate-900">
+                  {{ stats.inscripcionesInvitadas }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pendientes -->
+          <div class="rounded-lg bg-white p-4 shadow sm:p-6">
+            <div class="flex items-start">
+              <div class="rounded-full bg-amber-100 p-2 sm:p-3">
+                <Users class="h-4 w-4 text-amber-600 sm:h-6 sm:w-6" />
+              </div>
+              <div class="ml-2 md:ml-4">
                 <p class="text-sm font-medium text-slate-500">Pendientes</p>
                 <p class="text-2xl font-bold text-slate-900">
                   {{ stats.inscripcionesPendientes }}
@@ -164,12 +182,12 @@ const estadistiques = computed(() => props.estadistiques);
           </div>
 
           <!-- Total Recaudado -->
-          <div class="rounded-lg bg-white p-6 shadow">
-            <div class="flex items-center">
-              <div class="rounded-full bg-purple-100 p-3">
-                <Euro class="h-6 w-6 text-purple-600" />
+          <div class="col-span-2 rounded-lg bg-white p-4 shadow sm:col-span-1 sm:p-6 lg:col-span-1">
+            <div class="flex items-start">
+              <div class="rounded-full bg-purple-100 p-2 sm:p-3">
+                <Euro class="h-4 w-4 text-purple-600 sm:h-6 sm:w-6" />
               </div>
-              <div class="ml-4">
+              <div class="ml-2 md:ml-4">
                 <p class="text-sm font-medium text-slate-500">Recaudado</p>
                 <p class="text-2xl font-bold text-slate-900">
                   {{ formatCurrency(stats.totalRecaudado) }}

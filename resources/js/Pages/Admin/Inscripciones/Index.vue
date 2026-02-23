@@ -613,15 +613,15 @@ const confirmarToggleDorsal = () => {
 
 <template>
   <AdminLayout>
-    <Head title="Gestión de Inscripciones" />
+    <Head title="Gestió d'Inscripcions" />
 
     <div class="px-4 py-8">
       <div class="mx-auto max-w-7xl">
         <!-- Header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-slate-900">Gestión de Inscripciones</h1>
+          <h1 class="text-3xl font-bold text-slate-900">Gestió d'Inscripcions</h1>
           <p class="mt-1 text-slate-600">
-            Total: {{ totalInscripcionesPagadas }} inscripciones pagadas
+            Total: {{ totalInscripcionesPagadas }} inscripcions
             <span v-if="busqueda" class="ml-2 text-slate-500">
               ({{ inscripcionesFiltradas.length }} resultats de la cerca)
             </span>

@@ -137,13 +137,13 @@ const transacciones = computed(() => props.transacciones.data);
 
 <template>
   <AdminLayout>
-    <Head title="Transacciones Redsys" />
+    <Head title="Transaccions Redsys" />
 
     <div class="px-4 py-8">
       <div class="mx-auto max-w-7xl">
         <div class="mb-6">
-          <h1 class="text-3xl font-bold text-slate-900">Transacciones Redsys</h1>
-          <p class="mt-1 text-slate-600">Pagos y errores registrados en el TPV</p>
+          <h1 class="text-3xl font-bold text-slate-900">Transaccions Redsys Banc de Sabadell</h1>
+          <p class="mt-1 text-slate-600">Pagaments i errors registrats al TPV</p>
         </div>
 
         <section class="mb-6 rounded-lg bg-white p-4 shadow">
