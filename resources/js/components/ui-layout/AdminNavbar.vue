@@ -46,13 +46,13 @@ const logout = () => {
 </script>
 
 <template>
-  <nav class="border-b border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-slate-800 shadow-sm">
     <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex h-16 items-center justify-between">
         <!-- Logo y navegación desktop -->
         <div class="flex items-center">
           <Link href="/uec-admin" class="shrink-0">
-            <span class="text-xl font-bold text-red-600"> Nocturna Admin </span>
+            <span class="text-xl font-bold text-red-500"> Nocturna Admin </span>
           </Link>
 
           <!-- Navegación desktop -->
@@ -62,11 +62,11 @@ const logout = () => {
                 v-for="item in navItems"
                 :key="item.name"
                 :href="item.href"
-                class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors"
+                class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors"
                 :class="
                   isActiveItem(item)
                     ? 'bg-slate-950 text-red-100'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-slate-100'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 "
               >
                 <component :is="item.icon" class="h-4 w-4" />
@@ -78,12 +78,7 @@ const logout = () => {
 
         <!-- Botones derecha -->
         <div class="hidden items-center gap-2 md:flex">
-          <Link
-            href="/"
-            class="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            ← Tornar al web
-          </Link>
+          <Link href="/" class="text-sm text-white hover:text-white"> ← Tornar al web </Link>
           <form @submit.prevent="logout" class="inline">
             <Button variant="ghost" size="sm" type="submit" class="gap-2">
               <LogOut class="h-4 w-4" />

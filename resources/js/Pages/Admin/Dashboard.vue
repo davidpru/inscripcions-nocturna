@@ -53,6 +53,8 @@ interface Estadistiques {
   busTortosa: { total: number; importTotal: number };
   busPauls: { total: number; importTotal: number };
   assegurances: { total: number; importTotal: number };
+  invitados: { total: number };
+  celiacos: { total: number };
 }
 
 const props = defineProps<{
@@ -328,46 +330,68 @@ const estadistiques = computed(() => props.estadistiques);
                   <!-- Soci no federat -->
                   <TableRow class="bg-green-100">
                     <TableCell class="font-medium">Soci no federat</TableCell>
-                    <TableCell class="text-center">{{
-                      estadistiques.sociNoFederat.total
-                    }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.sociNoFederat.importTotal)
-                    }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.sociNoFederat.importInscr ?? 0)
-                    }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.sociNoFederat.importBus ?? 0)
-                    }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.sociNoFederat.importAsseg ?? 0)
-                    }}</TableCell>
+                    <TableCell class="text-center">
+                      {{ estadistiques.sociNoFederat.total }}
+                    </TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.sociNoFederat.importTotal) }}
+                    </TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.sociNoFederat.importInscr ?? 0) }}
+                    </TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.sociNoFederat.importBus ?? 0) }}
+                    </TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.sociNoFederat.importAsseg ?? 0) }}
+                    </TableCell>
                   </TableRow>
                   <!-- Soci federat -->
                   <TableRow class="bg-green-100">
                     <TableCell class="font-medium">Soci federat</TableCell>
                     <TableCell class="text-center">{{ estadistiques.sociFederat.total }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.sociFederat.importTotal)
-                    }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.sociFederat.importInscr ?? 0)
-                    }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.sociFederat.importBus ?? 0)
-                    }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.sociFederat.importAsseg ?? 0)
-                    }}</TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.sociFederat.importTotal) }}
+                    </TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.sociFederat.importInscr ?? 0) }}
+                    </TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.sociFederat.importBus ?? 0) }}
+                    </TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.sociFederat.importAsseg ?? 0) }}
+                    </TableCell>
+                  </TableRow>
+                  <!-- Assegurances contractades -->
+                  <TableRow class="bg-green-100">
+                    <TableCell class="font-medium">Assegurances contr.</TableCell>
+                    <TableCell class="text-center">
+                      {{ estadistiques.assegurances.total }}
+                    </TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.assegurances.importTotal) }}
+                    </TableCell>
+                    <TableCell class="text-center"></TableCell>
+                    <TableCell class="text-center"></TableCell>
+                    <TableCell class="text-center"></TableCell>
+                  </TableRow>
+                  <!-- Invitats -->
+                  <TableRow class="bg-green-100">
+                    <TableCell class="font-medium">Invitats</TableCell>
+                    <TableCell class="text-center">{{ estadistiques.invitados.total }}</TableCell>
+                    <TableCell class="text-right"></TableCell>
+                    <TableCell class="text-right"></TableCell>
+                    <TableCell class="text-right"></TableCell>
+                    <TableCell class="text-right"></TableCell>
                   </TableRow>
                   <!-- Places de bus -->
                   <TableRow class="bg-purple-200">
                     <TableCell class="font-medium">Places de bus</TableCell>
                     <TableCell class="text-center">{{ estadistiques.placesBus.total }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.placesBus.importTotal)
-                    }}</TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.placesBus.importTotal) }}
+                    </TableCell>
                     <TableCell class="text-right"></TableCell>
                     <TableCell class="text-right"></TableCell>
                     <TableCell class="text-right"></TableCell>
@@ -376,9 +400,9 @@ const estadistiques = computed(() => props.estadistiques);
                   <TableRow class="bg-purple-100">
                     <TableCell class="pl-6 font-medium">↳ Bus Tortosa</TableCell>
                     <TableCell class="text-center">{{ estadistiques.busTortosa.total }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.busTortosa.importTotal)
-                    }}</TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.busTortosa.importTotal) }}
+                    </TableCell>
                     <TableCell class="text-right"></TableCell>
                     <TableCell class="text-right"></TableCell>
                     <TableCell class="text-right"></TableCell>
@@ -387,25 +411,21 @@ const estadistiques = computed(() => props.estadistiques);
                   <TableRow class="bg-purple-100">
                     <TableCell class="pl-6 font-medium">↳ Bus Paüls</TableCell>
                     <TableCell class="text-center">{{ estadistiques.busPauls.total }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.busPauls.importTotal)
-                    }}</TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(estadistiques.busPauls.importTotal) }}
+                    </TableCell>
                     <TableCell class="text-right"></TableCell>
                     <TableCell class="text-right"></TableCell>
                     <TableCell class="text-right"></TableCell>
                   </TableRow>
-                  <!-- Assegurances contractades -->
+                  <!-- Celíacs -->
                   <TableRow>
-                    <TableCell class="font-medium">Assegurances contr.</TableCell>
-                    <TableCell class="text-center">{{
-                      estadistiques.assegurances.total
-                    }}</TableCell>
-                    <TableCell class="text-right">{{
-                      formatCurrency(estadistiques.assegurances.importTotal)
-                    }}</TableCell>
-                    <TableCell class="text-center"></TableCell>
-                    <TableCell class="text-center"></TableCell>
-                    <TableCell class="text-center"></TableCell>
+                    <TableCell class="font-medium">Celíacs</TableCell>
+                    <TableCell class="text-center">{{ estadistiques.celiacos.total }}</TableCell>
+                    <TableCell class="text-right"></TableCell>
+                    <TableCell class="text-right"></TableCell>
+                    <TableCell class="text-right"></TableCell>
+                    <TableCell class="text-right"></TableCell>
                   </TableRow>
                 </TableBody>
               </Table>

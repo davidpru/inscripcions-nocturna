@@ -82,6 +82,8 @@ class DashboardController extends Controller
 
         $baseQuery = fn() => Inscripcion::where('edicion_id', $edicion->id)
             ->where('estado_pago', 'pagado');
+        $baseQueryAll = fn() => Inscripcion::where('edicion_id', $edicion->id)
+            ->whereIn('estado_pago', ['pagado', 'invitado']);
 
         // Precios de referencia (usamos normal por defecto)
         $precioBus = $edicion->precio_autobus_normal ?? 12.50;
@@ -176,6 +178,9 @@ class DashboardController extends Controller
             ->where('esta_federado', true)
             ->sum('precio_total');
 
+        $invitados = $baseQueryAll()->where('estado_pago', 'invitado')->count();
+        $celiacos = $baseQueryAll()->where('es_celiaco', true)->count();
+
         return [
             'totals' => [
                 'total' => $totalInscrits,
@@ -227,6 +232,12 @@ class DashboardController extends Controller
             'assegurances' => [
                 'total' => $assegurances,
                 'importTotal' => $importAsseg,
+            ],
+            'invitados' => [
+                'total' => $invitados,
+            ],
+            'celiacos' => [
+                'total' => $celiacos,
             ],
         ];
     }
