@@ -463,15 +463,6 @@ watch(busqueda, () => {
   }, 500);
 });
 
-watch(
-  () => props.inscripciones.data,
-  (data) => {
-    inscripcionesList.value = [...data];
-    currentPage.value = props.inscripciones.current_page;
-    lastPage.value = props.inscripciones.last_page;
-  }
-);
-
 onMounted(() => {
   loadMoreObserver = new IntersectionObserver(
     (entries) => {
@@ -1086,10 +1077,7 @@ const confirmarToggleDorsal = () => {
           </div>
 
           <!-- Carga incremental -->
-          <div
-            v-if="inscripciones.total > 0"
-            class="border-t border-slate-200 bg-white px-4 py-3"
-          >
+          <div v-if="inscripciones.total > 0" class="border-t border-slate-200 bg-white px-4 py-3">
             <div class="flex items-center justify-between">
               <div class="text-sm text-slate-700">
                 Mostrando 1 - {{ inscripcionesFiltradas.length }} de {{ inscripciones.total }}
