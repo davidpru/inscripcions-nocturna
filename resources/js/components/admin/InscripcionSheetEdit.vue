@@ -160,21 +160,21 @@ const handleOpenChange = (open: boolean) => {
             <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div>
                 <p class="text-xs text-slate-500">Nom</p>
-                <p class="font-medium break-words">
+                <p class="font-medium wrap-break-word">
                   {{ inscripcion.participante.nombre }} {{ inscripcion.participante.apellidos }}
                 </p>
               </div>
               <div>
                 <p class="text-xs text-slate-500">DNI</p>
-                <p class="font-medium break-words">{{ inscripcion.participante.dni }}</p>
+                <p class="font-medium wrap-break-word">{{ inscripcion.participante.dni }}</p>
               </div>
               <div>
                 <p class="text-xs text-slate-500">Email</p>
-                <p class="font-medium break-words">{{ inscripcion.participante.email }}</p>
+                <p class="font-medium wrap-break-word">{{ inscripcion.participante.email }}</p>
               </div>
               <div>
                 <p class="text-xs text-slate-500">Telèfon</p>
-                <p class="font-medium break-words">{{ inscripcion.participante.telefono }}</p>
+                <p class="font-medium wrap-break-word">{{ inscripcion.participante.telefono }}</p>
               </div>
             </div>
           </div>

@@ -10,8 +10,8 @@ import {
 import { Input } from '@/components/ui/input';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
 import { Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface Participante {
   nombre: string;
