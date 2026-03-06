@@ -23,6 +23,8 @@ jobs:
 
       - name: Build assets
         run: npm run build
+        env:
+          VITE_APP_NAME: 'Nocturna Fredes-Paüls'
 
       - name: Sync build files to server
         uses: appleboy/scp-action@v0.1.7
