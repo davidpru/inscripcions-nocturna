@@ -94,7 +94,10 @@ const enviarFormulario = () => {
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 Al alcanzar este número de inscritos se activará la tarifa tardía
               </p>
-              <p v-if="form.errors.limite_tarifa_tardia_inscritos" class="mt-1 text-sm text-red-600">
+              <p
+                v-if="form.errors.limite_tarifa_tardia_inscritos"
+                class="mt-1 text-sm text-red-600"
+              >
                 {{ form.errors.limite_tarifa_tardia_inscritos }}
               </p>
             </div>

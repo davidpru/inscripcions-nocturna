@@ -57,10 +57,22 @@ class InscripcionController extends Controller
             abort(404, 'No hay ediciones abiertas');
         }
 
+        $ultimaInscripcion = Inscripcion::where('edicion_id', $edicionActiva->id)
+            ->whereIn('estado_pago', ['pagado', 'invitado'])
+            ->latest('created_at')
+            ->first();
+
+        $ultimaInscripcionHaceMinutos = null;
+        if ($ultimaInscripcion?->created_at) {
+            $ultimaInscripcionHaceMinutos = max(1, now()->diffInMinutes($ultimaInscripcion->created_at, true));
+        }
+
         return Inertia::render('Inscripcion/Index', [
             'edicion' => $edicionActiva,
             'inscripcionesAbiertas' => $edicionActiva->inscripcionesAbiertas(),
             'fechaInicioInscripciones' => $edicionActiva->fecha_inicio_inscripciones?->toIso8601String(),
+            'ultimaInscripcionHaceMinutos' => $ultimaInscripcionHaceMinutos,
+            'dev' => $request->boolean('dev', false),
             'dni' => $request->query('dni'),
             'participante' => $request->query('participante'),
         ]);

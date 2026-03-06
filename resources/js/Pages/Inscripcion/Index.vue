@@ -16,6 +16,7 @@ import { PARADAS, getParadaShortLabel } from '@/constants/paradas';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
+import { Star, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 interface Edicion {
@@ -47,6 +48,8 @@ const props = defineProps<{
   edicion: Edicion;
   inscripcionesAbiertas: boolean;
   fechaInicioInscripciones: string | null;
+  ultimaInscripcionHaceMinutos: number | null;
+  dev?: boolean;
   dni?: string;
   participante?: string;
 }>();
@@ -54,7 +57,31 @@ const props = defineProps<{
 // Countdown timer
 const countdown = ref({ dias: 0, horas: 0, minutos: 0, segundos: 0 });
 const inscripcionesAbiertas = ref(props.inscripcionesAbiertas);
+const retardoAvisoInicialMs = 4000;
 let countdownInterval: ReturnType<typeof setInterval> | null = null;
+let mostrarAvisoInicialTimeout: ReturnType<typeof setTimeout> | null = null;
+let ultimaInscripcionAlertTimeout: ReturnType<typeof setTimeout> | null = null;
+const mostrarAvisoUltimaInscripcion = ref(false);
+
+const ultimaInscripcionDesglose = computed(() => {
+  if (props.ultimaInscripcionHaceMinutos === null) return null;
+
+  const totalMinutos = Math.max(1, Math.floor(Number(props.ultimaInscripcionHaceMinutos)));
+
+  return {
+    dias: Math.floor(totalMinutos / (60 * 24)),
+    horas: Math.floor((totalMinutos % (60 * 24)) / 60),
+    minutos: totalMinutos % 60,
+  };
+});
+
+const cerrarAvisoUltimaInscripcion = () => {
+  mostrarAvisoUltimaInscripcion.value = false;
+  if (ultimaInscripcionAlertTimeout) {
+    clearTimeout(ultimaInscripcionAlertTimeout);
+    ultimaInscripcionAlertTimeout = null;
+  }
+};
 
 const actualizarCountdown = () => {
   if (!props.fechaInicioInscripciones) {
@@ -88,11 +115,31 @@ onMounted(() => {
     actualizarCountdown();
     countdownInterval = setInterval(actualizarCountdown, 1000);
   }
+
+  if (
+    props.ultimaInscripcionHaceMinutos !== null &&
+    ((props.dev ?? false) || props.ultimaInscripcionHaceMinutos <= 120)
+  ) {
+    const mostrarAviso = () => {
+      mostrarAvisoUltimaInscripcion.value = true;
+      ultimaInscripcionAlertTimeout = setTimeout(() => {
+        mostrarAvisoUltimaInscripcion.value = false;
+      }, 7000);
+    };
+
+    mostrarAvisoInicialTimeout = setTimeout(mostrarAviso, retardoAvisoInicialMs);
+  }
 });
 
 onUnmounted(() => {
   if (countdownInterval) {
     clearInterval(countdownInterval);
+  }
+  if (mostrarAvisoInicialTimeout) {
+    clearTimeout(mostrarAvisoInicialTimeout);
+  }
+  if (ultimaInscripcionAlertTimeout) {
+    clearTimeout(ultimaInscripcionAlertTimeout);
   }
 });
 
@@ -379,6 +426,62 @@ const enviarInscripcion = () => {
 <template>
   <Head title="Inscripció" />
   <Header></Header>
+
+  <Transition
+    enter-active-class="transform transition duration-300 ease-out"
+    enter-from-class="translate-y-3 opacity-0"
+    enter-to-class="translate-y-0 opacity-100"
+    leave-active-class="transform transition duration-200 ease-in"
+    leave-from-class="translate-y-0 opacity-100"
+    leave-to-class="translate-x-6 opacity-0"
+  >
+    <div
+      v-if="mostrarAvisoUltimaInscripcion && ultimaInscripcionDesglose"
+      class="fixed right-4 bottom-4 z-50 max-w-sm rounded-lg border border-emerald-200 bg-slate-800 p-6 shadow-lg"
+      role="status"
+      aria-live="polite"
+    >
+      <button
+        type="button"
+        class="absolute top-2 right-2 cursor-pointer rounded p-1 text-white/70 transition hover:text-white"
+        aria-label="Tancar avís"
+        @click="cerrarAvisoUltimaInscripcion"
+      >
+        <X class="h-4 w-4" />
+      </button>
+
+      <div class="mb-2 flex w-65 gap-0.5">
+        <Star
+          v-for="index in 5"
+          :key="index"
+          fill="var(--color-red-500)"
+          class="h-3 w-3 text-red-500"
+        />
+      </div>
+
+      <div class="md:text-md mb-2 text-sm font-medium text-white">Ùltima inscripció, fa:</div>
+      <div class="text-md font-medium text-white md:text-lg">
+        <span v-if="ultimaInscripcionDesglose.dias > 0">
+          {{ ultimaInscripcionDesglose.dias }}
+          {{ ultimaInscripcionDesglose.dias === 1 ? 'dia' : 'dies' }},
+          {{ ultimaInscripcionDesglose.horas }}
+          {{ ultimaInscripcionDesglose.horas === 1 ? 'hora' : 'hores' }} i
+          {{ ultimaInscripcionDesglose.minutos }}
+          {{ ultimaInscripcionDesglose.minutos === 1 ? 'minut' : 'minuts' }}
+        </span>
+        <span v-else-if="ultimaInscripcionDesglose.horas > 0">
+          {{ ultimaInscripcionDesglose.horas }}
+          {{ ultimaInscripcionDesglose.horas === 1 ? 'hora' : 'hores' }} i
+          {{ ultimaInscripcionDesglose.minutos }}
+          {{ ultimaInscripcionDesglose.minutos === 1 ? 'minut' : 'minuts' }}
+        </span>
+        <span v-else>
+          {{ ultimaInscripcionDesglose.minutos }}
+          {{ ultimaInscripcionDesglose.minutos === 1 ? 'minut' : 'minuts' }}
+        </span>
+      </div>
+    </div>
+  </Transition>
 
   <div class="min-h-screen">
     <div class="mx-auto max-w-4xl">

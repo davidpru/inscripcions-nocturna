@@ -319,7 +319,6 @@ const calcularAsientosOcupados = computed(() => {
                           class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
-
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
@@ -333,9 +332,7 @@ const calcularAsientosOcupados = computed(() => {
                           required
                           class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
-                        <p class="mt-1 text-xs text-slate-500">
-                          Després s'aplicarà tarifa tardana
-                        </p>
+                        <p class="mt-1 text-xs text-slate-500">Després s'aplicarà tarifa tardana</p>
                       </div>
 
                       <div>
