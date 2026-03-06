@@ -19,6 +19,7 @@ interface Edicion {
   fecha_inicio_inscripciones: string | null;
   fecha_evento: string;
   limite_inscritos: number;
+  limite_tarifa_tardia_inscritos: number;
   fecha_limite_tarifa_normal: string;
   estado: 'abierta' | 'cerrada';
   activa: boolean;
@@ -50,6 +51,7 @@ const form = useForm({
   fecha_inicio_inscripciones: props.edicion.fecha_inicio_inscripciones ?? '',
   fecha_evento: props.edicion.fecha_evento ?? '',
   limite_inscritos: props.edicion.limite_inscritos ?? '',
+  limite_tarifa_tardia_inscritos: props.edicion.limite_tarifa_tardia_inscritos ?? 650,
   fecha_limite_tarifa_normal: props.edicion.fecha_limite_tarifa_normal ?? '',
   estado: props.edicion.estado ?? 'abierta',
   activa: props.edicion.activa ?? false,
@@ -108,7 +110,7 @@ const eliminarAutobus = (index: number) => {
 };
 
 const enviarFormulario = () => {
-  form.put(`/admin/ediciones/${props.edicion.id}`);
+  form.put(`/uec-admin/ediciones/${props.edicion.id}`);
 };
 
 // Computed: Tarifas finales (inscripción + licencia federativa para no federados)
@@ -317,19 +319,42 @@ const calcularAsientosOcupados = computed(() => {
                           class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
                         />
                       </div>
+
                     </div>
 
-                    <div>
-                      <label class="mb-2 block text-sm font-medium text-slate-700">
-                        Data Límit Tarifa Normal *
-                      </label>
-                      <input
-                        v-model="form.fecha_limite_tarifa_normal"
-                        type="date"
-                        required
-                        class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
-                      />
-                      <p class="mt-1 text-xs text-slate-500">Després s'aplicarà tarifa tardana</p>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
+                          Data Límit Tarifa Normal *
+                        </label>
+                        <input
+                          v-model="form.fecha_limite_tarifa_normal"
+                          type="date"
+                          required
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
+                        />
+                        <p class="mt-1 text-xs text-slate-500">
+                          Després s'aplicarà tarifa tardana
+                        </p>
+                      </div>
+
+                      <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700">
+                          Límit Tarifa Tardana (inscrits) *
+                        </label>
+                        <input
+                          v-model.number="form.limite_tarifa_tardia_inscritos"
+                          type="number"
+                          required
+                          class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900"
+                        />
+                        <p
+                          v-if="form.errors.limite_tarifa_tardia_inscritos"
+                          class="mt-1 text-sm text-red-600"
+                        >
+                          {{ form.errors.limite_tarifa_tardia_inscritos }}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>

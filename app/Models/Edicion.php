@@ -14,6 +14,7 @@ class Edicion extends Model
         'fecha_inicio_inscripciones',
         'fecha_evento',
         'limite_inscritos',
+        'limite_tarifa_tardia_inscritos',
         'fecha_limite_tarifa_normal',
         'estado',
         'activa',
@@ -35,6 +36,7 @@ class Edicion extends Model
     protected $casts = [
         'fecha_inicio_inscripciones' => 'datetime:Y-m-d\\TH:i',
         'fecha_evento' => 'date:Y-m-d',
+        'limite_tarifa_tardia_inscritos' => 'integer',
         'fecha_limite_tarifa_normal' => 'date:Y-m-d',
         'activa' => 'boolean',
         'autobuses' => 'array',
@@ -78,9 +80,11 @@ class Edicion extends Model
 
     public function esTarifaTardia(): bool
     {
-        // Tarifa tardía si ya pasó la fecha límite O si ya hay 650 inscritos
+        $umbralTarifaTardia = $this->limite_tarifa_tardia_inscritos ?? $this->limite_inscritos;
+
+        // Tarifa tardía si ya pasó la fecha límite o se alcanzó el umbral de tardía.
         return now()->isAfter($this->fecha_limite_tarifa_normal) 
-            || $this->getNumeroInscritosAttribute() >= $this->limite_inscritos;
+            || $this->getNumeroInscritosAttribute() >= $umbralTarifaTardia;
     }
 
     /**

@@ -7,13 +7,14 @@ const form = useForm({
   anio: new Date().getFullYear(),
   fecha_evento: '',
   limite_inscritos: 650,
+  limite_tarifa_tardia_inscritos: 650,
   fecha_limite_tarifa_normal: '',
   estado: 'abierta' as 'abierta' | 'cerrada',
   activa: true,
 });
 
 const enviarFormulario = () => {
-  form.post('/admin/ediciones');
+  form.post('/uec-admin/ediciones');
 };
 </script>
 
@@ -82,6 +83,24 @@ const enviarFormulario = () => {
 
             <div>
               <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                Límite Tarifa Tardía (inscritos) *
+              </label>
+              <input
+                v-model.number="form.limite_tarifa_tardia_inscritos"
+                type="number"
+                required
+                class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+              />
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Al alcanzar este número de inscritos se activará la tarifa tardía
+              </p>
+              <p v-if="form.errors.limite_tarifa_tardia_inscritos" class="mt-1 text-sm text-red-600">
+                {{ form.errors.limite_tarifa_tardia_inscritos }}
+              </p>
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Fecha Límite Tarifa Normal *
               </label>
               <input
@@ -91,8 +110,7 @@ const enviarFormulario = () => {
                 class="w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
               />
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Después de esta fecha o al alcanzar el límite de inscritos, se aplicará la tarifa
-                tardía
+                A partir de esta fecha se aplicará la tarifa tardía
               </p>
               <p v-if="form.errors.fecha_limite_tarifa_normal" class="mt-1 text-sm text-red-600">
                 {{ form.errors.fecha_limite_tarifa_normal }}
