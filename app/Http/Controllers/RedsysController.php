@@ -831,12 +831,19 @@ class RedsysController extends Controller
                     : (($importeDevueltoTotal >= $inscripcion->precio_total) ? 'devuelto' : 'devolucion_parcial');
                 
                 // Devolución exitosa
-                $inscripcion->update([
+                $updateData = [
                     'estado_pago' => $nuevoEstado,
                     'fecha_devolucion' => now(),
-                    'importe_devolucion' => $importeDevueltoTotal, // Acumular devoluciones
+                    'importe_devolucion' => $importeDevueltoTotal,
                     'autorizacion_devolucion' => $notificationParams->responseAuthorisationCode,
-                ]);
+                ];
+                
+                // Si es ajuste de tarifa, corregir el precio_total
+                if ($mantenerPagado) {
+                    $updateData['precio_total'] = $inscripcion->precio_total - $importeDevolucion;
+                }
+                
+                $inscripcion->update($updateData);
 
                 Log::info('Devolución exitosa', [
                     'inscripcion_id' => $inscripcion->id,
@@ -904,11 +911,18 @@ class RedsysController extends Controller
             ? 'pagado'
             : (($importeDevueltoTotal >= $inscripcion->precio_total) ? 'devuelto' : 'devolucion_parcial');
 
-        $inscripcion->update([
+        $updateData = [
             'estado_pago' => $nuevoEstado,
             'fecha_devolucion' => now(),
             'importe_devolucion' => $importeDevueltoTotal,
-        ]);
+        ];
+        
+        // Si es ajuste de tarifa, corregir el precio_total
+        if ($mantenerPagado) {
+            $updateData['precio_total'] = $inscripcion->precio_total - $importeDevolucion;
+        }
+        
+        $inscripcion->update($updateData);
 
         Log::info('Devolución manual completada', [
             'inscripcion_id' => $inscripcion->id,
