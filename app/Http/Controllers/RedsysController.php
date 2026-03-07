@@ -726,9 +726,9 @@ class RedsysController extends Controller
     {
         Log::info('Iniciando devolución', ['inscripcion_id' => $inscripcion->id]);
 
-        // Verificar que la inscripción esté pagada
-        if ($inscripcion->estado_pago !== 'pagado') {
-            return back()->withErrors(['error' => 'Solo se pueden devolver inscripciones pagadas']);
+        // Verificar que la inscripción esté pagada o en devolución parcial
+        if (!in_array($inscripcion->estado_pago, ['pagado', 'devolucion_parcial'])) {
+            return back()->withErrors(['error' => 'Solo se pueden devolver inscripciones pagadas o con devolución parcial']);
         }
 
         // Verificar que tenga número de pedido original
@@ -874,21 +874,39 @@ class RedsysController extends Controller
     {
         Log::info('Devolución manual', ['inscripcion_id' => $inscripcion->id]);
 
-        // Verificar que la inscripción esté pagada
-        if ($inscripcion->estado_pago !== 'pagado') {
-            return back()->withErrors(['error' => 'Solo se pueden devolver inscripciones pagadas']);
+        // Verificar que la inscripción esté pagada o en devolución parcial
+        if (!in_array($inscripcion->estado_pago, ['pagado', 'devolucion_parcial'])) {
+            return back()->withErrors(['error' => 'Solo se pueden devolver inscripciones pagadas o con devolución parcial']);
         }
 
-        $importeDevolucion = $request->input('importe', $inscripcion->precio_total);
+        $importeDevolucion = (float) $request->input('importe', $inscripcion->precio_total);
+        $importeYaDevuelto = $inscripcion->importe_devolucion ?? 0;
+        $importeMaximo = $inscripcion->precio_total - $importeYaDevuelto;
+
+        if ($importeDevolucion > $importeMaximo) {
+            return back()->withErrors(['error' => "L'import de devolució ({$importeDevolucion}€) supera el màxim permès ({$importeMaximo}€)."]);
+        }
+
+        if ($importeDevolucion <= 0) {
+            return back()->withErrors(['error' => "L'import de devolució ha de ser superior a 0"]);
+        }
+
+        $importeDevueltoTotal = $importeYaDevuelto + $importeDevolucion;
+        $nuevoEstado = ($importeDevueltoTotal >= $inscripcion->precio_total) ? 'devuelto' : 'devolucion_parcial';
 
         $inscripcion->update([
-            'estado_pago' => 'devuelto',
+            'estado_pago' => $nuevoEstado,
             'fecha_devolucion' => now(),
-            'importe_devolucion' => $importeDevolucion,
+            'importe_devolucion' => $importeDevueltoTotal,
         ]);
 
-        Log::info('Devolución manual completada', ['inscripcion_id' => $inscripcion->id, 'importe' => $importeDevolucion]);
+        Log::info('Devolución manual completada', [
+            'inscripcion_id' => $inscripcion->id,
+            'importe' => $importeDevolucion,
+            'total_devuelto' => $importeDevueltoTotal,
+            'estado_final' => $nuevoEstado,
+        ]);
 
-        return back()->with('success', 'Devolución manual registrada correctamente');
+        return back()->with('success', "Devolució manual registrada ({$importeDevolucion}€). Total retornat: {$importeDevueltoTotal}€");
     }
 }

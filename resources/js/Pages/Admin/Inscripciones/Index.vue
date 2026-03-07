@@ -101,6 +101,8 @@ interface Inscripcion {
   cupon?: CuponInfo | null;
   descuento_cupon: number | null;
   dorsal_recogido: boolean;
+  importe_devolucion: number | null;
+  fecha_devolucion: string | null;
 }
 
 interface Paginacion {
@@ -555,15 +557,22 @@ const refundTipo = ref<'manual' | 'redsys'>('manual');
 const refundImporte = ref('');
 const refundError = ref('');
 
-const maxRefundAmount = computed(() => refundInscripcion.value?.precio_total || 0);
+const maxRefundAmount = computed(() => {
+  if (!refundInscripcion.value) return 0;
+  const total = refundInscripcion.value.precio_total;
+  const yaDevuelto = refundInscripcion.value.importe_devolucion || 0;
+  return Math.round((total - yaDevuelto) * 100) / 100;
+});
 
 const abrirDialogoDevolucion = (inscripcion: Inscripcion) => {
-  if (inscripcion.estado_pago !== 'pagado') {
+  if (inscripcion.estado_pago !== 'pagado' && inscripcion.estado_pago !== 'devolucion_parcial') {
     return;
   }
   refundInscripcion.value = inscripcion;
   refundTipo.value = 'manual';
-  refundImporte.value = inscripcion.precio_total.toString();
+  const yaDevuelto = inscripcion.importe_devolucion || 0;
+  const restante = Math.round((inscripcion.precio_total - yaDevuelto) * 100) / 100;
+  refundImporte.value = restante.toString();
   refundError.value = '';
   refundDialogOpen.value = true;
 };
@@ -1096,7 +1105,7 @@ const confirmarToggleDorsal = () => {
                     />
 
                     <Button
-                      v-if="inscripcion.estado_pago === 'pagado'"
+                      v-if="inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'devolucion_parcial'"
                       variant="default"
                       size="icon-sm"
                       :disabled="processingRefund === inscripcion.id"
@@ -1187,6 +1196,15 @@ const confirmarToggleDorsal = () => {
               </RadioGroup>
             </div>
 
+            <!-- Info de devoluciones previas -->
+            <div
+              v-if="refundInscripcion && refundInscripcion.importe_devolucion"
+              class="rounded-md bg-amber-50 p-3 text-sm text-amber-700"
+            >
+              Ja s'han retornat {{ refundInscripcion.importe_devolucion }}€ de
+              {{ refundInscripcion.precio_total }}€
+            </div>
+
             <!-- Importe -->
             <div class="space-y-2">
               <Label for="refund-amount">Importe a devolver (€)</Label>
@@ -1199,7 +1217,10 @@ const confirmarToggleDorsal = () => {
                 :max="maxRefundAmount"
                 placeholder="0.00"
               />
-              <p class="text-sm text-slate-500">Máximo: {{ maxRefundAmount }}€</p>
+              <p class="text-sm text-slate-500">
+                Preu total: {{ refundInscripcion?.precio_total }}€ · Màxim a retornar:
+                {{ maxRefundAmount }}€
+              </p>
             </div>
 
             <!-- Error -->

@@ -71,6 +71,7 @@ interface Inscripcion {
     descuento_tipo: 'porcentaje' | 'fijo';
     descuento_valor: number;
   } | null;
+  importe_devolucion: number | null;
 }
 
 const props = defineProps<{
@@ -709,8 +710,27 @@ const getTipoDescuentoCupon = () => {
                     >
                   </div>
                 </div>
+                <!-- Descuadre cobert per devolució parcial -->
                 <p
                   v-if="
+                    calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_total !==
+                      Number(inscripcion.precio_total) &&
+                    inscripcion.importe_devolucion &&
+                    Math.abs(
+                      Number(inscripcion.precio_total) -
+                        calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                          .precio_total -
+                        Number(inscripcion.importe_devolucion),
+                    ) < 0.01
+                  "
+                  class="mt-3 rounded-md bg-green-50 p-3 text-xs text-green-700"
+                >
+                  ✅ S'ha retornat {{ Number(inscripcion.importe_devolucion).toFixed(2) }}€ per
+                  ajustar la diferència de tarifes.
+                </p>
+                <!-- Descuadre NO cobert -->
+                <p
+                  v-else-if="
                     calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_total !==
                     Number(inscripcion.precio_total)
                   "
@@ -720,8 +740,22 @@ const getTipoDescuentoCupon = () => {
                     Number(inscripcion.precio_total).toFixed(2)
                   }}€) no coincideix amb el preu calculat ({{
                     calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_total
-                  }}€). Això pot ser perquè les tarifes de l'edició han canviat des de la
-                  inscripció.
+                  }}€).
+                  <template v-if="inscripcion.importe_devolucion">
+                    S'han retornat {{ Number(inscripcion.importe_devolucion).toFixed(2) }}€ però
+                    encara queda un descuadre de
+                    {{
+                      (
+                        Number(inscripcion.precio_total) -
+                        calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                          .precio_total -
+                        Number(inscripcion.importe_devolucion)
+                      ).toFixed(2)
+                    }}€.
+                  </template>
+                  <template v-else>
+                    Això pot ser perquè les tarifes de l'edició han canviat des de la inscripció.
+                  </template>
                 </p>
               </div>
             </div>

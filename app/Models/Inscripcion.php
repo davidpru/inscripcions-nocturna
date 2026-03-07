@@ -63,11 +63,14 @@ class Inscripcion extends Model
         });
 
         static::updating(function (Inscripcion $inscripcion) {
-            // Si una inscripción vuelve a estado pagado, limpiar metadatos de devolución
-            // para evitar incoherencias visuales en consulta pública/admin.
+            // Si vuelve a pagado desde un estado que NO es de devolución, limpiar metadatos.
+            // No limpiar si viene de devolucion_parcial/devuelto para no perder el histórico.
             if ($inscripcion->isDirty('estado_pago') && $inscripcion->estado_pago === 'pagado') {
-                $inscripcion->fecha_devolucion = null;
-                $inscripcion->importe_devolucion = null;
+                $estadoAnterior = $inscripcion->getOriginal('estado_pago');
+                if (!in_array($estadoAnterior, ['devolucion_parcial', 'devuelto'])) {
+                    $inscripcion->fecha_devolucion = null;
+                    $inscripcion->importe_devolucion = null;
+                }
             }
         });
     }
