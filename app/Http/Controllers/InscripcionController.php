@@ -31,7 +31,7 @@ class InscripcionController extends Controller
         }
 
         $inscritos = Inscripcion::where('edicion_id', $edicionActiva->id)
-            ->where('estado_pago', 'pagado')
+            ->whereIn('estado_pago', ['pagado', 'invitado'])
             ->with(['participante:id,nombre,apellidos,poblacion'])
             ->orderBy('created_at', 'asc')
             ->get()
