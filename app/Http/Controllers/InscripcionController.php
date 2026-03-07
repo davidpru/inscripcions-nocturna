@@ -128,10 +128,12 @@ class InscripcionController extends Controller
 
         $inscripcion = Inscripcion::where('participante_id', $participante->id)
             ->where('edicion_id', $edicionActiva->id)
+            ->whereIn('estado_pago', ['pagado', 'pendiente', 'invitado'])
+            ->latest('created_at')
             ->first();
 
         if (!$inscripcion) {
-             return back()->withErrors(['dni' => 'No tienes ninguna inscripción para la edición actual.']);
+             return back()->withErrors(['dni' => 'No tens cap inscripció activa per a l\'edició actual.']);
         }
 
         // Calcular precio autobús según tarifa normal o tardía
@@ -292,6 +294,9 @@ class InscripcionController extends Controller
             'cupon' => [
                 'id' => $cupon->id,
                 'codigo' => $cupon->codigo,
+                'descuento_tipo' => $cupon->descuento_tipo,
+                'descuento_valor' => $cupon->descuento_valor,
+                'descuento_porcentaje' => $cupon->descuento_porcentaje,
                 'incluye_autobus' => $cupon->incluye_autobus,
                 'incluye_federativa' => $cupon->incluye_federativa,
                 'descuento' => $descuento,

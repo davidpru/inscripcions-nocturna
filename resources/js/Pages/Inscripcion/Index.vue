@@ -151,6 +151,9 @@ const codigoCupon = ref('');
 const cuponValidado = ref<{
   id: number;
   codigo: string;
+  descuento_tipo: 'porcentaje' | 'fijo';
+  descuento_valor: number;
+  descuento_porcentaje: number;
   incluye_autobus: boolean;
   descuento: number;
 } | null>(null);
@@ -1120,11 +1123,12 @@ const enviarInscripcion = () => {
                   v-if="cuponValidado && precioCalculado?.descuento_cupon"
                   class="mt-2 text-xs text-green-600"
                 >
-                  Descompte de {{ precioCalculado.descuento_cupon }}€ (llicència federativa<span
-                    v-if="cuponValidado.incluye_autobus"
-                  >
-                    + autobús</span
-                  >)
+                  Descompte de {{ precioCalculado.descuento_cupon }}€ (
+                  {{
+                    cuponValidado.descuento_tipo === 'fijo'
+                      ? `${cuponValidado.descuento_valor}€ inscripció`
+                      : `${cuponValidado.descuento_valor}% inscripció`
+                  }}<span v-if="cuponValidado.incluye_autobus"> + autobús</span>)
                 </p>
               </div>
 
@@ -1140,7 +1144,9 @@ const enviarInscripcion = () => {
                   <div class="flex justify-between text-slate-700">
                     <span>
                       Inscripció ({{ precioCalculado.nombre_tarifa
-                      }}<span v-if="!form.esta_federado">, inclou federativa</span>):
+                      }}<span v-if="!form.esta_federado"
+                        >, inclou federativa {{ precioCalculado.precio_licencia }}€</span
+                      >):
                     </span>
                     <span>{{ precioCalculado.tarifa_base }}€</span>
                   </div>
@@ -1148,7 +1154,11 @@ const enviarInscripcion = () => {
                     v-if="precioCalculado.descuento_cupon > 0"
                     class="flex justify-between text-green-600"
                   >
-                    <span>Descompte cupó ({{ cuponValidado?.codigo }}):</span>
+                    <span>
+                      <strong>Descompte cupó</strong>
+                      <span v-if="!form.esta_federado"> (no descompta federativa)</span> <br />
+                      ({{ cuponValidado?.codigo }})
+                    </span>
                     <span>-{{ precioCalculado.descuento_cupon }}€</span>
                   </div>
                   <div v-if="form.necesita_autobus" class="flex justify-between text-slate-700">

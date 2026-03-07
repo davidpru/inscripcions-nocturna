@@ -14,6 +14,9 @@ class Cupon extends Model
         'codigo',
         'descripcion',
         'edicion_id',
+        'descuento_tipo',
+        'descuento_valor',
+        'descuento_porcentaje',
         'usos_maximos',
         'usos_actuales',
         'incluye_autobus',
@@ -23,6 +26,9 @@ class Cupon extends Model
     ];
 
     protected $casts = [
+        'descuento_tipo' => 'string',
+        'descuento_valor' => 'float',
+        'descuento_porcentaje' => 'float',
         'incluye_autobus' => 'boolean',
         'incluye_federativa' => 'boolean',
         'activo' => 'boolean',
@@ -71,15 +77,24 @@ class Cupon extends Model
         $esTarifaTardia = $edicion->esTarifaTardia();
 
         // El cupón descuenta solo la inscripción, no la licencia
+        $precioInscripcion = 0.0;
         if ($esSocioUEC) {
-            return $esTarifaTardia 
+            $precioInscripcion = $esTarifaTardia
                 ? (float) $edicion->precio_inscripcion_socio_tardia 
                 : (float) $edicion->precio_inscripcion_socio_normal;
         } else {
-            return $esTarifaTardia 
+            $precioInscripcion = $esTarifaTardia
                 ? (float) $edicion->precio_inscripcion_publico_tardia 
                 : (float) $edicion->precio_inscripcion_publico_normal;
         }
+
+        if ($this->descuento_tipo === 'fijo') {
+            $descuentoFijo = max(0, (float) ($this->descuento_valor ?? 0));
+            return round(min($precioInscripcion, $descuentoFijo), 2);
+        }
+
+        $porcentaje = min(100, max(0, (float) ($this->descuento_valor ?? $this->descuento_porcentaje ?? 100)));
+        return round($precioInscripcion * ($porcentaje / 100), 2);
     }
 
     /**

@@ -17,7 +17,11 @@ class InscripcionController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Inscripcion::with(['participante', 'edicion'])
+        $query = Inscripcion::with([
+            'participante',
+            'edicion',
+            'cupon:id,codigo,descripcion,descuento_tipo,descuento_valor',
+        ])
             ->orderBy('created_at', 'desc');
 
         // Filtrar por edición si se especifica y tiene valor

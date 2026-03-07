@@ -65,6 +65,12 @@ interface Inscripcion {
   fecha_pago: string | null;
   cupon_id: number | null;
   descuento_cupon: number | null;
+  cupon?: {
+    codigo: string;
+    descripcion: string | null;
+    descuento_tipo: 'porcentaje' | 'fijo';
+    descuento_valor: number;
+  } | null;
 }
 
 const props = defineProps<{
@@ -88,6 +94,27 @@ const handleOpenChange = (open: boolean) => {
   } else {
     emit('close');
   }
+};
+
+const getDescuentoAplicadoEnInscripcion = (data: any, descuentoCupon: number | null): number => {
+  const precioInscripcion = Number(props.calcularPrecio(data, false, 0).precio_inscripcion || 0);
+  const descuentoTotal = Number(descuentoCupon || 0);
+
+  // El descuento total puede incluir extras (p. ej. bus), aquí mostramos solo la parte de inscripción.
+  return Math.max(0, Math.min(descuentoTotal, precioInscripcion));
+};
+
+const getPrecioInscripcionFinal = (data: any, descuentoCupon: number | null): number => {
+  const precioInscripcion = Number(props.calcularPrecio(data, false, 0).precio_inscripcion || 0);
+  const descuentoInscripcion = getDescuentoAplicadoEnInscripcion(data, descuentoCupon);
+  return Math.max(0, precioInscripcion - descuentoInscripcion);
+};
+
+const getTipoDescuentoCupon = () => {
+  if (!props.inscripcion.cupon) return '-';
+  return props.inscripcion.cupon.descuento_tipo === 'fijo'
+    ? `Import fix (${props.inscripcion.cupon.descuento_valor}€)`
+    : `Percentatge (${props.inscripcion.cupon.descuento_valor}%)`;
 };
 </script>
 
@@ -213,6 +240,49 @@ const handleOpenChange = (open: boolean) => {
               <div v-if="inscripcion.fecha_pago">
                 <span class="text-slate-500">Data pagament:</span>
                 <span class="ml-2">{{ formatearFecha(inscripcion.fecha_pago) }}</span>
+              </div>
+
+              <div class="sm:col-span-2">
+                <span class="text-slate-500">Pagament amb cupó:</span>
+                <span
+                  :class="
+                    inscripcion.descuento_cupon && Number(inscripcion.descuento_cupon) > 0
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-slate-200 text-slate-700'
+                  "
+                  class="ml-2 rounded-full px-2 py-0.5 text-xs font-semibold"
+                >
+                  {{
+                    inscripcion.descuento_cupon && Number(inscripcion.descuento_cupon) > 0
+                      ? `Sí (-${Number(inscripcion.descuento_cupon).toFixed(2)}€)`
+                      : 'No'
+                  }}
+                </span>
+              </div>
+
+              <div
+                v-if="inscripcion.descuento_cupon && Number(inscripcion.descuento_cupon) > 0"
+                class="rounded-md border border-green-200 bg-green-50 p-3 text-xs sm:col-span-2"
+              >
+                <p>
+                  <span class="text-slate-500">Cupó:</span>
+                  <span class="ml-1 font-medium text-slate-900">
+                    {{ inscripcion.cupon?.codigo || `ID ${inscripcion.cupon_id ?? '-'}` }}
+                  </span>
+                </p>
+                <p>
+                  <span class="text-slate-500">Tipus:</span>
+                  <span class="ml-1 text-slate-900">{{ getTipoDescuentoCupon() }}</span>
+                </p>
+                <p>
+                  <span class="text-slate-500">Descripció:</span>
+                  <span class="ml-1 text-slate-900">
+                    {{
+                      inscripcion.cupon?.descripcion ||
+                      (inscripcion.cupon_id ? 'Sense descripció o dades no carregades' : '-')
+                    }}
+                  </span>
+                </p>
               </div>
             </div>
           </div>
@@ -546,12 +616,33 @@ const handleOpenChange = (open: boolean) => {
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between text-slate-700">
                   <span>Inscripció {{ editingData.es_socio_uec ? '(Soci)' : '(Públic)' }}:</span>
-                  <span
-                    >{{
+                  <span class="text-right">
+                    {{
                       calcularPrecio(editingData, false, inscripcion.descuento_cupon)
                         .precio_inscripcion
-                    }}€</span
-                  >
+                    }}€
+                    <template
+                      v-if="
+                        getDescuentoAplicadoEnInscripcion(
+                          editingData,
+                          inscripcion.descuento_cupon
+                        ) > 0
+                      "
+                    >
+                      <span class="ml-1 text-xs text-green-600">
+                        -
+                        {{
+                          getDescuentoAplicadoEnInscripcion(
+                            editingData,
+                            inscripcion.descuento_cupon
+                          )
+                        }}€ (cupó) =
+                      </span>
+                      <span class="text-slate-900">
+                        {{ getPrecioInscripcionFinal(editingData, inscripcion.descuento_cupon) }}€
+                      </span>
+                    </template>
+                  </span>
                 </div>
                 <div
                   v-if="

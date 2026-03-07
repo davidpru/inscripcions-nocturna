@@ -370,10 +370,10 @@ const calcularAsientosOcupados = computed(() => {
                       <div class="grid grid-cols-2 gap-4">
                         <div>
                           <label class="mb-2 block text-sm font-medium text-slate-700">
-                            Soci UEC
+                            Públic
                           </label>
                           <input
-                            v-model.number="form.precio_inscripcion_socio_normal"
+                            v-model.number="form.precio_inscripcion_publico_normal"
                             type="number"
                             step="0.01"
                             min="0"
@@ -382,10 +382,10 @@ const calcularAsientosOcupados = computed(() => {
                         </div>
                         <div>
                           <label class="mb-2 block text-sm font-medium text-slate-700">
-                            Públic
+                            Soci UEC
                           </label>
                           <input
-                            v-model.number="form.precio_inscripcion_publico_normal"
+                            v-model.number="form.precio_inscripcion_socio_normal"
                             type="number"
                             step="0.01"
                             min="0"
@@ -401,10 +401,10 @@ const calcularAsientosOcupados = computed(() => {
                       <div class="grid grid-cols-2 gap-4">
                         <div>
                           <label class="mb-2 block text-sm font-medium text-slate-700">
-                            Soci UEC
+                            Públic
                           </label>
                           <input
-                            v-model.number="form.precio_inscripcion_socio_tardia"
+                            v-model.number="form.precio_inscripcion_publico_tardia"
                             type="number"
                             step="0.01"
                             min="0"
@@ -413,10 +413,10 @@ const calcularAsientosOcupados = computed(() => {
                         </div>
                         <div>
                           <label class="mb-2 block text-sm font-medium text-slate-700">
-                            Públic
+                            Soci UEC
                           </label>
                           <input
-                            v-model.number="form.precio_inscripcion_publico_tardia"
+                            v-model.number="form.precio_inscripcion_socio_tardia"
                             type="number"
                             step="0.01"
                             min="0"

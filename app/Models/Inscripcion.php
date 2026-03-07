@@ -61,6 +61,15 @@ class Inscripcion extends Model
                 $inscripcion->hash_token = Str::random(32);
             }
         });
+
+        static::updating(function (Inscripcion $inscripcion) {
+            // Si una inscripción vuelve a estado pagado, limpiar metadatos de devolución
+            // para evitar incoherencias visuales en consulta pública/admin.
+            if ($inscripcion->isDirty('estado_pago') && $inscripcion->estado_pago === 'pagado') {
+                $inscripcion->fecha_devolucion = null;
+                $inscripcion->importe_devolucion = null;
+            }
+        });
     }
 
     public function participante(): BelongsTo

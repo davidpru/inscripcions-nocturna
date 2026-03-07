@@ -70,6 +70,13 @@ interface Edicion {
   precio_seguro: number;
 }
 
+interface CuponInfo {
+  codigo: string;
+  descripcion: string | null;
+  descuento_tipo: 'porcentaje' | 'fijo';
+  descuento_valor: number;
+}
+
 interface Inscripcion {
   id: number;
   precio_total: number;
@@ -91,6 +98,7 @@ interface Inscripcion {
   numero_autorizacion: string | null;
   fecha_pago: string | null;
   cupon_id: number | null;
+  cupon?: CuponInfo | null;
   descuento_cupon: number | null;
   dorsal_recogido: boolean;
 }
@@ -638,6 +646,24 @@ const getEstadoPagoTexto = (estado: string) => {
   return textos[estado] || estado;
 };
 
+const getTipoDescuentoCupon = (inscripcion: Inscripcion): string => {
+  if (!inscripcion.cupon) return '-';
+  return inscripcion.cupon.descuento_tipo === 'fijo'
+    ? `Import fix (${inscripcion.cupon.descuento_valor}€)`
+    : `Percentatge (${inscripcion.cupon.descuento_valor}%)`;
+};
+
+// Mantener la lista local alineada con los props de Inertia cuando cambian por navegación/filtros.
+watch(
+  () => props.inscripciones,
+  (next) => {
+    inscripcionesList.value = [...next.data];
+    currentPage.value = next.current_page;
+    lastPage.value = next.last_page;
+  },
+  { deep: true }
+);
+
 // Estado del diálogo de dorsal
 const dorsalDialogOpen = ref(false);
 const dorsalInscripcion = ref<Inscripcion | null>(null);
@@ -940,7 +966,7 @@ const confirmarToggleDorsal = () => {
                     </div>
                   </td>
                   <td class="px-2 py-3 text-sm font-semibold whitespace-nowrap">
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-col items-center gap-1">
                       <span
                         :class="
                           inscripcion.descuento_cupon && inscripcion.descuento_cupon > 0
@@ -968,8 +994,22 @@ const confirmarToggleDorsal = () => {
                               }}<sup class="text-[10px]"> €</sup>
                             </p>
                             <p>
-                              Descompte aplicat: -{{ inscripcion.descuento_cupon
+                              Descompte aplicat: -{{ Number(inscripcion.descuento_cupon).toFixed(2)
                               }}<sup class="text-[10px]">€</sup>
+                            </p>
+                            <p>
+                              Cupó:
+                              {{ inscripcion.cupon?.codigo || `ID ${inscripcion.cupon_id ?? '-'}` }}
+                            </p>
+                            <p>Tipus: {{ getTipoDescuentoCupon(inscripcion) }}</p>
+                            <p>
+                              Descripció:
+                              {{
+                                inscripcion.cupon?.descripcion ||
+                                (inscripcion.cupon_id
+                                  ? 'Sense descripció o dades del cupó no carregades'
+                                  : '-')
+                              }}
                             </p>
                           </TooltipContent>
                         </Tooltip>

@@ -30,6 +30,17 @@ class CuponController extends Controller
             'codigo' => 'required|string|max:50|unique:cupones,codigo',
             'descripcion' => 'nullable|string|max:255',
             'edicion_id' => 'required|exists:ediciones,id',
+            'descuento_tipo' => 'required|in:porcentaje,fijo',
+            'descuento_valor' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->input('descuento_tipo') === 'porcentaje' && (float) $value > 100) {
+                        $fail('El descuento en porcentaje no puede superar el 100%.');
+                    }
+                },
+            ],
             'usos_maximos' => 'required|integer|min:1',
             'incluye_autobus' => 'required|boolean',
             'incluye_federativa' => 'required|boolean',
@@ -39,6 +50,9 @@ class CuponController extends Controller
 
         // Convertir código a mayúsculas
         $validated['codigo'] = strtoupper($validated['codigo']);
+        $validated['descuento_porcentaje'] = $validated['descuento_tipo'] === 'porcentaje'
+            ? (float) $validated['descuento_valor']
+            : 0;
 
         Cupon::create($validated);
 
@@ -47,10 +61,40 @@ class CuponController extends Controller
 
     public function update(Request $request, Cupon $cupon)
     {
+        $cuponUsado = $cupon->usos_actuales > 0 || $cupon->inscripciones()->exists();
+
+        // Si el cupón ya fue usado, solo permitimos ampliar/ajustar usos máximos.
+        if ($cuponUsado) {
+            $validated = $request->validate([
+                'usos_maximos' => 'required|integer|min:' . $cupon->usos_actuales,
+                'fecha_expiracion' => 'nullable|date',
+                'activo' => 'required|boolean',
+            ]);
+
+            $cupon->update([
+                'usos_maximos' => $validated['usos_maximos'],
+                'fecha_expiracion' => $validated['fecha_expiracion'] ?? null,
+                'activo' => $validated['activo'],
+            ]);
+
+            return redirect()->back()->with('success', 'Usos máximos, expiración y estado del cupón actualizados correctamente.');
+        }
+
         $validated = $request->validate([
             'codigo' => 'required|string|max:50|unique:cupones,codigo,' . $cupon->id,
             'descripcion' => 'nullable|string|max:255',
             'edicion_id' => 'required|exists:ediciones,id',
+            'descuento_tipo' => 'required|in:porcentaje,fijo',
+            'descuento_valor' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->input('descuento_tipo') === 'porcentaje' && (float) $value > 100) {
+                        $fail('El descuento en porcentaje no puede superar el 100%.');
+                    }
+                },
+            ],
             'usos_maximos' => 'required|integer|min:1',
             'incluye_autobus' => 'required|boolean',
             'incluye_federativa' => 'required|boolean',
@@ -60,6 +104,9 @@ class CuponController extends Controller
 
         // Convertir código a mayúsculas
         $validated['codigo'] = strtoupper($validated['codigo']);
+        $validated['descuento_porcentaje'] = $validated['descuento_tipo'] === 'porcentaje'
+            ? (float) $validated['descuento_valor']
+            : 0;
 
         $cupon->update($validated);
 
