@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Gasto extends Model
 {
@@ -12,6 +13,10 @@ class Gasto extends Model
         'edicion_id',
         'titulo',
         'descripcion',
+        'empresa',
+        'contacto_nombre',
+        'contacto_telefono',
+        'contacto_email',
         'base_imponible',
         'tipo_iva',
         'total',
@@ -54,5 +59,10 @@ class Gasto extends Model
     public function pagadoPorAdmin(): BelongsTo
     {
         return $this->belongsTo(Administrador::class, 'pagado_por');
+    }
+
+    public function logs(): HasMany
+    {
+        return $this->hasMany(GastoLog::class);
     }
 }

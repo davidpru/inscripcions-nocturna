@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CategoriaGasto;
 use App\Models\Edicion;
 use App\Models\Gasto;
+use App\Models\GastoLog;
 use App\Models\Inscripcion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,7 +40,7 @@ class GastoController extends Controller
                 ->where('estado_pago', 'pagado')
                 ->sum('precio_total');
             $gastos = Gasto::where('edicion_id', $edicionActual->id)
-                ->with(['categorias', 'presupuestadoPorAdmin:id,nombre', 'aceptadoPorAdmin:id,nombre', 'pagadoPorAdmin:id,nombre'])
+                ->with(['categorias', 'presupuestadoPorAdmin:id,nombre', 'aceptadoPorAdmin:id,nombre', 'pagadoPorAdmin:id,nombre', 'logs.admin:id,nombre'])
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -77,6 +78,10 @@ class GastoController extends Controller
             'categoria_ids.*' => 'exists:categorias_gasto,id',
             'titulo' => 'required|string|max:150',
             'descripcion' => 'nullable|string|max:1000',
+            'empresa' => 'nullable|string|max:200',
+            'contacto_nombre' => 'nullable|string|max:150',
+            'contacto_telefono' => 'nullable|string|max:30',
+            'contacto_email' => 'nullable|email|max:200',
             'base_imponible' => 'required|numeric|min:0',
             'tipo_iva' => 'required|in:0,4,10,21',
             'presupuestado' => 'required|boolean',
@@ -94,6 +99,10 @@ class GastoController extends Controller
             'edicion_id' => $validated['edicion_id'],
             'titulo' => $validated['titulo'],
             'descripcion' => $validated['descripcion'] ?? '',
+            'empresa' => $validated['empresa'] ?? null,
+            'contacto_nombre' => $validated['contacto_nombre'] ?? null,
+            'contacto_telefono' => $validated['contacto_telefono'] ?? null,
+            'contacto_email' => $validated['contacto_email'] ?? null,
             'base_imponible' => $baseImponible,
             'tipo_iva' => (string) $tipoIva,
             'total' => $total,
@@ -107,6 +116,14 @@ class GastoController extends Controller
 
         $gasto->categorias()->sync($validated['categoria_ids']);
 
+        GastoLog::create([
+            'gasto_id' => $gasto->id,
+            'admin_id' => $adminId,
+            'campo' => 'creació',
+            'valor_anterior' => null,
+            'valor_nuevo' => $gasto->titulo,
+        ]);
+
         return redirect()->back()->with('success', 'Despesa afegida correctament.');
     }
 
@@ -117,6 +134,10 @@ class GastoController extends Controller
             'categoria_ids.*' => 'exists:categorias_gasto,id',
             'titulo' => 'required|string|max:150',
             'descripcion' => 'nullable|string|max:1000',
+            'empresa' => 'nullable|string|max:200',
+            'contacto_nombre' => 'nullable|string|max:150',
+            'contacto_telefono' => 'nullable|string|max:30',
+            'contacto_email' => 'nullable|email|max:200',
             'base_imponible' => 'required|numeric|min:0',
             'tipo_iva' => 'required|in:0,4,10,21',
             'presupuestado' => 'required|boolean',
@@ -130,9 +151,71 @@ class GastoController extends Controller
 
         $adminId = Auth::guard('administrador')->id();
 
+        $fieldLabels = [
+            'titulo' => 'Títol',
+            'descripcion' => 'Descripció',
+            'empresa' => 'Empresa',
+            'contacto_nombre' => 'Contacte',
+            'contacto_telefono' => 'Telèfon',
+            'contacto_email' => 'Email',
+            'base_imponible' => 'Base imposable',
+            'tipo_iva' => 'Tipus IVA',
+            'total' => 'Total',
+        ];
+
+        $newValues = [
+            'titulo' => $validated['titulo'],
+            'descripcion' => $validated['descripcion'] ?? '',
+            'empresa' => $validated['empresa'] ?? null,
+            'contacto_nombre' => $validated['contacto_nombre'] ?? null,
+            'contacto_telefono' => $validated['contacto_telefono'] ?? null,
+            'contacto_email' => $validated['contacto_email'] ?? null,
+            'base_imponible' => $baseImponible,
+            'tipo_iva' => (string) $tipoIva,
+            'total' => $total,
+        ];
+
+        foreach ($fieldLabels as $field => $label) {
+            $old = (string) ($gasto->$field ?? '');
+            $new = (string) ($newValues[$field] ?? '');
+            if ($old !== $new) {
+                GastoLog::create([
+                    'gasto_id' => $gasto->id,
+                    'admin_id' => $adminId,
+                    'campo' => $label,
+                    'valor_anterior' => $old ?: null,
+                    'valor_nuevo' => $new ?: null,
+                ]);
+            }
+        }
+
+        $statusFields = [
+            'presupuestado' => 'Presupuestat',
+            'aceptado' => 'Acceptat',
+            'pagado' => 'Pagat',
+        ];
+
+        foreach ($statusFields as $field => $label) {
+            $oldVal = (bool) $gasto->$field;
+            $newVal = (bool) $validated[$field];
+            if ($oldVal !== $newVal) {
+                GastoLog::create([
+                    'gasto_id' => $gasto->id,
+                    'admin_id' => $adminId,
+                    'campo' => $label,
+                    'valor_anterior' => $oldVal ? 'Sí' : 'No',
+                    'valor_nuevo' => $newVal ? 'Sí' : 'No',
+                ]);
+            }
+        }
+
         $gasto->update([
             'titulo' => $validated['titulo'],
             'descripcion' => $validated['descripcion'] ?? '',
+            'empresa' => $validated['empresa'] ?? null,
+            'contacto_nombre' => $validated['contacto_nombre'] ?? null,
+            'contacto_telefono' => $validated['contacto_telefono'] ?? null,
+            'contacto_email' => $validated['contacto_email'] ?? null,
             'base_imponible' => $baseImponible,
             'tipo_iva' => (string) $tipoIva,
             'total' => $total,

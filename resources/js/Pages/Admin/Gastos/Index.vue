@@ -7,6 +7,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogScrollContent,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -19,13 +20,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import {
   ChevronDown,
   CircleCheck,
   CircleDot,
+  Clock,
   Euro,
+  Eye,
+  Info,
   Pencil,
   Plus,
   Receipt,
@@ -55,12 +60,25 @@ interface AdminUser {
   nombre: string;
 }
 
+interface GastoLog {
+  id: number;
+  campo: string;
+  valor_anterior: string | null;
+  valor_nuevo: string | null;
+  admin: AdminUser | null;
+  created_at: string;
+}
+
 interface Gasto {
   id: number;
   edicion_id: number;
   categorias: CategoriaGasto[];
   titulo: string;
   descripcion: string;
+  empresa: string | null;
+  contacto_nombre: string | null;
+  contacto_telefono: string | null;
+  contacto_email: string | null;
   base_imponible: string;
   tipo_iva: '0' | '4' | '10' | '21';
   total: string;
@@ -70,6 +88,7 @@ interface Gasto {
   aceptado_por_admin: AdminUser | null;
   pagado: boolean;
   pagado_por_admin: AdminUser | null;
+  logs: GastoLog[];
 }
 
 const props = defineProps<{
@@ -90,8 +109,10 @@ const showDeleteDialog = ref(false);
 const showCategoriaDialog = ref(false);
 const showDeleteCategoriaDialog = ref(false);
 const showDistanciaDialog = ref(false);
+const showDetailDialog = ref(false);
 
 const editingGasto = ref<Gasto | null>(null);
+const detailGasto = ref<Gasto | null>(null);
 const deletingGasto = ref<Gasto | null>(null);
 const deletingCategoria = ref<CategoriaGasto | null>(null);
 const editingCategoria = ref<CategoriaGasto | null>(null);
@@ -102,6 +123,10 @@ const gastoForm = useForm({
   categoria_ids: [] as number[],
   titulo: '',
   descripcion: '',
+  empresa: '',
+  contacto_nombre: '',
+  contacto_telefono: '',
+  contacto_email: '',
   base_imponible: 0,
   tipo_iva: '21' as string,
   presupuestado: false,
@@ -163,6 +188,10 @@ const openEditGasto = (gasto: Gasto) => {
   gastoForm.categoria_ids = gasto.categorias.map((c) => c.id);
   gastoForm.titulo = gasto.titulo;
   gastoForm.descripcion = gasto.descripcion;
+  gastoForm.empresa = gasto.empresa || '';
+  gastoForm.contacto_nombre = gasto.contacto_nombre || '';
+  gastoForm.contacto_telefono = gasto.contacto_telefono || '';
+  gastoForm.contacto_email = gasto.contacto_email || '';
   gastoForm.base_imponible = Number(gasto.base_imponible);
   gastoForm.tipo_iva = gasto.tipo_iva;
   gastoForm.presupuestado = gasto.presupuestado;
@@ -259,10 +288,6 @@ const submitDistancia = () => {
       showDistanciaDialog.value = false;
     },
   });
-};
-
-const formatIva = (tipo: string) => {
-  return tipo === '0' ? 'Exempt' : `${tipo}%`;
 };
 
 const formatEur = (value: number | string) => {
@@ -464,19 +489,19 @@ const presetColors = [
                   Títol / Descripció
                 </th>
                 <th
-                  class="px-4 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  class="px-4 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
-                  Base
-                </th>
-                <th
-                  class="px-4 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
-                >
-                  IVA
+                  Empresa
                 </th>
                 <th
                   class="px-4 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
                 >
                   Total
+                </th>
+                <th
+                  class="px-4 py-3 text-right text-xs font-medium tracking-wider text-slate-500 uppercase"
+                >
+                  €/dorsal
                 </th>
                 <th
                   class="px-4 py-3 text-center text-xs font-medium tracking-wider text-slate-500 uppercase"
@@ -510,72 +535,139 @@ const presetColors = [
                     {{ gasto.descripcion }}
                   </p>
                 </td>
-                <td class="px-4 py-3 text-right text-sm whitespace-nowrap text-slate-600">
-                  {{ formatEur(gasto.base_imponible) }}
-                </td>
-                <td class="px-4 py-3 text-right text-sm whitespace-nowrap text-slate-600">
-                  {{ formatIva(gasto.tipo_iva) }}
+                <td class="px-4 py-3 text-sm text-slate-600">
+                  <span v-if="gasto.empresa">{{ gasto.empresa }}</span>
+                  <span v-else class="text-slate-300">—</span>
                 </td>
                 <td
                   class="px-4 py-3 text-right text-sm font-medium whitespace-nowrap text-slate-900"
                 >
-                  {{ formatEur(gasto.total) }}
+                  <div class="flex items-center justify-end gap-1">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <Info class="h-3.5 w-3.5 cursor-help text-slate-400" />
+                        </TooltipTrigger>
+                        <TooltipContent side="left" class="text-xs">
+                          <div class="space-y-0.5">
+                            <div class="flex justify-between gap-4">
+                              <span>Base:</span>
+                              <span>{{ formatEur(gasto.base_imponible) }}</span>
+                            </div>
+                            <div class="flex justify-between gap-4">
+                              <span>IVA ({{ gasto.tipo_iva }}%):</span>
+                              <span>{{
+                                formatEur(Number(gasto.total) - Number(gasto.base_imponible))
+                              }}</span>
+                            </div>
+                            <div
+                              class="flex justify-between gap-4 border-t border-slate-600 pt-0.5 font-semibold"
+                            >
+                              <span>Total:</span>
+                              <span>{{ formatEur(gasto.total) }}</span>
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    {{ formatEur(gasto.total) }}
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right text-sm whitespace-nowrap text-slate-600">
+                  {{ totalInscrits > 0 ? formatEur(Number(gasto.total) / totalInscrits) : '—' }}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap">
                   <div class="flex items-center justify-center gap-2">
-                    <span
-                      class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                      :class="
-                        gasto.presupuestado
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'bg-slate-50 text-slate-400'
-                      "
-                      :title="
-                        gasto.presupuestado_por_admin
-                          ? `Presupuestat per ${gasto.presupuestado_por_admin.nombre}`
-                          : ''
-                      "
-                    >
-                      <CircleDot class="h-3 w-3" />
-                      P
-                    </span>
-                    <span
-                      class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                      :class="
-                        gasto.aceptado ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-400'
-                      "
-                      :title="
-                        gasto.aceptado_por_admin
-                          ? `Acceptat per ${gasto.aceptado_por_admin.nombre}`
-                          : ''
-                      "
-                    >
-                      <CircleCheck class="h-3 w-3" />
-                      A
-                    </span>
-                    <span
-                      class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                      :class="
-                        gasto.pagado ? 'bg-green-50 text-green-700' : 'bg-slate-50 text-slate-400'
-                      "
-                      :title="
-                        gasto.pagado_por_admin ? `Pagat per ${gasto.pagado_por_admin.nombre}` : ''
-                      "
-                    >
-                      <Wallet class="h-3 w-3" />
-                      $
-                    </span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <span
+                            class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                            :class="
+                              gasto.presupuestado
+                                ? 'bg-blue-700 text-blue-50'
+                                : 'bg-slate-700 text-slate-50'
+                            "
+                          >
+                            <CircleDot class="h-3 w-3" />
+                            P
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <span v-if="gasto.presupuestado_por_admin">
+                            Presupuestat per {{ gasto.presupuestado_por_admin.nombre }}
+                          </span>
+                          <span v-else>No presupuestat</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <span
+                            class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                            :class="
+                              gasto.aceptado
+                                ? 'bg-orange-500 text-orange-50'
+                                : 'bg-slate-700 text-slate-50'
+                            "
+                          >
+                            <CircleCheck class="h-3 w-3" />
+                            A
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <span v-if="gasto.aceptado_por_admin">
+                            Acceptat per {{ gasto.aceptado_por_admin.nombre }}
+                          </span>
+                          <span v-else>No acceptat</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <span
+                            class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                            :class="
+                              gasto.pagado
+                                ? 'bg-green-700 text-green-50'
+                                : 'bg-slate-200 text-slate-50'
+                            "
+                          >
+                            <Wallet class="h-3 w-3" />
+                            $
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <span v-if="gasto.pagado_por_admin">
+                            Pagat per {{ gasto.pagado_por_admin.nombre }}
+                          </span>
+                          <span v-else>No pagat</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </td>
                 <td class="px-4 py-3 text-right whitespace-nowrap">
                   <div class="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="sm" @click="openEditGasto(gasto)">
+                    <Button
+                      variant="secondary"
+                      size="icon-sm"
+                      @click="
+                        detailGasto = gasto;
+                        showDetailDialog = true;
+                      "
+                    >
+                      <Eye class="h-4 w-4 text-slate-500" />
+                    </Button>
+                    <Button variant="secondary" size="icon-sm" @click="openEditGasto(gasto)">
                       <Pencil class="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      class="text-red-600 hover:text-red-700"
+                      variant="destructive"
+                      size="icon-sm"
+                      class="bg-red-100! text-red-700"
                       @click="confirmDeleteGasto(gasto)"
                     >
                       <Trash2 class="h-4 w-4" />
@@ -722,6 +814,26 @@ const presetColors = [
             <p v-if="gastoForm.errors.descripcion" class="text-sm text-red-500">
               {{ gastoForm.errors.descripcion }}
             </p>
+          </div>
+
+          <div class="space-y-2">
+            <Label>Empresa</Label>
+            <Input v-model="gastoForm.empresa" placeholder="Nom de l'empresa (opcional)" />
+          </div>
+
+          <div class="grid grid-cols-3 gap-4">
+            <div class="space-y-2">
+              <Label>Contacte</Label>
+              <Input v-model="gastoForm.contacto_nombre" placeholder="Nom" />
+            </div>
+            <div class="space-y-2">
+              <Label>Telèfon</Label>
+              <Input v-model="gastoForm.contacto_telefono" placeholder="Telèfon" />
+            </div>
+            <div class="space-y-2">
+              <Label>Email</Label>
+              <Input v-model="gastoForm.contacto_email" type="email" placeholder="Email" />
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -921,6 +1033,175 @@ const presetColors = [
           </DialogFooter>
         </form>
       </DialogContent>
+    </Dialog>
+
+    <!-- Dialog: Detalle gasto -->
+    <Dialog v-model:open="showDetailDialog">
+      <DialogScrollContent class="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Detall de la despesa</DialogTitle>
+          <DialogDescription>{{ detailGasto?.titulo }}</DialogDescription>
+        </DialogHeader>
+        <div v-if="detailGasto" class="space-y-4">
+          <!-- Categorías -->
+          <div class="flex flex-wrap gap-1">
+            <span
+              v-for="cat in detailGasto.categorias"
+              :key="cat.id"
+              class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+              :style="{ backgroundColor: cat.color + '20', color: cat.color }"
+            >
+              {{ cat.nombre }}
+            </span>
+          </div>
+
+          <!-- Descripción -->
+          <div v-if="detailGasto.descripcion" class="text-sm text-slate-600">
+            {{ detailGasto.descripcion }}
+          </div>
+
+          <!-- Empresa y contacto -->
+          <div
+            v-if="detailGasto.empresa || detailGasto.contacto_nombre"
+            class="rounded-md bg-slate-50 p-3 text-sm"
+          >
+            <p v-if="detailGasto.empresa" class="font-medium text-slate-900">
+              {{ detailGasto.empresa }}
+            </p>
+            <div class="mt-1 space-y-0.5 text-slate-600">
+              <p v-if="detailGasto.contacto_nombre">{{ detailGasto.contacto_nombre }}</p>
+              <p v-if="detailGasto.contacto_telefono">{{ detailGasto.contacto_telefono }}</p>
+              <p v-if="detailGasto.contacto_email">{{ detailGasto.contacto_email }}</p>
+            </div>
+          </div>
+
+          <!-- Desglose económico -->
+          <div class="rounded-md bg-slate-50 p-3 text-sm">
+            <div class="flex justify-between text-slate-600">
+              <span>Base imposable</span>
+              <span>{{ formatEur(detailGasto.base_imponible) }}</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>IVA ({{ detailGasto.tipo_iva }}%)</span>
+              <span>{{
+                formatEur(Number(detailGasto.total) - Number(detailGasto.base_imponible))
+              }}</span>
+            </div>
+            <div
+              class="mt-1 flex justify-between border-t border-slate-200 pt-1 font-semibold text-slate-900"
+            >
+              <span>Total</span>
+              <span>{{ formatEur(detailGasto.total) }}</span>
+            </div>
+          </div>
+
+          <!-- Estados -->
+          <div class="space-y-3">
+            <p class="text-sm font-medium text-slate-700">Estats</p>
+            <div class="space-y-2">
+              <div
+                class="flex items-center justify-between rounded-md px-3 py-2 text-sm"
+                :class="detailGasto.presupuestado ? 'bg-blue-50' : 'bg-slate-50'"
+              >
+                <div class="flex items-center gap-2">
+                  <CircleDot
+                    class="h-4 w-4"
+                    :class="detailGasto.presupuestado ? 'text-blue-600' : 'text-slate-400'"
+                  />
+                  <span :class="detailGasto.presupuestado ? 'text-blue-900' : 'text-slate-500'"
+                    >Presupuestat</span
+                  >
+                </div>
+                <span v-if="detailGasto.presupuestado_por_admin" class="text-xs text-blue-600">
+                  {{ detailGasto.presupuestado_por_admin.nombre }}
+                </span>
+                <span v-else class="text-xs text-slate-400">—</span>
+              </div>
+              <div
+                class="flex items-center justify-between rounded-md px-3 py-2 text-sm"
+                :class="detailGasto.aceptado ? 'bg-orange-50' : 'bg-slate-50'"
+              >
+                <div class="flex items-center gap-2">
+                  <CircleCheck
+                    class="h-4 w-4"
+                    :class="detailGasto.aceptado ? 'text-orange-600' : 'text-slate-400'"
+                  />
+                  <span :class="detailGasto.aceptado ? 'text-orange-900' : 'text-slate-500'"
+                    >Acceptat</span
+                  >
+                </div>
+                <span v-if="detailGasto.aceptado_por_admin" class="text-xs text-orange-600">
+                  {{ detailGasto.aceptado_por_admin.nombre }}
+                </span>
+                <span v-else class="text-xs text-slate-400">—</span>
+              </div>
+              <div
+                class="flex items-center justify-between rounded-md px-3 py-2 text-sm"
+                :class="detailGasto.pagado ? 'bg-green-50' : 'bg-slate-50'"
+              >
+                <div class="flex items-center gap-2">
+                  <Wallet
+                    class="h-4 w-4"
+                    :class="detailGasto.pagado ? 'text-green-600' : 'text-slate-400'"
+                  />
+                  <span :class="detailGasto.pagado ? 'text-green-900' : 'text-slate-500'"
+                    >Pagat</span
+                  >
+                </div>
+                <span v-if="detailGasto.pagado_por_admin" class="text-xs text-green-600">
+                  {{ detailGasto.pagado_por_admin.nombre }}
+                </span>
+                <span v-else class="text-xs text-slate-400">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Historial de canvis -->
+          <div v-if="detailGasto.logs && detailGasto.logs.length > 0" class="space-y-3">
+            <p class="flex items-center gap-1.5 text-sm font-medium text-slate-700">
+              <Clock class="h-4 w-4" />
+              Historial de canvis
+            </p>
+            <div class="relative ml-2 space-y-3 border-l-2 border-slate-200 pl-4">
+              <div v-for="log in [...detailGasto.logs].reverse()" :key="log.id" class="relative">
+                <div
+                  class="absolute top-1 -left-[1.3rem] h-2.5 w-2.5 rounded-full border-2 border-white"
+                  :class="log.campo === 'creació' ? 'bg-emerald-500' : 'bg-blue-500'"
+                ></div>
+                <div class="text-sm">
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-medium text-slate-900">{{ log.campo }}</span>
+                    <span class="text-xs text-slate-400">·</span>
+                    <span class="text-xs text-slate-500">{{ log.admin?.nombre ?? 'Sistema' }}</span>
+                  </div>
+                  <div v-if="log.campo === 'creació'" class="mt-0.5 text-xs text-slate-500">
+                    Despesa creada
+                  </div>
+                  <div v-else class="mt-0.5 text-xs text-slate-500">
+                    <span class="text-slate-400 line-through">{{ log.valor_anterior || '—' }}</span>
+                    <span class="mx-1">→</span>
+                    <span class="text-slate-700">{{ log.valor_nuevo || '—' }}</span>
+                  </div>
+                  <div class="mt-0.5 text-[11px] text-slate-400">
+                    {{
+                      new Date(log.created_at).toLocaleDateString('ca-ES', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="showDetailDialog = false">Tancar</Button>
+        </DialogFooter>
+      </DialogScrollContent>
     </Dialog>
   </AdminLayout>
 </template>
