@@ -220,40 +220,63 @@ class InscripcionController extends Controller
             'fecha_nacimiento' => $validated['fecha_nacimiento'],
         ]);
 
-        // Recalcular precio y tarifa si no es invitado
-        if ($validated['estado_pago'] === 'invitado') {
-            $precioTotal = 0;
-            $tarifaAplicada = 'Invitado';
-        } else {
-            $tarifaService = new TarifaService();
-            $resultadoCalculo = $tarifaService->calcularPrecio(
-                $inscripcion->edicion,
-                $validated['es_socio_uec'] ?? false,
-                $validated['esta_federado'] ?? false,
-                $validated['necesita_autobus'] ?? false,
-                $validated['seguro_anulacion'] ?? false
-            );
-            
-            // Si tiene cupón aplicado, recalcular el descuento
-            $descuentoCupon = 0;
-            if ($inscripcion->cupon_id) {
-                $cupon = $inscripcion->cupon;
-                if ($cupon) {
-                    $descuentoCupon = $cupon->calcularDescuento(
-                        $inscripcion->edicion,
-                        $validated['es_socio_uec'] ?? false,
-                        $validated['esta_federado'] ?? false
-                    );
-                    
-                    // Si incluye autobús, añadir el precio del autobús al descuento
-                    if ($cupon->incluye_autobus && ($validated['necesita_autobus'] ?? false)) {
-                        $descuentoCupon += $resultadoCalculo['precio_autobus'];
+        // Recalcular precio y tarifa SOLO si cambian campos que afectan al precio
+        $camposTarifa = ['es_socio_uec', 'esta_federado', 'necesita_autobus', 'seguro_anulacion', 'estado_pago'];
+        $cambiaTarifa = false;
+        foreach ($camposTarifa as $campo) {
+            $valorActual = $campo === 'estado_pago'
+                ? $inscripcion->$campo
+                : (bool) $inscripcion->$campo;
+            $valorNuevo = $campo === 'estado_pago'
+                ? $validated[$campo]
+                : (bool) ($validated[$campo] ?? false);
+            if ($valorActual !== $valorNuevo) {
+                $cambiaTarifa = true;
+                break;
+            }
+        }
+
+        if ($cambiaTarifa) {
+            if ($validated['estado_pago'] === 'invitado') {
+                $precioTotal = 0;
+                $tarifaAplicada = 'Invitado';
+                $descuentoCupon = 0;
+            } else {
+                $tarifaService = new TarifaService();
+                $resultadoCalculo = $tarifaService->calcularPrecio(
+                    $inscripcion->edicion,
+                    $validated['es_socio_uec'] ?? false,
+                    $validated['esta_federado'] ?? false,
+                    $validated['necesita_autobus'] ?? false,
+                    $validated['seguro_anulacion'] ?? false
+                );
+
+                // Si tiene cupón aplicado, recalcular el descuento
+                $descuentoCupon = 0;
+                if ($inscripcion->cupon_id) {
+                    $cupon = $inscripcion->cupon;
+                    if ($cupon) {
+                        $descuentoCupon = $cupon->calcularDescuento(
+                            $inscripcion->edicion,
+                            $validated['es_socio_uec'] ?? false,
+                            $validated['esta_federado'] ?? false
+                        );
+
+                        // Si incluye autobús, añadir el precio del autobús al descuento
+                        if ($cupon->incluye_autobus && ($validated['necesita_autobus'] ?? false)) {
+                            $descuentoCupon += $resultadoCalculo['precio_autobus'];
+                        }
                     }
                 }
+
+                $precioTotal = max(0, $resultadoCalculo['precio_total'] - $descuentoCupon);
+                $tarifaAplicada = $resultadoCalculo['nombre_tarifa'];
             }
-            
-            $precioTotal = max(0, $resultadoCalculo['precio_total'] - $descuentoCupon);
-            $tarifaAplicada = $resultadoCalculo['nombre_tarifa'];
+        } else {
+            // Mantener precio original
+            $precioTotal = $inscripcion->precio_total;
+            $tarifaAplicada = $inscripcion->tarifa_aplicada;
+            $descuentoCupon = $inscripcion->descuento_cupon;
         }
 
         // Actualizar inscripción

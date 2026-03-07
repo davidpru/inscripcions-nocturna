@@ -65,7 +65,9 @@ class Edicion extends Model
 
     public function getNumeroInscritosAttribute(): int
     {
-        return $this->inscripciones()->count();
+        return $this->inscripciones()
+            ->whereIn('estado_pago', ['pagado', 'invitado'])
+            ->count();
     }
 
     /**
