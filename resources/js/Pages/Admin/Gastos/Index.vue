@@ -323,7 +323,7 @@ const presetColors = [
         <!-- Cards resumen -->
         <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <!-- Total recaudado inscripciones -->
-          <div class="rounded-lg border border-purple-200 bg-purple-50 p-3 shadow-sm">
+          <div class="rounded-lg border border-purple-300 bg-purple-50 p-3 shadow-sm">
             <div class="flex items-center gap-3">
               <div class="rounded-lg bg-purple-600 p-2">
                 <Euro class="h-4 w-4 text-white" />
