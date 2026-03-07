@@ -266,7 +266,10 @@ const formatIva = (tipo: string) => {
 };
 
 const formatEur = (value: number | string) => {
-  return Number(value).toFixed(2) + ' €';
+  return (
+    Number(value).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+    ' €'
+  );
 };
 
 const presetColors = [
@@ -322,8 +325,8 @@ const presetColors = [
           <!-- Total recaudado inscripciones -->
           <div class="rounded-lg border border-purple-200 bg-purple-50 p-3 shadow-sm">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-white p-2">
-                <Euro class="h-4 w-4 text-purple-600" />
+              <div class="rounded-lg bg-purple-600 p-2">
+                <Euro class="h-4 w-4 text-white" />
               </div>
               <div>
                 <p class="text-xs font-medium text-purple-700">Inscripcions</p>
@@ -335,8 +338,8 @@ const presetColors = [
           <!-- Total gastos -->
           <div class="rounded-lg border border-red-200 bg-red-50 p-3 shadow-sm">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-white p-2">
-                <Receipt class="h-4 w-4 text-red-600" />
+              <div class="rounded-lg bg-red-600 p-2">
+                <Receipt class="h-4 w-4 text-white" />
               </div>
               <div>
                 <p class="text-xs font-medium text-red-700">Despeses</p>
@@ -348,11 +351,11 @@ const presetColors = [
           <!-- Cost per km -->
           <div class="rounded-lg border border-blue-200 bg-blue-50 p-3 shadow-sm">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-white p-2">
-                <Ruler class="h-4 w-4 text-blue-600" />
+              <div class="rounded-lg bg-blue-500 p-2">
+                <Ruler class="h-4 w-4 text-white" />
               </div>
               <div>
-                <p class="text-xs font-medium text-blue-700">Cost per km</p>
+                <p class="text-xs font-medium text-blue-700">Despeses per km</p>
                 <p v-if="costePorKm !== null" class="text-lg font-bold text-blue-900">
                   {{ formatEur(costePorKm) }}
                 </p>
@@ -374,8 +377,8 @@ const presetColors = [
           <!-- Cost per corredor -->
           <div class="rounded-lg border border-green-200 bg-green-50 p-3 shadow-sm">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-white p-2">
-                <Users class="h-4 w-4 text-green-600" />
+              <div class="rounded-lg bg-green-600 p-2">
+                <Users class="h-4 w-4 text-white" />
               </div>
               <div>
                 <p class="text-xs font-medium text-green-700">Cost per corredor</p>
@@ -400,12 +403,13 @@ const presetColors = [
             "
           >
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-white p-2">
+              <div
+                class="rounded-lg p-2"
+                :class="totalRecaudado - totalGastos >= 0 ? 'bg-emerald-600' : 'bg-orange-600'"
+              >
                 <TrendingUp
                   class="h-4 w-4"
-                  :class="
-                    totalRecaudado - totalGastos >= 0 ? 'text-emerald-600' : 'text-orange-600'
-                  "
+                  :class="totalRecaudado - totalGastos >= 0 ? 'text-white' : 'text-white'"
                 />
               </div>
               <div>
