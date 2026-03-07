@@ -572,7 +572,12 @@ const abrirDialogoDevolucion = (inscripcion: Inscripcion) => {
   refundTipo.value = 'manual';
   const yaDevuelto = inscripcion.importe_devolucion || 0;
   const restante = Math.round((inscripcion.precio_total - yaDevuelto) * 100) / 100;
-  refundImporte.value = restante.toString();
+
+  // Si hay descuadre de tarifes, preformatear con la diferencia
+  const precioCalculado = calcularPrecio(inscripcion, false, inscripcion.descuento_cupon).precio_total;
+  const diferencia = Math.round((Number(inscripcion.precio_total) - precioCalculado - yaDevuelto) * 100) / 100;
+  refundImporte.value = (diferencia > 0 && diferencia < restante ? diferencia : restante).toString();
+
   refundError.value = '';
   refundDialogOpen.value = true;
 };
