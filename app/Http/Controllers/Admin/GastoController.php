@@ -27,8 +27,14 @@ class GastoController extends Controller
         $totalGastos = 0;
         $costePorKm = null;
         $totalRecaudado = 0;
+        $costePorCorredor = null;
+        $totalInscrits = 0;
 
         if ($edicionActual) {
+            $totalInscrits = Inscripcion::where('edicion_id', $edicionActual->id)
+                ->where('estado_pago', 'pagado')
+                ->count();
+
             $totalRecaudado = Inscripcion::where('edicion_id', $edicionActual->id)
                 ->where('estado_pago', 'pagado')
                 ->sum('precio_total');
@@ -42,6 +48,10 @@ class GastoController extends Controller
             if ($edicionActual->distancia_km && $edicionActual->distancia_km > 0) {
                 $costePorKm = round($totalGastos / $edicionActual->distancia_km, 2);
             }
+
+            if ($totalInscrits > 0) {
+                $costePorCorredor = round($totalGastos / $totalInscrits, 2);
+            }
         }
 
         $categorias = CategoriaGasto::orderBy('nombre')->get();
@@ -54,6 +64,8 @@ class GastoController extends Controller
             'totalGastos' => round($totalGastos, 2),
             'totalRecaudado' => round($totalRecaudado, 2),
             'costePorKm' => $costePorKm,
+            'costePorCorredor' => $costePorCorredor,
+            'totalInscrits' => $totalInscrits,
         ]);
     }
 

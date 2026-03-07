@@ -32,6 +32,8 @@ import {
   Ruler,
   Tag,
   Trash2,
+  TrendingUp,
+  Users,
   Wallet,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -78,6 +80,8 @@ const props = defineProps<{
   totalGastos: number;
   totalRecaudado: number;
   costePorKm: number | null;
+  costePorCorredor: number | null;
+  totalInscrits: number;
 }>();
 
 // --- Estado de diálogos ---
@@ -266,9 +270,21 @@ const formatEur = (value: number | string) => {
 };
 
 const presetColors = [
-  '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e',
-  '#14b8a6', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6',
-  '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#6b7280',
+  '#ef4444',
+  '#f97316',
+  '#f59e0b',
+  '#84cc16',
+  '#22c55e',
+  '#14b8a6',
+  '#06b6d4',
+  '#3b82f6',
+  '#6366f1',
+  '#8b5cf6',
+  '#a855f7',
+  '#d946ef',
+  '#ec4899',
+  '#f43f5e',
+  '#6b7280',
 ];
 </script>
 
@@ -288,7 +304,7 @@ const presetColors = [
             :model-value="edicionActual ? String(edicionActual.id) : undefined"
             @update:model-value="cambiarEdicion"
           >
-            <SelectTrigger class="w-[140px]">
+            <SelectTrigger class="w-35">
               <SelectValue placeholder="Edició" />
             </SelectTrigger>
             <SelectContent>
@@ -302,42 +318,42 @@ const presetColors = [
 
       <template v-if="edicionActual">
         <!-- Cards resumen -->
-        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <!-- Total recaudado inscripciones -->
-          <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="rounded-lg border border-purple-200 bg-purple-50 p-3 shadow-sm">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-purple-50 p-2.5">
-                <Euro class="h-5 w-5 text-purple-600" />
+              <div class="rounded-lg bg-white p-2">
+                <Euro class="h-4 w-4 text-purple-600" />
               </div>
               <div>
-                <p class="text-sm text-slate-500">Ingressos inscripcions</p>
-                <p class="text-xl font-bold text-slate-900">{{ formatEur(totalRecaudado) }}</p>
+                <p class="text-xs font-medium text-purple-700">Inscripcions</p>
+                <p class="text-lg font-bold text-purple-900">{{ formatEur(totalRecaudado) }}</p>
               </div>
             </div>
           </div>
 
           <!-- Total gastos -->
-          <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="rounded-lg border border-red-200 bg-red-50 p-3 shadow-sm">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-red-50 p-2.5">
-                <Receipt class="h-5 w-5 text-red-600" />
+              <div class="rounded-lg bg-white p-2">
+                <Receipt class="h-4 w-4 text-red-600" />
               </div>
               <div>
-                <p class="text-sm text-slate-500">Total despeses</p>
-                <p class="text-xl font-bold text-slate-900">{{ formatEur(totalGastos) }}</p>
+                <p class="text-xs font-medium text-red-700">Despeses</p>
+                <p class="text-lg font-bold text-red-900">{{ formatEur(totalGastos) }}</p>
               </div>
             </div>
           </div>
 
           <!-- Cost per km -->
-          <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="rounded-lg border border-blue-200 bg-blue-50 p-3 shadow-sm">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-blue-50 p-2.5">
-                <Ruler class="h-5 w-5 text-blue-600" />
+              <div class="rounded-lg bg-white p-2">
+                <Ruler class="h-4 w-4 text-blue-600" />
               </div>
               <div>
-                <p class="text-sm text-slate-500">Cost per km</p>
-                <p v-if="costePorKm !== null" class="text-xl font-bold text-slate-900">
+                <p class="text-xs font-medium text-blue-700">Cost per km</p>
+                <p v-if="costePorKm !== null" class="text-lg font-bold text-blue-900">
                   {{ formatEur(costePorKm) }}
                 </p>
                 <button
@@ -349,10 +365,70 @@ const presetColors = [
                 </button>
               </div>
             </div>
-            <p v-if="edicionActual.distancia_km" class="mt-1 text-xs text-slate-400">
+            <p v-if="edicionActual.distancia_km" class="mt-1 text-xs text-blue-400">
               {{ edicionActual.distancia_km }} km ·
               <button class="text-blue-500 underline" @click="openDistanciaDialog">editar</button>
             </p>
+          </div>
+
+          <!-- Cost per corredor -->
+          <div class="rounded-lg border border-green-200 bg-green-50 p-3 shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="rounded-lg bg-white p-2">
+                <Users class="h-4 w-4 text-green-600" />
+              </div>
+              <div>
+                <p class="text-xs font-medium text-green-700">Cost per corredor</p>
+                <p v-if="costePorCorredor !== null" class="text-lg font-bold text-green-900">
+                  {{ formatEur(costePorCorredor) }}
+                </p>
+                <p v-else class="text-xs text-green-400">Sense inscrits</p>
+              </div>
+            </div>
+            <p v-if="totalInscrits > 0" class="mt-1 text-xs text-green-800">
+              {{ totalInscrits }} inscrits pagats
+            </p>
+          </div>
+
+          <!-- Beneficis reals -->
+          <div
+            class="rounded-lg border p-3 shadow-sm"
+            :class="
+              totalRecaudado - totalGastos >= 0
+                ? 'border-emerald-200 bg-emerald-50'
+                : 'border-orange-200 bg-orange-50'
+            "
+          >
+            <div class="flex items-center gap-3">
+              <div class="rounded-lg bg-white p-2">
+                <TrendingUp
+                  class="h-4 w-4"
+                  :class="
+                    totalRecaudado - totalGastos >= 0 ? 'text-emerald-600' : 'text-orange-600'
+                  "
+                />
+              </div>
+              <div>
+                <p
+                  class="text-xs"
+                  :class="
+                    totalRecaudado - totalGastos >= 0
+                      ? 'font-medium text-emerald-700'
+                      : 'font-medium text-orange-700'
+                  "
+                >
+                  Beneficis reals
+                </p>
+                <p
+                  class="text-lg font-bold"
+                  :class="
+                    totalRecaudado - totalGastos >= 0 ? 'text-emerald-900' : 'text-orange-900'
+                  "
+                >
+                  {{ formatEur(totalRecaudado - totalGastos) }}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -535,14 +611,8 @@ const presetColors = [
               class="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm"
               :style="{ borderColor: cat.color + '40', backgroundColor: cat.color + '10' }"
             >
-              <span
-                class="h-2.5 w-2.5 rounded-full"
-                :style="{ backgroundColor: cat.color }"
-              />
-              <button
-                class="text-slate-700 hover:underline"
-                @click="openEditCategoria(cat)"
-              >
+              <span class="h-2.5 w-2.5 rounded-full" :style="{ backgroundColor: cat.color }" />
+              <button class="text-slate-700 hover:underline" @click="openEditCategoria(cat)">
                 {{ cat.nombre }}
               </button>
               <button
@@ -784,7 +854,9 @@ const presetColors = [
                 :key="c"
                 type="button"
                 class="h-7 w-7 rounded-full border-2 transition-transform hover:scale-110"
-                :class="categoriaForm.color === c ? 'border-slate-900 scale-110' : 'border-transparent'"
+                :class="
+                  categoriaForm.color === c ? 'scale-110 border-slate-900' : 'border-transparent'
+                "
                 :style="{ backgroundColor: c }"
                 @click="categoriaForm.color = c"
               />
@@ -797,7 +869,9 @@ const presetColors = [
             <Button type="button" variant="outline" @click="showCategoriaDialog = false">
               Cancel·lar
             </Button>
-            <Button type="submit" :disabled="categoriaForm.processing">{{ editingCategoria ? 'Actualitzar' : 'Afegir' }}</Button>
+            <Button type="submit" :disabled="categoriaForm.processing">{{
+              editingCategoria ? 'Actualitzar' : 'Afegir'
+            }}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
