@@ -822,8 +822,13 @@ class RedsysController extends Controller
                 // Calcular el nuevo importe devuelto total (acumulando devoluciones)
                 $importeDevueltoTotal = ($inscripcion->importe_devolucion ?? 0) + $importeDevolucion;
                 
+                // Si es ajuste de tarifa, mantener como pagado
+                $mantenerPagado = $request->boolean('mantener_pagado');
+                
                 // Determinar el estado: si se devolvió todo = 'devuelto', si es parcial = 'devolucion_parcial'
-                $nuevoEstado = ($importeDevueltoTotal >= $inscripcion->precio_total) ? 'devuelto' : 'devolucion_parcial';
+                $nuevoEstado = $mantenerPagado
+                    ? 'pagado'
+                    : (($importeDevueltoTotal >= $inscripcion->precio_total) ? 'devuelto' : 'devolucion_parcial');
                 
                 // Devolución exitosa
                 $inscripcion->update([
@@ -892,7 +897,12 @@ class RedsysController extends Controller
         }
 
         $importeDevueltoTotal = $importeYaDevuelto + $importeDevolucion;
-        $nuevoEstado = ($importeDevueltoTotal >= $inscripcion->precio_total) ? 'devuelto' : 'devolucion_parcial';
+        
+        // Si es ajuste de tarifa, mantener como pagado
+        $mantenerPagado = $request->boolean('mantener_pagado');
+        $nuevoEstado = $mantenerPagado
+            ? 'pagado'
+            : (($importeDevueltoTotal >= $inscripcion->precio_total) ? 'devuelto' : 'devolucion_parcial');
 
         $inscripcion->update([
             'estado_pago' => $nuevoEstado,

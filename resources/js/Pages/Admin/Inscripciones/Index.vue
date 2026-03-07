@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
@@ -556,6 +557,7 @@ const refundInscripcion = ref<Inscripcion | null>(null);
 const refundTipo = ref<'manual' | 'redsys'>('manual');
 const refundImporte = ref('');
 const refundError = ref('');
+const refundAjustTarifa = ref(false);
 
 const maxRefundAmount = computed(() => {
   if (!refundInscripcion.value) return 0;
@@ -578,6 +580,9 @@ const abrirDialogoDevolucion = (inscripcion: Inscripcion) => {
   const diferencia = Math.round((Number(inscripcion.precio_total) - precioCalculado - yaDevuelto) * 100) / 100;
   refundImporte.value = (diferencia > 0 && diferencia < restante ? diferencia : restante).toString();
 
+  // Auto-marcar ajust de tarifa si hay descuadre
+  refundAjustTarifa.value = diferencia > 0 && diferencia < restante;
+
   refundError.value = '';
   refundDialogOpen.value = true;
 };
@@ -599,7 +604,7 @@ const confirmarDevolucion = () => {
 
   router.post(
     ruta,
-    { importe: importeNum },
+    { importe: importeNum, mantener_pagado: refundAjustTarifa.value },
     {
       preserveScroll: true,
       onSuccess: () => {
@@ -1249,6 +1254,25 @@ const confirmarToggleDorsal = () => {
               <p class="text-sm text-slate-500">
                 Màxim a retornar: {{ maxRefundAmount }}€
               </p>
+            </div>
+
+            <!-- Mantener como pagado (ajuste de tarifa) -->
+            <div class="flex items-start space-x-3">
+              <Checkbox
+                id="ajust-tarifa"
+                :model-value="refundAjustTarifa"
+                @update:model-value="
+                  (val: boolean | 'indeterminate') => (refundAjustTarifa = val === true)
+                "
+              />
+              <div>
+                <Label for="ajust-tarifa" class="cursor-pointer font-medium"
+                  >Ajust de tarifa (mantenir inscripció activa)</Label
+                >
+                <div class="text-sm text-slate-500">
+                  La inscripció es manté com a "Pagat" amb el seu dorsal
+                </div>
+              </div>
             </div>
 
             <!-- Error -->
