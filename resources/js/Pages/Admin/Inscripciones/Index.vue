@@ -1210,6 +1210,30 @@ const confirmarToggleDorsal = () => {
               {{ refundInscripcion.precio_total }}€
             </div>
 
+            <!-- Aviso de descuadre de tarifes -->
+            <div
+              v-if="
+                refundInscripcion &&
+                calcularPrecio(refundInscripcion, false, refundInscripcion.descuento_cupon)
+                  .precio_total !== Number(refundInscripcion.precio_total)
+              "
+              class="rounded-md bg-blue-50 p-3 text-sm text-blue-700"
+            >
+              <strong>Descuadre de tarifes:</strong> Es va cobrar
+              {{ Number(refundInscripcion.precio_total).toFixed(2) }}€ però el preu actual és
+              {{
+                calcularPrecio(refundInscripcion, false, refundInscripcion.descuento_cupon)
+                  .precio_total
+              }}€. Diferència:
+              {{
+                (
+                  Number(refundInscripcion.precio_total) -
+                  calcularPrecio(refundInscripcion, false, refundInscripcion.descuento_cupon)
+                    .precio_total
+                ).toFixed(2)
+              }}€
+            </div>
+
             <!-- Importe -->
             <div class="space-y-2">
               <Label for="refund-amount">Importe a devolver (€)</Label>
@@ -1223,8 +1247,7 @@ const confirmarToggleDorsal = () => {
                 placeholder="0.00"
               />
               <p class="text-sm text-slate-500">
-                Preu total: {{ refundInscripcion?.precio_total }}€ · Màxim a retornar:
-                {{ maxRefundAmount }}€
+                Màxim a retornar: {{ maxRefundAmount }}€
               </p>
             </div>
 
