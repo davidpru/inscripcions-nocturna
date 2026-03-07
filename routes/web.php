@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\EdicionController;
 use App\Http\Controllers\Admin\InscripcionController as AdminInscripcionController;
 use App\Http\Controllers\Admin\RedsysTransaccionController;
 use App\Http\Controllers\Admin\CuponController;
+use App\Http\Controllers\Admin\GastoController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\Edicion;
@@ -136,6 +137,16 @@ Route::prefix('uec-admin')->name('admin.')->middleware('admin.auth')->group(func
     Route::put('cupones/{cupon}', [CuponController::class, 'update'])->name('cupones.update');
     Route::delete('cupones/{cupon}', [CuponController::class, 'destroy'])->name('cupones.destroy');
     Route::post('cupones/{cupon}/reset-usos', [CuponController::class, 'resetUsos'])->name('cupones.reset-usos');
+
+    // Gestión de gastos
+    Route::get('gastos', [GastoController::class, 'index'])->name('gastos.index');
+    Route::post('gastos', [GastoController::class, 'store'])->name('gastos.store');
+    Route::put('gastos/{gasto}', [GastoController::class, 'update'])->name('gastos.update');
+    Route::delete('gastos/{gasto}', [GastoController::class, 'destroy'])->name('gastos.destroy');
+    Route::post('gastos/categorias', [GastoController::class, 'storeCategoria'])->name('gastos.categorias.store');
+    Route::put('gastos/categorias/{categoria}', [GastoController::class, 'updateCategoria'])->name('gastos.categorias.update');
+    Route::delete('gastos/categorias/{categoria}', [GastoController::class, 'destroyCategoria'])->name('gastos.categorias.destroy');
+    Route::put('gastos/distancia/{edicion}', [GastoController::class, 'updateDistanciaKm'])->name('gastos.distancia.update');
 
     // Gestión de usuarios administradores
     Route::get('usuarios', [AuthController::class, 'index'])->name('usuarios.index');

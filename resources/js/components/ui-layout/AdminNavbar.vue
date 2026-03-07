@@ -16,6 +16,7 @@ import {
   Home,
   LogOut,
   Menu,
+  Receipt,
   Ticket,
   UserCog,
 } from 'lucide-vue-next';
@@ -30,6 +31,7 @@ const navItems = [
   { name: 'Transaccions', href: '/uec-admin/transacciones', icon: CreditCard },
   { name: 'Edicions', href: '/uec-admin/ediciones', icon: Calendar },
   { name: 'Cupons', href: '/uec-admin/cupones', icon: Ticket },
+  { name: 'Despeses', href: '/uec-admin/gastos', icon: Receipt },
   { name: 'Usuaris', href: '/uec-admin/usuarios', icon: UserCog },
 ];
 

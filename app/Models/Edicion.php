@@ -13,6 +13,7 @@ class Edicion extends Model
         'anio',
         'fecha_inicio_inscripciones',
         'fecha_evento',
+        'distancia_km',
         'limite_inscritos',
         'limite_tarifa_tardia_inscritos',
         'fecha_limite_tarifa_normal',
@@ -38,6 +39,7 @@ class Edicion extends Model
         'fecha_evento' => 'date:Y-m-d',
         'limite_tarifa_tardia_inscritos' => 'integer',
         'fecha_limite_tarifa_normal' => 'date:Y-m-d',
+        'distancia_km' => 'float',
         'activa' => 'boolean',
         'autobuses' => 'array',
         'precio_inscripcion_socio_normal' => 'float',
@@ -54,6 +56,11 @@ class Edicion extends Model
     public function inscripciones(): HasMany
     {
         return $this->hasMany(Inscripcion::class);
+    }
+
+    public function gastos(): HasMany
+    {
+        return $this->hasMany(Gasto::class);
     }
 
     public function getNumeroInscritosAttribute(): int
