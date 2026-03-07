@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InscripcionSheetEdit from '@/components/admin/InscripcionSheetEdit.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
@@ -576,9 +576,16 @@ const abrirDialogoDevolucion = (inscripcion: Inscripcion) => {
   const restante = Math.round((inscripcion.precio_total - yaDevuelto) * 100) / 100;
 
   // Si hay descuadre de tarifes, preformatear con la diferencia
-  const precioCalculado = calcularPrecio(inscripcion, false, inscripcion.descuento_cupon).precio_total;
-  const diferencia = Math.round((Number(inscripcion.precio_total) - precioCalculado - yaDevuelto) * 100) / 100;
-  refundImporte.value = (diferencia > 0 && diferencia < restante ? diferencia : restante).toString();
+  const precioCalculado = calcularPrecio(
+    inscripcion,
+    false,
+    inscripcion.descuento_cupon
+  ).precio_total;
+  const diferencia =
+    Math.round((Number(inscripcion.precio_total) - precioCalculado - yaDevuelto) * 100) / 100;
+  refundImporte.value = (
+    diferencia > 0 && diferencia < restante ? diferencia : restante
+  ).toString();
 
   // Auto-marcar ajust de tarifa si hay descuadre
   refundAjustTarifa.value = diferencia > 0 && diferencia < restante;
@@ -1115,7 +1122,10 @@ const confirmarToggleDorsal = () => {
                     />
 
                     <Button
-                      v-if="inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'devolucion_parcial'"
+                      v-if="
+                        inscripcion.estado_pago === 'pagado' ||
+                        inscripcion.estado_pago === 'devolucion_parcial'
+                      "
                       variant="default"
                       size="icon-sm"
                       :disabled="processingRefund === inscripcion.id"
@@ -1251,9 +1261,7 @@ const confirmarToggleDorsal = () => {
                 :max="maxRefundAmount"
                 placeholder="0.00"
               />
-              <p class="text-sm text-slate-500">
-                Màxim a retornar: {{ maxRefundAmount }}€
-              </p>
+              <p class="text-sm text-slate-500">Màxim a retornar: {{ maxRefundAmount }}€</p>
             </div>
 
             <!-- Mantener como pagado (ajuste de tarifa) -->

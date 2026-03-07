@@ -720,7 +720,7 @@ const getTipoDescuentoCupon = () => {
                       Number(inscripcion.precio_total) -
                         calcularPrecio(editingData, false, inscripcion.descuento_cupon)
                           .precio_total -
-                        Number(inscripcion.importe_devolucion),
+                        Number(inscripcion.importe_devolucion)
                     ) < 0.01
                   "
                   class="mt-3 rounded-md bg-green-50 p-3 text-xs text-green-700"
