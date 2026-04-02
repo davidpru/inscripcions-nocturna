@@ -44,7 +44,7 @@ class InscripcionController extends Controller
         $queryPagadas = clone $query;
         $queryPagadas->whereIn('estado_pago', ['pagado', 'invitado']);
         
-        $inscripciones = $query->paginate(50);
+        $inscripciones = $query->get();
         $ediciones = Edicion::orderBy('anio', 'desc')->get();
         
         // Calcular total de inscripciones pagadas (respetando filtros)

@@ -40,7 +40,7 @@ import {
   WheatOff,
   X,
 } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 interface Participante {
   id: number;
@@ -106,16 +106,8 @@ interface Inscripcion {
   fecha_devolucion: string | null;
 }
 
-interface Paginacion {
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-  data: Inscripcion[];
-}
-
 const props = defineProps<{
-  inscripciones: Paginacion;
+  inscripciones: Inscripcion[];
   ediciones: Edicion[];
   filtros: {
     edicion_id?: number;
@@ -129,15 +121,8 @@ const busqueda = ref(props.filtros.busqueda || '');
 const saving = ref(false);
 const editingData = reactive<Record<number, any>>({});
 
-const inscripcionesList = ref<Inscripcion[]>([...props.inscripciones.data]);
-const currentPage = ref(props.inscripciones.current_page);
-const lastPage = ref(props.inscripciones.last_page);
-const loadingMore = ref(false);
-const loadMoreTrigger = ref<HTMLElement | null>(null);
-let loadMoreObserver: IntersectionObserver | null = null;
-
 // Mostrar todas las inscripciones sin filtrado local (la búsqueda se hace en backend)
-const inscripcionesFiltradas = computed(() => inscripcionesList.value);
+const inscripcionesFiltradas = computed(() => props.inscripciones);
 
 // Total de inscripciones pagadas (viene del backend)
 const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas);
@@ -158,38 +143,6 @@ const numeroInscripcionPorId = computed(() => {
 
 const getNumeroInscripcion = (inscripcion: Inscripcion): number | null => {
   return numeroInscripcionPorId.value.get(inscripcion.id) ?? null;
-};
-
-const hasMore = computed(() => currentPage.value < lastPage.value);
-
-const cargarMas = () => {
-  if (loadingMore.value || !hasMore.value) return;
-
-  loadingMore.value = true;
-  const nextPage = currentPage.value + 1;
-  const url = new URL(window.location.href);
-  url.searchParams.set('page', nextPage.toString());
-
-  router.get(
-    url.toString(),
-    {},
-    {
-      preserveScroll: true,
-      preserveState: true,
-      only: ['inscripciones', 'totalInscripcionesPagadas'],
-      onSuccess: (page) => {
-        const nextData = (page.props as unknown as { inscripciones: Paginacion }).inscripciones;
-        if (nextData?.data?.length) {
-          inscripcionesList.value = [...inscripcionesList.value, ...nextData.data];
-          currentPage.value = nextData.current_page;
-          lastPage.value = nextData.last_page;
-        }
-      },
-      onFinish: () => {
-        loadingMore.value = false;
-      },
-    }
-  );
 };
 
 const modalNuevaInscripcion = ref(false);
@@ -493,27 +446,6 @@ watch(busqueda, () => {
   }, 500);
 });
 
-onMounted(() => {
-  loadMoreObserver = new IntersectionObserver(
-    (entries) => {
-      if (entries[0]?.isIntersecting) {
-        cargarMas();
-      }
-    },
-    { rootMargin: '200px' }
-  );
-
-  if (loadMoreTrigger.value) {
-    loadMoreObserver.observe(loadMoreTrigger.value);
-  }
-});
-
-onBeforeUnmount(() => {
-  if (loadMoreObserver && loadMoreTrigger.value) {
-    loadMoreObserver.unobserve(loadMoreTrigger.value);
-  }
-});
-
 // Exportar inscripciones confirmadas a CSV
 const exportarInscripciones = () => {
   // Construir URL con parámetros de edición y búsqueda si están seleccionados
@@ -688,17 +620,6 @@ const getTipoDescuentoCupon = (inscripcion: Inscripcion): string => {
     ? `Import fix (${inscripcion.cupon.descuento_valor}€)`
     : `Percentatge (${inscripcion.cupon.descuento_valor}%)`;
 };
-
-// Mantener la lista local alineada con los props de Inertia cuando cambian por navegación/filtros.
-watch(
-  () => props.inscripciones,
-  (next) => {
-    inscripcionesList.value = [...next.data];
-    currentPage.value = next.current_page;
-    lastPage.value = next.last_page;
-  },
-  { deep: true }
-);
 
 // Estado del diálogo de dorsal
 const dorsalDialogOpen = ref(false);
@@ -1165,24 +1086,11 @@ const confirmarToggleDorsal = () => {
             <p class="text-slate-500">No hay inscripciones</p>
           </div>
 
-          <!-- Carga incremental -->
-          <div v-if="inscripciones.total > 0" class="border-t border-slate-200 bg-white px-4 py-3">
-            <div class="flex items-center justify-between">
-              <div class="text-sm text-slate-700">
-                Mostrando 1 - {{ inscripcionesFiltradas.length }} de {{ inscripciones.total }}
-                resultados
-              </div>
-              <Button
-                v-if="hasMore"
-                variant="outline"
-                size="sm"
-                :disabled="loadingMore"
-                @click="cargarMas"
-              >
-                {{ loadingMore ? 'Carregant...' : 'Carregar mes' }}
-              </Button>
+          <!-- Total -->
+          <div v-if="inscripciones.length > 0" class="border-t border-slate-200 bg-white px-4 py-3">
+            <div class="text-sm text-slate-700">
+              Mostrando {{ inscripcionesFiltradas.length }} resultats
             </div>
-            <div ref="loadMoreTrigger" class="h-1"></div>
           </div>
         </div>
       </div>
