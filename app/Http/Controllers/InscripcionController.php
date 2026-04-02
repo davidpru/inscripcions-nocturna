@@ -109,8 +109,12 @@ class InscripcionController extends Controller
             'fecha_nacimiento' => 'required|date',
         ]);
 
+        $fechaInput = $request->fecha_nacimiento;
         $participante = Participante::where('dni', strtoupper($request->dni))
-            ->whereDate('fecha_nacimiento', $request->fecha_nacimiento)
+            ->whereBetween('fecha_nacimiento', [
+                date('Y-m-d', strtotime("$fechaInput -2 days")),
+                date('Y-m-d', strtotime("$fechaInput +2 days")),
+            ])
             ->first();
 
         if (!$participante) {
