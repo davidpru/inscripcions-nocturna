@@ -130,17 +130,25 @@ const renderCount = ref(RENDER_BATCH);
 const renderTrigger = ref<HTMLElement | null>(null);
 let renderObserver: IntersectionObserver | null = null;
 
-const inscripcionesVisibles = computed(() => inscripcionesFiltradas.value.slice(0, renderCount.value));
+const inscripcionesVisibles = computed(() =>
+  inscripcionesFiltradas.value.slice(0, renderCount.value)
+);
 
-watch(() => props.inscripciones, () => {
-  renderCount.value = RENDER_BATCH;
-});
+watch(
+  () => props.inscripciones,
+  () => {
+    renderCount.value = RENDER_BATCH;
+  }
+);
 
 onMounted(() => {
   renderObserver = new IntersectionObserver(
     (entries) => {
       if (entries[0]?.isIntersecting && renderCount.value < inscripcionesFiltradas.value.length) {
-        renderCount.value = Math.min(renderCount.value + RENDER_BATCH, inscripcionesFiltradas.value.length);
+        renderCount.value = Math.min(
+          renderCount.value + RENDER_BATCH,
+          inscripcionesFiltradas.value.length
+        );
       }
     },
     { rootMargin: '400px' }
@@ -1121,7 +1129,8 @@ const confirmarToggleDorsal = () => {
           <!-- Total -->
           <div v-if="inscripciones.length > 0" class="border-t border-slate-200 bg-white px-4 py-3">
             <div class="text-sm text-slate-700">
-              Mostrando {{ inscripcionesVisibles.length }} de {{ inscripcionesFiltradas.length }} resultats
+              Mostrando {{ inscripcionesVisibles.length }} de
+              {{ inscripcionesFiltradas.length }} resultats
             </div>
             <div ref="renderTrigger" class="h-1"></div>
           </div>
