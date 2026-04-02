@@ -40,7 +40,7 @@ import {
   WheatOff,
   X,
 } from 'lucide-vue-next';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
 interface Participante {
   id: number;
@@ -123,6 +123,38 @@ const editingData = reactive<Record<number, any>>({});
 
 // Mostrar todas las inscripciones sin filtrado local (la búsqueda se hace en backend)
 const inscripcionesFiltradas = computed(() => props.inscripciones);
+
+// Renderizado incremental: mostrar filas progresivamente para no bloquear el DOM
+const RENDER_BATCH = 50;
+const renderCount = ref(RENDER_BATCH);
+const renderTrigger = ref<HTMLElement | null>(null);
+let renderObserver: IntersectionObserver | null = null;
+
+const inscripcionesVisibles = computed(() => inscripcionesFiltradas.value.slice(0, renderCount.value));
+
+watch(() => props.inscripciones, () => {
+  renderCount.value = RENDER_BATCH;
+});
+
+onMounted(() => {
+  renderObserver = new IntersectionObserver(
+    (entries) => {
+      if (entries[0]?.isIntersecting && renderCount.value < inscripcionesFiltradas.value.length) {
+        renderCount.value = Math.min(renderCount.value + RENDER_BATCH, inscripcionesFiltradas.value.length);
+      }
+    },
+    { rootMargin: '400px' }
+  );
+  if (renderTrigger.value) {
+    renderObserver.observe(renderTrigger.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (renderObserver && renderTrigger.value) {
+    renderObserver.unobserve(renderTrigger.value);
+  }
+});
 
 // Total de inscripciones pagadas (viene del backend)
 const totalInscripcionesPagadas = computed(() => props.totalInscripcionesPagadas);
@@ -790,7 +822,7 @@ const confirmarToggleDorsal = () => {
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 bg-white">
-                <tr v-for="inscripcion in inscripcionesFiltradas" :key="inscripcion.id">
+                <tr v-for="inscripcion in inscripcionesVisibles" :key="inscripcion.id">
                   <td class="px-2 py-3 text-sm whitespace-nowrap text-slate-900">
                     <span
                       v-if="getNumeroInscripcion(inscripcion)"
@@ -1089,8 +1121,9 @@ const confirmarToggleDorsal = () => {
           <!-- Total -->
           <div v-if="inscripciones.length > 0" class="border-t border-slate-200 bg-white px-4 py-3">
             <div class="text-sm text-slate-700">
-              Mostrando {{ inscripcionesFiltradas.length }} resultats
+              Mostrando {{ inscripcionesVisibles.length }} de {{ inscripcionesFiltradas.length }} resultats
             </div>
+            <div ref="renderTrigger" class="h-1"></div>
           </div>
         </div>
       </div>
