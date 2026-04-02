@@ -13,6 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PARADAS } from '@/constants/paradas';
 import { Download, Eye, Mail, Pencil, QrCode, Save } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 interface Participante {
   id: number;
@@ -97,8 +98,26 @@ const handleOpenChange = (open: boolean) => {
   }
 };
 
+// Detectar si la inscripción fue con tarifa tardía comparando precio pagado
+const esTarifaTardia = computed(() => {
+  const precioNormal = props.calcularPrecio(
+    props.inscripcion,
+    false,
+    props.inscripcion.descuento_cupon
+  ).precio_total;
+  const precioTardia = props.calcularPrecio(
+    props.inscripcion,
+    true,
+    props.inscripcion.descuento_cupon
+  ).precio_total;
+  const precioPagado = Number(props.inscripcion.precio_total);
+  return Math.abs(precioPagado - precioTardia) < Math.abs(precioPagado - precioNormal);
+});
+
 const getDescuentoAplicadoEnInscripcion = (data: any, descuentoCupon: number | null): number => {
-  const precioInscripcion = Number(props.calcularPrecio(data, false, 0).precio_inscripcion || 0);
+  const precioInscripcion = Number(
+    props.calcularPrecio(data, esTarifaTardia.value, 0).precio_inscripcion || 0
+  );
   const descuentoTotal = Number(descuentoCupon || 0);
 
   // El descuento total puede incluir extras (p. ej. bus), aquí mostramos solo la parte de inscripción.
@@ -106,7 +125,9 @@ const getDescuentoAplicadoEnInscripcion = (data: any, descuentoCupon: number | n
 };
 
 const getPrecioInscripcionFinal = (data: any, descuentoCupon: number | null): number => {
-  const precioInscripcion = Number(props.calcularPrecio(data, false, 0).precio_inscripcion || 0);
+  const precioInscripcion = Number(
+    props.calcularPrecio(data, esTarifaTardia.value, 0).precio_inscripcion || 0
+  );
   const descuentoInscripcion = getDescuentoAplicadoEnInscripcion(data, descuentoCupon);
   return Math.max(0, precioInscripcion - descuentoInscripcion);
 };
@@ -619,7 +640,7 @@ const getTipoDescuentoCupon = () => {
                   <span>Inscripció {{ editingData.es_socio_uec ? '(Soci)' : '(Públic)' }}:</span>
                   <span class="text-right">
                     {{
-                      calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                      calcularPrecio(editingData, esTarifaTardia, inscripcion.descuento_cupon)
                         .precio_inscripcion
                     }}€
                     <template
@@ -648,7 +669,7 @@ const getTipoDescuentoCupon = () => {
                 <div
                   v-if="
                     !editingData.esta_federado &&
-                    calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                    calcularPrecio(editingData, esTarifaTardia, inscripcion.descuento_cupon)
                       .precio_licencia > 0
                   "
                   class="flex justify-between text-slate-700"
@@ -656,7 +677,7 @@ const getTipoDescuentoCupon = () => {
                   <span>Llicència federativa:</span>
                   <span
                     >{{
-                      calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                      calcularPrecio(editingData, esTarifaTardia, inscripcion.descuento_cupon)
                         .precio_licencia
                     }}€</span
                   >
@@ -668,7 +689,7 @@ const getTipoDescuentoCupon = () => {
                   <span>Autobús:</span>
                   <span
                     >{{
-                      calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                      calcularPrecio(editingData, esTarifaTardia, inscripcion.descuento_cupon)
                         .precio_autobus
                     }}€</span
                   >
@@ -680,7 +701,8 @@ const getTipoDescuentoCupon = () => {
                   <span>Assegurança:</span>
                   <span
                     >{{
-                      calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_seguro
+                      calcularPrecio(editingData, esTarifaTardia, inscripcion.descuento_cupon)
+                        .precio_seguro
                     }}€</span
                   >
                 </div>
@@ -696,7 +718,7 @@ const getTipoDescuentoCupon = () => {
                     <span>PREU FINAL:</span>
                     <span
                       >{{
-                        calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                        calcularPrecio(editingData, esTarifaTardia, inscripcion.descuento_cupon)
                           .precio_total
                       }}€</span
                     >
@@ -713,12 +735,12 @@ const getTipoDescuentoCupon = () => {
                 <!-- Descuadre cobert per devolució parcial -->
                 <p
                   v-if="
-                    calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_total !==
-                      Number(inscripcion.precio_total) &&
+                    calcularPrecio(editingData, esTarifaTardia, inscripcion.descuento_cupon)
+                      .precio_total !== Number(inscripcion.precio_total) &&
                     inscripcion.importe_devolucion &&
                     Math.abs(
                       Number(inscripcion.precio_total) -
-                        calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                        calcularPrecio(editingData, esTarifaTardia, inscripcion.descuento_cupon)
                           .precio_total -
                         Number(inscripcion.importe_devolucion)
                     ) < 0.01
@@ -731,15 +753,16 @@ const getTipoDescuentoCupon = () => {
                 <!-- Descuadre NO cobert -->
                 <p
                   v-else-if="
-                    calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_total !==
-                    Number(inscripcion.precio_total)
+                    calcularPrecio(editingData, esTarifaTardia, inscripcion.descuento_cupon)
+                      .precio_total !== Number(inscripcion.precio_total)
                   "
                   class="mt-3 rounded-md bg-amber-50 p-3 text-xs text-amber-700"
                 >
                   ⚠️ <strong>Atenció:</strong> El preu guardat ({{
                     Number(inscripcion.precio_total).toFixed(2)
                   }}€) no coincideix amb el preu calculat ({{
-                    calcularPrecio(editingData, false, inscripcion.descuento_cupon).precio_total
+                    calcularPrecio(editingData, esTarifaTardia, inscripcion.descuento_cupon)
+                      .precio_total
                   }}€).
                   <template v-if="inscripcion.importe_devolucion">
                     S'han retornat {{ Number(inscripcion.importe_devolucion).toFixed(2) }}€ però
@@ -747,7 +770,7 @@ const getTipoDescuentoCupon = () => {
                     {{
                       (
                         Number(inscripcion.precio_total) -
-                        calcularPrecio(editingData, false, inscripcion.descuento_cupon)
+                        calcularPrecio(editingData, esTarifaTardia, inscripcion.descuento_cupon)
                           .precio_total -
                         Number(inscripcion.importe_devolucion)
                       ).toFixed(2)

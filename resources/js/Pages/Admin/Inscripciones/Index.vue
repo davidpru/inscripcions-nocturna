@@ -337,6 +337,15 @@ const getEdicionActual = () => {
   return props.ediciones.find((e) => e.id === Number(edicionId));
 };
 
+// Detectar si una inscripción fue con tarifa tardía comparando el precio pagado
+const detectarTarifaTardia = (inscripcion: any): boolean => {
+  const precioNormal = calcularPrecio(inscripcion, false, inscripcion.descuento_cupon).precio_total;
+  const precioTardia = calcularPrecio(inscripcion, true, inscripcion.descuento_cupon).precio_total;
+  const precioPagado = Number(inscripcion.precio_total);
+  // Si coincide con tarifa tardía (o está más cerca), es tardía
+  return Math.abs(precioPagado - precioTardia) < Math.abs(precioPagado - precioNormal);
+};
+
 // Calcular precio en base a las opciones (usando tarifas de la edición)
 // Nova estructura: preu inscripció + llicència federativa (si no federat) + extras
 const calcularPrecio = (data: any, esTarifaTardia: boolean, descuentoCupon: number | null = 0) => {
@@ -576,9 +585,10 @@ const abrirDialogoDevolucion = (inscripcion: Inscripcion) => {
   const restante = Math.round((inscripcion.precio_total - yaDevuelto) * 100) / 100;
 
   // Si hay descuadre de tarifes, preformatear con la diferencia
+  const esTardia = detectarTarifaTardia(inscripcion);
   const precioCalculado = calcularPrecio(
     inscripcion,
-    false,
+    esTardia,
     inscripcion.descuento_cupon
   ).precio_total;
   const diferencia =
@@ -1229,22 +1239,31 @@ const confirmarToggleDorsal = () => {
             <div
               v-if="
                 refundInscripcion &&
-                calcularPrecio(refundInscripcion, false, refundInscripcion.descuento_cupon)
-                  .precio_total !== Number(refundInscripcion.precio_total)
+                calcularPrecio(
+                  refundInscripcion,
+                  detectarTarifaTardia(refundInscripcion),
+                  refundInscripcion.descuento_cupon
+                ).precio_total !== Number(refundInscripcion.precio_total)
               "
               class="rounded-md bg-blue-50 p-3 text-sm text-blue-700"
             >
               <strong>Descuadre de tarifes:</strong> Es va cobrar
               {{ Number(refundInscripcion.precio_total).toFixed(2) }}€ però el preu actual és
               {{
-                calcularPrecio(refundInscripcion, false, refundInscripcion.descuento_cupon)
-                  .precio_total
+                calcularPrecio(
+                  refundInscripcion,
+                  detectarTarifaTardia(refundInscripcion),
+                  refundInscripcion.descuento_cupon
+                ).precio_total
               }}€. Diferència:
               {{
                 (
                   Number(refundInscripcion.precio_total) -
-                  calcularPrecio(refundInscripcion, false, refundInscripcion.descuento_cupon)
-                    .precio_total
+                  calcularPrecio(
+                    refundInscripcion,
+                    detectarTarifaTardia(refundInscripcion),
+                    refundInscripcion.descuento_cupon
+                  ).precio_total
                 ).toFixed(2)
               }}€
             </div>
