@@ -23,13 +23,6 @@ class Participante extends Model
         'numero_licencia',
     ];
 
-    protected $casts = [
-        'fecha_nacimiento' => 'date:Y-m-d',
-    ];
-
-    /**
-     * Serializar fecha_nacimiento sin conversión de zona horaria
-     */
     protected function serializeDate(\DateTimeInterface $date): string
     {
         return $date->format('Y-m-d H:i:s');
