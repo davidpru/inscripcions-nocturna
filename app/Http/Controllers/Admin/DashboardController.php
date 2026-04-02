@@ -37,10 +37,10 @@ class DashboardController extends Controller
         // Datos para la gráfica de inscripciones por día
         $inscripcionesPorDia = [];
         if ($edicionActual) {
-            // Obtener inscripciones agrupadas por día
+            // Obtener inscripciones agrupadas por día (created_at para incluir invitados sin fecha_pago)
             $inscripciones = Inscripcion::where('edicion_id', $edicionActual->id)
                 ->whereIn('estado_pago', ['pagado', 'invitado'])
-                ->selectRaw('DATE(fecha_pago) as fecha, COUNT(*) as total')
+                ->selectRaw('DATE(created_at) as fecha, COUNT(*) as total')
                 ->groupBy('fecha')
                 ->orderBy('fecha')
                 ->get()
