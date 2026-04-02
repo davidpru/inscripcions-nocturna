@@ -636,6 +636,8 @@ const getEstadoPagoBadgeClass = (estado: string) => {
     return 'bg-orange-100 text-orange-800';
   } else if (estado === 'invitado') {
     return 'bg-purple-500 text-purple-100';
+  } else if (estado === 'lista_espera') {
+    return 'bg-amber-100 text-amber-800';
   } else {
     return 'bg-gray-100 text-gray-700';
   }
@@ -650,6 +652,7 @@ const getEstadoPagoTexto = (estado: string) => {
     devolucion_parcial: 'Devolució Parcial',
     invitado: 'Invitat',
     fallido: 'Fallit',
+    lista_espera: 'Llista Espera',
   };
   return textos[estado] || estado;
 };

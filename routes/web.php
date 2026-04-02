@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\InscripcionPdfController;
+use App\Http\Controllers\ListaEsperaController;
 use App\Http\Controllers\RedsysController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -26,12 +27,17 @@ Route::get('/', function () {
         ? ($isTestIp ? true : $edicion->inscripcionesAbiertas()) 
         : false;
     
+    $plazasAgotadas = $edicion && $edicion->limite_inscritos
+        ? $edicion->numero_inscritos >= $edicion->limite_inscritos
+        : false;
+
     return Inertia::render('Home', [
         'edicion' => $edicion,
         'hayEdicion' => $edicion !== null,
         'inscripcionesAbiertas' => $inscripcionesAbiertas,
         'isTestMode' => $isTestIp && $edicion && !$edicion->inscripcionesAbiertas(),
-        'estadoEdicion' => $edicion?->estado
+        'estadoEdicion' => $edicion?->estado,
+        'plazasAgotadas' => $plazasAgotadas,
     ]);
 })->name('home');
 
@@ -80,6 +86,10 @@ Route::prefix('inscripcio')->group(function () {
 Route::get('/inscripcion/{inscripcion}/pdf', function (App\Models\Inscripcion $inscripcion) {
     return redirect()->route('inscripcion.pdf.hash', $inscripcion->hash_token, 301);
 });
+
+// Lista de espera
+Route::get('/llista-espera', [ListaEsperaController::class, 'index'])->name('lista-espera.index');
+Route::post('/llista-espera', [ListaEsperaController::class, 'store'])->name('lista-espera.store');
 
 // Rutas de pago con Redsys
 Route::prefix('pago')->name('redsys.')->group(function () {

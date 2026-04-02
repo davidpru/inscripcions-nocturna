@@ -22,6 +22,7 @@ const props = defineProps<{
   inscripcionesAbiertas: boolean;
   isTestMode?: boolean;
   estadoEdicion?: string;
+  plazasAgotadas?: boolean;
 }>();
 
 const dni = ref('');
@@ -202,7 +203,8 @@ onUnmounted(() => {
         <!-- Selección -->
         <div v-if="inscripcionesAbiertas" class="grid grid-cols-1 gap-8 md:grid-cols-2">
           <div class="">
-            <Card>
+            <!-- Card inscripción normal -->
+            <Card v-if="!plazasAgotadas">
               <CardHeader class="pb-2">
                 <CardTitle class="text-2xl">Nova Inscripció</CardTitle>
                 <CardDescription>Inscriu-te a la Fredes-Paüls</CardDescription>
@@ -227,6 +229,25 @@ onUnmounted(() => {
                     {{ buscando ? 'Cercant...' : 'Continuar' }}
                   </Button>
                 </form>
+              </CardContent>
+            </Card>
+
+            <!-- Card lista de espera (plazas agotadas) -->
+            <Card v-else class="border-amber-200 bg-amber-50/30">
+              <CardHeader class="pb-2">
+                <CardTitle class="text-2xl">Places esgotades</CardTitle>
+                <CardDescription>Apunta't a la llista d'espera</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p class="mb-4 text-balance text-slate-600">
+                  Les places s'han esgotat! Pots apuntar-te a la llista d'espera i l'organització es
+                  posarà en contacte amb tu si hi ha plaça disponible.
+                </p>
+                <Link href="/llista-espera">
+                  <Button size="xl" class="w-full bg-amber-600 hover:bg-amber-700">
+                    Llista d'espera
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
