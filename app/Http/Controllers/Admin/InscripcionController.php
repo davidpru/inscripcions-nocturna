@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CambioDorsal;
 use App\Models\Inscripcion;
 use App\Models\Edicion;
 use App\Models\Participante;
@@ -10,6 +11,7 @@ use App\Mail\InscripcionConfirmada;
 use App\Services\TarifaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -322,6 +324,34 @@ class InscripcionController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Error al enviar el correo: ' . $e->getMessage());
         }
+    }
+
+    public function generarEnlaceCambioDorsal(Inscripcion $inscripcion)
+    {
+        $inscripcion->load(['participante', 'edicion']);
+
+        if (!in_array($inscripcion->estado_pago, ['pagado', 'invitado'])) {
+            return response()->json(['error' => 'La inscripció ha d\'estar pagada per generar un canvi de dorsal.'], 422);
+        }
+
+        // Invalidar tokens anteriores pendientes para esta inscripción
+        CambioDorsal::where('inscripcion_id', $inscripcion->id)
+            ->where('estado', 'pendiente')
+            ->update(['estado' => 'caducado']);
+
+        $cambioDorsal = CambioDorsal::create([
+            'inscripcion_id'              => $inscripcion->id,
+            'token'                       => Str::random(64),
+            'estado'                      => 'pendiente',
+            'precio'                      => 10.00,
+            'expires_at'                  => now()->addHours(48),
+            'email_participante_original' => $inscripcion->participante->email,
+            'nombre_participante_original'=> $inscripcion->participante->nombre . ' ' . $inscripcion->participante->apellidos,
+        ]);
+
+        $url = route('canvi-dorsal.show', $cambioDorsal->token);
+
+        return response()->json(['url' => $url]);
     }
 
     public function toggleDorsalRecogido(Inscripcion $inscripcion)

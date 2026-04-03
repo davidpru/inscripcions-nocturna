@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PARADAS } from '@/constants/paradas';
-import { Download, Eye, Mail, Pencil, QrCode, Save } from 'lucide-vue-next';
-import { computed } from 'vue';
+import axios from 'axios';
+import { Copy, Download, Eye, Mail, Pencil, QrCode, RefreshCw, Save } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface Participante {
   id: number;
@@ -95,6 +96,52 @@ const handleOpenChange = (open: boolean) => {
     emit('open');
   } else {
     emit('close');
+  }
+};
+
+// Generar canvi de dorsal
+const generantEnllac = ref(false);
+const urlCambioDorsal = ref<string | null>(null);
+const errorCambioDorsal = ref<string | null>(null);
+const copiat = ref(false);
+
+const generarEnllacCambioDorsal = async () => {
+  generantEnllac.value = true;
+  urlCambioDorsal.value = null;
+  errorCambioDorsal.value = null;
+  try {
+    // Llegir el token CSRF de la cookie XSRF-TOKEN
+    const xsrfToken = decodeURIComponent(
+      document.cookie
+        .split('; ')
+        .find((c) => c.startsWith('XSRF-TOKEN='))
+        ?.split('=')[1] ?? '',
+    );
+    const response = await axios.post(
+      `/uec-admin/inscripciones/${props.inscripcion.id}/generar-cambio-dorsal`,
+      {},
+      { headers: { 'X-XSRF-TOKEN': xsrfToken } },
+    );
+    urlCambioDorsal.value = response.data.url;
+  } catch (err: any) {
+    console.error('Error generant canvi de dorsal:', err);
+    errorCambioDorsal.value =
+      err?.response?.data?.error ??
+      err?.response?.data?.message ??
+      'Error inesperat. Revisa la consola.';
+  } finally {
+    generantEnllac.value = false;
+  }
+};
+
+const copiarEnllac = async () => {
+  if (!urlCambioDorsal.value) return;
+  try {
+    await navigator.clipboard.writeText(urlCambioDorsal.value);
+    copiat.value = true;
+    setTimeout(() => (copiat.value = false), 2000);
+  } catch {
+    // fallback: no action needed
   }
 };
 
@@ -200,6 +247,38 @@ const getTipoDescuentoCupon = () => {
                 <Mail class="h-4 w-4" />
                 Reenviar Correu
               </Button>
+            </div>
+
+            <!-- Generar canvi de dorsal -->
+            <div class="mt-3 w-full px-1">
+              <Button
+                variant="outline"
+                size="sm"
+                class="w-full gap-2 border-violet-200 text-violet-700"
+                :disabled="generantEnllac"
+                @click="generarEnllacCambioDorsal"
+              >
+                <RefreshCw class="h-4 w-4" :class="generantEnllac ? 'animate-spin' : ''" />
+                {{ generantEnllac ? 'Generant...' : 'Generar Canvi de Dorsal' }}
+              </Button>
+
+              <!-- Error -->
+              <p v-if="errorCambioDorsal" class="mt-2 text-xs text-red-600">
+                {{ errorCambioDorsal }}
+              </p>
+
+              <!-- URL generada -->
+              <div v-if="urlCambioDorsal" class="mt-2 flex gap-2">
+                <Input
+                  :model-value="urlCambioDorsal"
+                  readonly
+                  class="min-w-0 flex-1 font-mono text-xs"
+                />
+                <Button variant="outline" size="sm" class="shrink-0" @click="copiarEnllac">
+                  <Copy class="h-4 w-4" />
+                  {{ copiat ? 'Copiat!' : 'Copiar' }}
+                </Button>
+              </div>
             </div>
           </div>
 

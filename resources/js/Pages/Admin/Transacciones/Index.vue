@@ -312,10 +312,20 @@ const transacciones = computed(() => props.transacciones.data);
                     <span
                       class="inline-flex rounded-full px-2 text-xs font-semibold"
                       :class="
-                        tx.es_autobus ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
+                        tx.numero_pedido?.startsWith('CDOR')
+                          ? 'bg-violet-100 text-violet-700'
+                          : tx.es_autobus
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-slate-100 text-slate-600'
                       "
                     >
-                      {{ tx.es_autobus ? 'Autobus' : 'Inscripcio' }}
+                      {{
+                        tx.numero_pedido?.startsWith('CDOR')
+                          ? 'Canvi Dorsal'
+                          : tx.es_autobus
+                            ? 'Autobus'
+                            : 'Inscripcio'
+                      }}
                     </span>
                   </td>
                   <td class="px-3 py-3 text-xs text-slate-700">

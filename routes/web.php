@@ -4,6 +4,7 @@ use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\InscripcionPdfController;
 use App\Http\Controllers\ListaEsperaController;
 use App\Http\Controllers\RedsysController;
+use App\Http\Controllers\CambioDorsalController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EdicionController;
@@ -102,6 +103,10 @@ Route::prefix('pago')->name('redsys.')->group(function () {
     Route::get('/{inscripcion}', [RedsysController::class, 'procesarPago'])->name('procesar');
 });
 
+// Canvi de dorsal (enlace privado generado por el admin)
+Route::get('/canvi-dorsal/{token}', [CambioDorsalController::class, 'show'])->name('canvi-dorsal.show');
+Route::post('/canvi-dorsal/{token}', [CambioDorsalController::class, 'procesar'])->name('canvi-dorsal.procesar');
+
 // Preview email (solo para desarrollo)
 Route::get('/preview-email', function () {
     $inscripcion = App\Models\Inscripcion::with(['participante', 'edicion'])->latest()->first();
@@ -135,6 +140,7 @@ Route::prefix('uec-admin')->name('admin.')->middleware('admin.auth')->group(func
     Route::delete('inscripciones/{inscripcion}', [AdminInscripcionController::class, 'destroy'])->name('inscripciones.destroy');
     Route::post('inscripciones/{inscripcion}/reenviar-correo', [AdminInscripcionController::class, 'reenviarCorreo'])->name('inscripciones.reenviar-correo');
     Route::post('inscripciones/{inscripcion}/toggle-dorsal', [AdminInscripcionController::class, 'toggleDorsalRecogido'])->name('inscripciones.toggle-dorsal');
+    Route::post('inscripciones/{inscripcion}/generar-cambio-dorsal', [AdminInscripcionController::class, 'generarEnlaceCambioDorsal'])->name('inscripciones.generar-cambio-dorsal');
     Route::post('inscripciones/{inscripcion}/devolucion', [RedsysController::class, 'procesarDevolucion'])->name('inscripciones.devolucion');
     Route::post('inscripciones/{inscripcion}/devolucion-manual', [RedsysController::class, 'devolucionManual'])->name('inscripciones.devolucion-manual');
 

@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inscripcion;
+use App\Models\Participante;
+use App\Models\CambioDorsal;
 use App\Models\RedsysTransaccion;
 use App\Mail\InscripcionConfirmada;
+use App\Mail\CambioDorsalConfirmado;
+use App\Mail\DorsalTransferit;
 use Creagia\Redsys\RedsysClient;
 use Creagia\Redsys\RedsysRequest;
 use Creagia\Redsys\Support\RequestParameters;
@@ -109,10 +113,82 @@ class RedsysController extends Controller
             'importe' => $importe,
             'moneda' => 'EUR',
             'response_code' => $responseCode,
-            'descripcion_error' => $descripcionError,
+            'descripcion_error' => $descripcionError ? mb_substr($descripcionError, 0, 255) : null,
             'es_autobus' => $esAutobus,
             'payload' => $payload,
         ]);
+    }
+
+    /**
+     * Lógica común para completar un cambio de dorsal tras pago confirmado.
+     */
+    private function procesarCambioDorsalCompletado(CambioDorsal $cambioDorsal, ?string $authCode): void
+    {
+        $inscripcion = $cambioDorsal->inscripcion;
+        $datos = $cambioDorsal->datos_nuevo_participante ?? [];
+
+        // Guardar email del participante original antes de cambiar
+        $emailOriginal = $cambioDorsal->email_participante_original ?? $inscripcion->participante?->email;
+        $nombreOriginal = $cambioDorsal->nombre_participante_original ?? ($inscripcion->participante ? ($inscripcion->participante->nombre . ' ' . $inscripcion->participante->apellidos) : '');
+
+        // Crear o actualizar el nuevo participante por DNI
+        $nuevoParticipante = Participante::updateOrCreate(
+            ['dni' => strtoupper(trim($datos['dni']))],
+            [
+                'nombre'           => $datos['nombre'],
+                'apellidos'        => $datos['apellidos'],
+                'genero'           => $datos['genero'],
+                'fecha_nacimiento' => $datos['fecha_nacimiento'],
+                'telefono'         => $datos['telefono'],
+                'email'            => $datos['email'],
+                'direccion'        => $datos['direccion'],
+                'codigo_postal'    => $datos['codigo_postal'],
+                'poblacion'        => $datos['poblacion'],
+                'provincia'        => $datos['provincia'],
+            ]
+        );
+
+        // Transferir la inscripción al nuevo participante
+        $inscripcion->update([
+            'participante_id'       => $nuevoParticipante->id,
+            'numero_autorizacion'   => $authCode ?? $inscripcion->numero_autorizacion,
+            'es_socio_uec'          => (bool) ($datos['es_socio_uec'] ?? false),
+            'esta_federado'         => (bool) ($datos['esta_federado'] ?? false),
+            'numero_licencia'       => ($datos['esta_federado'] ?? false) ? ($datos['numero_licencia'] ?? null) : null,
+            'club'                  => $datos['club'] ?? null,
+            'es_celiaco'            => (bool) ($datos['es_celiaco'] ?? false),
+        ]);
+
+        // Marcar el cambio de dorsal como completado
+        $cambioDorsal->update([
+            'estado'               => 'completado',
+            'nuevo_participante_id'=> $nuevoParticipante->id,
+        ]);
+
+        Log::info('CambioDorsal completado', [
+            'cambio_dorsal_id'    => $cambioDorsal->id,
+            'inscripcion_id'      => $inscripcion->id,
+            'nuevo_participante'  => $nuevoParticipante->id,
+        ]);
+
+        // Recargar relaciones antes de enviar emails
+        $inscripcion->load(['participante', 'edicion']);
+
+        // Email al nuevo participante
+        try {
+            Mail::to($nuevoParticipante->email)->send(new CambioDorsalConfirmado($inscripcion, $nuevoParticipante));
+        } catch (\Exception $e) {
+            Log::error('Error enviando CambioDorsalConfirmado', ['error' => $e->getMessage()]);
+        }
+
+        // Email de notificación al participante original
+        if ($emailOriginal) {
+            try {
+                Mail::to($emailOriginal)->send(new DorsalTransferit($inscripcion, $nombreOriginal, $nuevoParticipante->nombre . ' ' . $nuevoParticipante->apellidos));
+            } catch (\Exception $e) {
+                Log::error('Error enviando DorsalTransferit', ['error' => $e->getMessage()]);
+            }
+        }
     }
 
     /**
@@ -295,8 +371,27 @@ class RedsysController extends Controller
 
             // Verificar si es un pago de autobús
             $esAutobus = isset($params->merchantData) && str_starts_with($params->merchantData, 'BUS_');
+            $esCambioDorsal = isset($params->merchantData) && str_starts_with($params->merchantData, 'CDORSAL_');
             $importe = isset($params->amount) ? ((int) $params->amount) / 100 : null;
             $payload = $this->buildPayload($request, $params);
+
+            if ($esCambioDorsal) {
+                $cambioDorsalId = str_replace('CDORSAL_', '', $params->merchantData);
+                $cambioDorsal = CambioDorsal::with('inscripcion.edicion')->find($cambioDorsalId);
+
+                if (!$cambioDorsal) {
+                    Log::error('Redsys notification: CambioDorsal not found', ['merchantData' => $params->merchantData]);
+                    $this->registrarTransaccion('notification', 'error', null, $payload, $params->order ?? null, $params->responseAuthorisationCode ?? null, $params->responseCode ?? null, 'CambioDorsal no encontrado', $importe, false);
+                    return response('CambioDorsal not found', 404);
+                }
+
+                if (!$cambioDorsal->estaCompletado()) {
+                    $this->procesarCambioDorsalCompletado($cambioDorsal, $params->responseAuthorisationCode ?? null);
+                }
+
+                $this->registrarTransaccion('notification', 'pagado', $cambioDorsal->inscripcion, $payload, $params->order ?? null, $params->responseAuthorisationCode ?? null, $params->responseCode ?? null, null, $importe, false);
+                return response('OK');
+            }
             
             if ($esAutobus) {
                 // Extraer ID de inscripción del merchantData
@@ -494,8 +589,31 @@ class RedsysController extends Controller
 
             // Verificar si es un pago de autobús
             $esAutobus = isset($params->merchantData) && str_starts_with($params->merchantData, 'BUS_');
+            $esCambioDorsal = isset($params->merchantData) && str_starts_with($params->merchantData, 'CDORSAL_');
             $importe = isset($params->amount) ? ((int) $params->amount) / 100 : null;
             $payload = $this->buildPayload($request, $params);
+
+            if ($esCambioDorsal) {
+                $cambioDorsalId = str_replace('CDORSAL_', '', $params->merchantData);
+                $cambioDorsal = CambioDorsal::with('inscripcion.edicion')->find($cambioDorsalId);
+
+                if (!$cambioDorsal) {
+                    Log::error('Redsys success: CambioDorsal not found', ['merchantData' => $params->merchantData]);
+                    $this->registrarTransaccion('success', 'error', null, $payload, $params->order ?? null, $params->responseAuthorisationCode ?? null, $params->responseCode ?? null, 'CambioDorsal no encontrado', $importe, false);
+                    return redirect()->route('home')->with('error', 'Canvi de dorsal no trobat');
+                }
+
+                if (!$cambioDorsal->estaCompletado()) {
+                    $this->procesarCambioDorsalCompletado($cambioDorsal, $params->responseAuthorisationCode ?? null);
+                    $cambioDorsal->refresh();
+                }
+
+                $this->registrarTransaccion('success', 'pagado', $cambioDorsal->inscripcion, $payload, $params->order ?? null, $params->responseAuthorisationCode ?? null, $params->responseCode ?? null, null, $importe, false);
+                return Inertia::render('CambioDorsal/Exito', [
+                    'inscripcion' => $cambioDorsal->inscripcion->load(['participante', 'edicion']),
+                    'nouParticipant' => $cambioDorsal->datos_nuevo_participante,
+                ]);
+            }
             
             if ($esAutobus) {
                 // Extraer ID de inscripción del merchantData
