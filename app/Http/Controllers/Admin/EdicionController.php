@@ -104,10 +104,11 @@ class EdicionController extends Controller
             'fecha_limite_tarifa_normal' => 'required|date',
             'estado' => 'required|in:abierta,cerrada',
             'activa' => 'boolean',
-            // Autobuses (JSON array)
+            // Autobuses
             'autobuses' => 'nullable|array',
             'autobuses.*.nombre' => 'required|string|max:100',
             'autobuses.*.plazas' => 'required|integer|min:1',
+            'plazas_autobus' => 'required|integer|min:0',
             // Nova estructura de preus
             'precio_inscripcion_socio_normal' => 'nullable|numeric|min:0',
             'precio_inscripcion_publico_normal' => 'nullable|numeric|min:0',
@@ -129,7 +130,7 @@ class EdicionController extends Controller
 
         $nuevasPlazas = $validated['plazas_autobus'] ?? 0;
         
-        if ($nuevasPlazas < $plazasAutobusVendidas) {
+        if ($nuevasPlazas > 0 && $nuevasPlazas < $plazasAutobusVendidas) {
             return back()->withErrors([
                 'plazas_autobus' => "No es pot reduir a {$nuevasPlazas} places. Hi ha {$plazasAutobusVendidas} places d'autobús venudes."
             ]);

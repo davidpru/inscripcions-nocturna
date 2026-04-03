@@ -90,8 +90,6 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
     Number(form.precio_inscripcion_publico_tardia || 0) +
     Number(form.precio_licencia_federativa_publico || 0)
 );
-
-
 </script>
 
 <template>
@@ -520,9 +518,7 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
             <TabsContent value="autobusos">
               <div class="mx-auto max-w-xl space-y-6">
                 <div class="rounded-lg bg-white p-6 shadow">
-                  <h3 class="mb-4 text-lg font-semibold text-slate-900">
-                    Places d'Autobús
-                  </h3>
+                  <h3 class="mb-4 text-lg font-semibold text-slate-900">Places d'Autobús</h3>
 
                   <div>
                     <label class="mb-2 block text-sm font-medium text-slate-700">
@@ -575,13 +571,8 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
                 </div>
 
                 <!-- Distribución por parada -->
-                <div
-                  v-if="plazasAutobusVendidas > 0"
-                  class="rounded-lg bg-white p-6 shadow"
-                >
-                  <h3 class="mb-4 text-lg font-semibold text-slate-900">
-                    Distribució per parada
-                  </h3>
+                <div v-if="plazasAutobusVendidas > 0" class="rounded-lg bg-white p-6 shadow">
+                  <h3 class="mb-4 text-lg font-semibold text-slate-900">Distribució per parada</h3>
                   <div class="grid grid-cols-2 gap-4 text-center">
                     <div class="rounded-lg bg-slate-50 p-4">
                       <p class="text-2xl font-bold text-slate-700">
