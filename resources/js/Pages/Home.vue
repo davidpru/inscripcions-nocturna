@@ -151,6 +151,9 @@ onUnmounted(() => {
             Fredes-Paüls {{ edicion?.anio }}
           </h1>
           <p v-if="inscripcionesAbiertas" class="text-foreground text-lg">Inscripcions online</p>
+          <p v-else-if="estadoEdicion === 'cerrada'" class="text-foreground text-lg">
+            Inscripcions tancades
+          </p>
           <p v-else class="text-foreground text-lg">Pròximament</p>
         </div>
 
@@ -184,27 +187,12 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Mensaje cuando inscripciones cerradas -->
-        <Card
-          v-if="
-            !inscripcionesAbiertas &&
-            (estadoEdicion === 'cerrada' || !edicion?.fecha_inicio_inscripciones)
-          "
-          class="mx-auto w-full"
-        >
-          <CardHeader>
-            <CardTitle class="text-2xl">Inscripcions tancades</CardTitle>
-            <CardDescription>
-              Les inscripcions encara no estan obertes. Torna més endavant.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
         <!-- Selección -->
-        <div v-if="inscripcionesAbiertas" class="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <!-- Columna esquerra -->
           <div class="">
-            <!-- Card inscripción normal -->
-            <Card v-if="!plazasAgotadas">
+            <!-- Nova inscripció (obertes + places disponibles) -->
+            <Card v-if="inscripcionesAbiertas && !plazasAgotadas">
               <CardHeader class="pb-2">
                 <CardTitle class="text-2xl">Nova Inscripció</CardTitle>
                 <CardDescription>Inscriu-te a la Fredes-Paüls</CardDescription>
@@ -232,8 +220,11 @@ onUnmounted(() => {
               </CardContent>
             </Card>
 
-            <!-- Card lista de espera (plazas agotadas) -->
-            <Card v-else class="border-amber-200 bg-amber-50/30">
+            <!-- Llista d'espera (places agotades o edició tancada) -->
+            <Card
+              v-else-if="(inscripcionesAbiertas && plazasAgotadas) || estadoEdicion === 'cerrada'"
+              class="border border-orange-500! bg-orange-50"
+            >
               <CardHeader class="pb-2">
                 <CardTitle class="text-2xl">Places esgotades</CardTitle>
                 <CardDescription>Apunta't a la llista d'espera</CardDescription>
@@ -244,13 +235,15 @@ onUnmounted(() => {
                   posarà en contacte amb tu si hi ha plaça disponible.
                 </p>
                 <Link href="/llista-espera">
-                  <Button size="xl" class="w-full bg-amber-600 hover:bg-amber-700">
+                  <Button size="xl" class="w-full bg-red-600 hover:bg-red-700">
                     Llista d'espera
                   </Button>
                 </Link>
               </CardContent>
             </Card>
           </div>
+
+          <!-- Columna dreta: links informatius (sempre visibles quan hi ha edició) -->
           <div class="flex flex-col gap-8">
             <Card class="transition-all hover:shadow-xl">
               <CardHeader>
