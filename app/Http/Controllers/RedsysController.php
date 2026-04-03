@@ -321,8 +321,8 @@ class RedsysController extends Controller
         }
 
         // Generar número de pedido único para el autobús
-        // Formato: BUS + 3 dígitos ID + 6 caracteres timestamp
-        $orderNumberFormatted = 'BUS' . str_pad((string)$inscripcion->id, 3, '0', STR_PAD_LEFT) . substr((string)time(), -6);
+        // Formato: BUS + 3 dígitos (últimos 3 del ID) + 6 chars timestamp = 12 chars máx Redsys
+        $orderNumberFormatted = 'BUS' . sprintf('%03d', $inscripcion->id % 1000) . substr((string)time(), -6);
         
         // Guardar en un campo temporal (usaremos numero_pedido_autobus si existe, sino reutilizamos otro campo)
         $inscripcion->update(['numero_pedido_autobus' => $orderNumberFormatted]);
