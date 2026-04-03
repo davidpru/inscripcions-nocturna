@@ -13,7 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PARADAS } from '@/constants/paradas';
 import axios from 'axios';
-import { Copy, Download, Eye, Mail, Pencil, QrCode, RefreshCw, Save } from 'lucide-vue-next';
+import { Copy, Download, Eye, Mail, Pencil, QrCode, RefreshCw, Save, Send } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface Participante {
@@ -105,22 +105,24 @@ const urlCambioDorsal = ref<string | null>(null);
 const errorCambioDorsal = ref<string | null>(null);
 const copiat = ref(false);
 
+// Activació llista d'espera
+const generantActivacio = ref(false);
+const urlActivacio = ref<string | null>(null);
+const errorActivacio = ref<string | null>(null);
+const copiatActivacio = ref(false);
+const enviantActivacio = ref(false);
+const enviatActivacio = ref(false);
+const errorEnvioActivacio = ref<string | null>(null);
+
 const generarEnllacCambioDorsal = async () => {
   generantEnllac.value = true;
   urlCambioDorsal.value = null;
   errorCambioDorsal.value = null;
   try {
-    // Llegir el token CSRF de la cookie XSRF-TOKEN
-    const xsrfToken = decodeURIComponent(
-      document.cookie
-        .split('; ')
-        .find((c) => c.startsWith('XSRF-TOKEN='))
-        ?.split('=')[1] ?? '',
-    );
     const response = await axios.post(
       `/uec-admin/inscripciones/${props.inscripcion.id}/generar-cambio-dorsal`,
       {},
-      { headers: { 'X-XSRF-TOKEN': xsrfToken } },
+      { headers: { 'X-XSRF-TOKEN': getXsrfToken() } }
     );
     urlCambioDorsal.value = response.data.url;
   } catch (err: any) {
@@ -142,6 +144,67 @@ const copiarEnllac = async () => {
     setTimeout(() => (copiat.value = false), 2000);
   } catch {
     // fallback: no action needed
+  }
+};
+
+const getXsrfToken = () =>
+  decodeURIComponent(
+    document.cookie
+      .split('; ')
+      .find((c) => c.startsWith('XSRF-TOKEN='))
+      ?.split('=')[1] ?? ''
+  );
+
+const generarEnllacActivacio = async () => {
+  generantActivacio.value = true;
+  urlActivacio.value = null;
+  errorActivacio.value = null;
+  try {
+    const response = await axios.post(
+      `/uec-admin/inscripciones/${props.inscripcion.id}/generar-activacio-llista-espera`,
+      {},
+      { headers: { 'X-XSRF-TOKEN': getXsrfToken() } }
+    );
+    urlActivacio.value = response.data.url;
+  } catch (err: any) {
+    console.error('Error generant activació:', err);
+    errorActivacio.value =
+      err?.response?.data?.error ?? err?.response?.data?.message ?? 'Error inesperat.';
+  } finally {
+    generantActivacio.value = false;
+  }
+};
+
+const copiarEnllacActivacio = async () => {
+  if (!urlActivacio.value) return;
+  try {
+    await navigator.clipboard.writeText(urlActivacio.value);
+    copiatActivacio.value = true;
+    setTimeout(() => (copiatActivacio.value = false), 2000);
+  } catch {
+    // fallback
+  }
+};
+
+const enviarEnllacActivacio = async () => {
+  enviantActivacio.value = true;
+  enviatActivacio.value = false;
+  errorEnvioActivacio.value = null;
+  try {
+    const response = await axios.post(
+      `/uec-admin/inscripciones/${props.inscripcion.id}/enviar-activacio-llista-espera`,
+      {},
+      { headers: { 'X-XSRF-TOKEN': getXsrfToken() } }
+    );
+    enviatActivacio.value = true;
+    urlActivacio.value = response.data.url;
+    setTimeout(() => (enviatActivacio.value = false), 3000);
+  } catch (err: any) {
+    console.error('Error enviant activació:', err);
+    errorEnvioActivacio.value =
+      err?.response?.data?.error ?? err?.response?.data?.message ?? 'Error enviant el correu.';
+  } finally {
+    enviantActivacio.value = false;
   }
 };
 
@@ -224,7 +287,7 @@ const getTipoDescuentoCupon = () => {
 
         <!-- Tab Resumen -->
         <TabsContent value="resumen" class="mt-4 space-y-6">
-          <!-- QR Code -->
+          <!-- QR Code (pagado/invitado) -->
           <div
             v-if="inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado'"
             class="flex flex-col items-center rounded-lg border bg-white p-4 sm:p-6"
@@ -279,6 +342,69 @@ const getTipoDescuentoCupon = () => {
                   {{ copiat ? 'Copiat!' : 'Copiar' }}
                 </Button>
               </div>
+            </div>
+          </div>
+
+          <!-- Activació llista d'espera -->
+          <div
+            v-if="inscripcion.estado_pago === 'lista_espera'"
+            class="rounded-lg border border-orange-200 bg-orange-50 p-4"
+          >
+            <h3 class="mb-3 font-semibold text-orange-900">Llista d'Espera — Activar plaça</h3>
+            <p class="mb-3 text-xs text-orange-700">
+              Genera un enllaç privat de 48h perquè el participant pugui pagar i confirmar la seva
+              plaça.
+            </p>
+
+            <div class="flex flex-col gap-2">
+              <!-- Botó generar -->
+              <Button
+                variant="outline"
+                size="sm"
+                class="w-full gap-2 border-orange-300 text-orange-800"
+                :disabled="generantActivacio"
+                @click="generarEnllacActivacio"
+              >
+                <RefreshCw class="h-4 w-4" :class="generantActivacio ? 'animate-spin' : ''" />
+                {{ generantActivacio ? 'Generant...' : "Generar enllaç d'activació" }}
+              </Button>
+
+              <!-- Botó enviar per correu -->
+              <Button
+                variant="outline"
+                size="sm"
+                class="w-full gap-2 border-orange-300 text-orange-800"
+                :disabled="enviantActivacio"
+                @click="enviarEnllacActivacio"
+              >
+                <Send class="h-4 w-4" />
+                {{
+                  enviantActivacio
+                    ? 'Enviant...'
+                    : enviatActivacio
+                      ? 'Correu enviat!'
+                      : 'Enviar enllaç per correu'
+                }}
+              </Button>
+            </div>
+
+            <!-- Errors -->
+            <p v-if="errorActivacio" class="mt-2 text-xs text-red-600">{{ errorActivacio }}</p>
+            <p v-if="errorEnvioActivacio" class="mt-2 text-xs text-red-600">
+              {{ errorEnvioActivacio }}
+            </p>
+
+            <!-- URL generada -->
+            <div v-if="urlActivacio" class="mt-2 flex gap-2">
+              <Input
+                :model-value="urlActivacio"
+                readonly
+                class="min-w-0 flex-1 font-mono text-xs"
+              />
+              <Button variant="outline" size="sm" class="shrink-0" @click="copiarEnllacActivacio">
+                <Copy class="h-4 w-4" />
+                {{ copiatActivacio ? 'Copiat!' : 'Copiar' }}
+              </Button>
             </div>
           </div>
 

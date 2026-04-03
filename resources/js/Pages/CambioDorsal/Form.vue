@@ -111,7 +111,7 @@ const submit = () => {
         errors.value = e as Record<string, string>;
         submitting.value = false;
       },
-    },
+    }
   );
 };
 </script>
@@ -136,10 +136,14 @@ const submit = () => {
 
       <template v-else>
         <!-- Countdown -->
-        <div class="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+        <div
+          class="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3"
+        >
           <Clock class="h-5 w-5 shrink-0 text-amber-600" />
           <div>
-            <p class="text-sm font-medium text-amber-800">Temps restant per completar el pagament</p>
+            <p class="text-sm font-medium text-amber-800">
+              Temps restant per completar el pagament
+            </p>
             <p class="font-mono text-lg font-bold text-amber-700">{{ countdownDisplay }}</p>
           </div>
         </div>
@@ -149,8 +153,8 @@ const submit = () => {
           <div class="flex items-start gap-2">
             <Info class="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
             <p class="text-sm text-slate-600">
-              Les talles de samarreta i el servei d'autobús s'hereten de la inscripció original i no es
-              poden modificar.
+              Les talles de samarreta i el servei d'autobús s'hereten de la inscripció original i no
+              es poden modificar.
             </p>
           </div>
           <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
@@ -164,7 +168,13 @@ const submit = () => {
             </div>
             <div class="rounded bg-slate-50 px-3 py-2">
               <p class="text-xs text-slate-500">Autobús</p>
-              <p class="font-semibold">{{ inscripcion.necesita_autobus ? `Sí (${inscripcion.parada_autobus ?? 'parada no especificada'})` : 'No' }}</p>
+              <p class="font-semibold">
+                {{
+                  inscripcion.necesita_autobus
+                    ? `Sí (${inscripcion.parada_autobus ?? 'parada no especificada'})`
+                    : 'No'
+                }}
+              </p>
             </div>
           </div>
         </div>
@@ -184,12 +194,20 @@ const submit = () => {
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="space-y-1">
               <Label for="nombre">Nom *</Label>
-              <Input id="nombre" v-model="form.nombre" :class="errors.nombre ? 'border-red-500' : ''" />
+              <Input
+                id="nombre"
+                v-model="form.nombre"
+                :class="errors.nombre ? 'border-red-500' : ''"
+              />
               <p v-if="errors.nombre" class="text-xs text-red-600">{{ errors.nombre }}</p>
             </div>
             <div class="space-y-1">
               <Label for="apellidos">Cognoms *</Label>
-              <Input id="apellidos" v-model="form.apellidos" :class="errors.apellidos ? 'border-red-500' : ''" />
+              <Input
+                id="apellidos"
+                v-model="form.apellidos"
+                :class="errors.apellidos ? 'border-red-500' : ''"
+              />
               <p v-if="errors.apellidos" class="text-xs text-red-600">{{ errors.apellidos }}</p>
             </div>
           </div>
@@ -201,7 +219,7 @@ const submit = () => {
               <select
                 id="genero"
                 v-model="form.genero"
-                class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                class="border-input bg-background ring-offset-background focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
                 :class="errors.genero ? 'border-red-500' : ''"
               >
                 <option value="">Selecciona...</option>
@@ -218,21 +236,33 @@ const submit = () => {
                 type="date"
                 :class="errors.fecha_nacimiento ? 'border-red-500' : ''"
               />
-              <p v-if="errors.fecha_nacimiento" class="text-xs text-red-600">{{ errors.fecha_nacimiento }}</p>
+              <p v-if="errors.fecha_nacimiento" class="text-xs text-red-600">
+                {{ errors.fecha_nacimiento }}
+              </p>
             </div>
           </div>
 
           <!-- Telèfon -->
           <div class="space-y-1">
             <Label for="telefono">Telèfon *</Label>
-            <Input id="telefono" v-model="form.telefono" type="tel" :class="errors.telefono ? 'border-red-500' : ''" />
+            <Input
+              id="telefono"
+              v-model="form.telefono"
+              type="tel"
+              :class="errors.telefono ? 'border-red-500' : ''"
+            />
             <p v-if="errors.telefono" class="text-xs text-red-600">{{ errors.telefono }}</p>
           </div>
 
           <!-- Email + confirmació -->
           <div class="space-y-1">
             <Label for="email">Correu electrònic *</Label>
-            <Input id="email" v-model="form.email" type="email" :class="errors.email ? 'border-red-500' : ''" />
+            <Input
+              id="email"
+              v-model="form.email"
+              type="email"
+              :class="errors.email ? 'border-red-500' : ''"
+            />
             <p v-if="errors.email" class="text-xs text-red-600">{{ errors.email }}</p>
           </div>
           <div class="space-y-1">
@@ -243,13 +273,19 @@ const submit = () => {
               type="email"
               :class="errors.email_confirm ? 'border-red-500' : ''"
             />
-            <p v-if="errors.email_confirm" class="text-xs text-red-600">{{ errors.email_confirm }}</p>
+            <p v-if="errors.email_confirm" class="text-xs text-red-600">
+              {{ errors.email_confirm }}
+            </p>
           </div>
 
           <!-- Adreça -->
           <div class="space-y-1">
             <Label for="direccion">Adreça *</Label>
-            <Input id="direccion" v-model="form.direccion" :class="errors.direccion ? 'border-red-500' : ''" />
+            <Input
+              id="direccion"
+              v-model="form.direccion"
+              :class="errors.direccion ? 'border-red-500' : ''"
+            />
             <p v-if="errors.direccion" class="text-xs text-red-600">{{ errors.direccion }}</p>
           </div>
 
@@ -257,18 +293,32 @@ const submit = () => {
           <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div class="space-y-1">
               <Label for="codigo_postal">C.P. *</Label>
-              <Input id="codigo_postal" v-model="form.codigo_postal" :class="errors.codigo_postal ? 'border-red-500' : ''" />
-              <p v-if="errors.codigo_postal" class="text-xs text-red-600">{{ errors.codigo_postal }}</p>
+              <Input
+                id="codigo_postal"
+                v-model="form.codigo_postal"
+                :class="errors.codigo_postal ? 'border-red-500' : ''"
+              />
+              <p v-if="errors.codigo_postal" class="text-xs text-red-600">
+                {{ errors.codigo_postal }}
+              </p>
             </div>
             <div class="col-span-1 space-y-1 sm:col-span-2">
               <Label for="poblacion">Població *</Label>
-              <Input id="poblacion" v-model="form.poblacion" :class="errors.poblacion ? 'border-red-500' : ''" />
+              <Input
+                id="poblacion"
+                v-model="form.poblacion"
+                :class="errors.poblacion ? 'border-red-500' : ''"
+              />
               <p v-if="errors.poblacion" class="text-xs text-red-600">{{ errors.poblacion }}</p>
             </div>
           </div>
           <div class="space-y-1">
             <Label for="provincia">Província *</Label>
-            <Input id="provincia" v-model="form.provincia" :class="errors.provincia ? 'border-red-500' : ''" />
+            <Input
+              id="provincia"
+              v-model="form.provincia"
+              :class="errors.provincia ? 'border-red-500' : ''"
+            />
             <p v-if="errors.provincia" class="text-xs text-red-600">{{ errors.provincia }}</p>
           </div>
 
@@ -278,7 +328,11 @@ const submit = () => {
 
             <!-- Soci UEC -->
             <label class="flex cursor-pointer items-center gap-3">
-              <input v-model="form.es_socio_uec" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
+              <input
+                v-model="form.es_socio_uec"
+                type="checkbox"
+                class="h-4 w-4 rounded border-gray-300"
+              />
               <span class="text-sm text-slate-700">Sóc soci/a de la UEC Tortosa</span>
             </label>
 
@@ -290,7 +344,11 @@ const submit = () => {
 
             <!-- Federativa -->
             <label class="flex cursor-pointer items-center gap-3">
-              <input v-model="form.esta_federado" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
+              <input
+                v-model="form.esta_federado"
+                type="checkbox"
+                class="h-4 w-4 rounded border-gray-300"
+              />
               <span class="text-sm text-slate-700">Tinc llicència federativa</span>
             </label>
 
@@ -302,17 +360,23 @@ const submit = () => {
                 v-model="form.numero_licencia"
                 :class="errors.numero_licencia ? 'border-red-500' : ''"
               />
-              <p v-if="errors.numero_licencia" class="text-xs text-red-600">{{ errors.numero_licencia }}</p>
+              <p v-if="errors.numero_licencia" class="text-xs text-red-600">
+                {{ errors.numero_licencia }}
+              </p>
             </div>
             <!-- Celíac -->
             <label class="flex cursor-pointer items-center gap-3">
-              <input v-model="form.es_celiaco" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
+              <input
+                v-model="form.es_celiaco"
+                type="checkbox"
+                class="h-4 w-4 rounded border-gray-300"
+              />
               <span class="text-sm text-slate-700">Tinc intolerància al gluten (menú celíac)</span>
             </label>
           </div>
 
           <!-- Preu + submit -->
-          <div class="rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-700 space-y-1">
+          <div class="space-y-1 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-700">
             <div class="flex justify-between">
               <span>Canvi de dorsal</span>
               <span>{{ cambioDorsal.precio_base.toFixed(2) }}€</span>
@@ -321,7 +385,9 @@ const submit = () => {
               <span>Llicència federativa</span>
               <span>{{ precioFederativa.toFixed(2) }}€</span>
             </div>
-            <div class="flex justify-between border-t border-slate-200 pt-1 font-bold text-slate-900">
+            <div
+              class="flex justify-between border-t border-slate-200 pt-1 font-bold text-slate-900"
+            >
               <span>Total</span>
               <span>{{ precioTotal.toFixed(2) }}€</span>
             </div>

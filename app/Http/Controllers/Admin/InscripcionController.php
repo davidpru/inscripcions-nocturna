@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivacioLlistaEspera;
 use App\Models\CambioDorsal;
 use App\Models\Inscripcion;
 use App\Models\Edicion;
 use App\Models\Participante;
+use App\Mail\EnlacActivacioLlistaEspera;
 use App\Mail\InscripcionConfirmada;
 use App\Services\TarifaService;
 use Illuminate\Http\Request;
@@ -352,6 +354,70 @@ class InscripcionController extends Controller
         $url = route('canvi-dorsal.show', $cambioDorsal->token);
 
         return response()->json(['url' => $url]);
+    }
+
+    public function generarEnlacActivacioLlistaEspera(Inscripcion $inscripcion)
+    {
+        $inscripcion->load(['participante', 'edicion']);
+
+        if ($inscripcion->estado_pago !== 'lista_espera') {
+            return response()->json(['error' => 'La inscripció ha d\'estar en llista d\'espera per generar l\'activació.'], 422);
+        }
+
+        // Invalidar activacions anteriors pendents
+        ActivacioLlistaEspera::where('inscripcion_id', $inscripcion->id)
+            ->where('estado', 'pendiente')
+            ->update(['estado' => 'caducado']);
+
+        $activacio = ActivacioLlistaEspera::create([
+            'inscripcion_id' => $inscripcion->id,
+            'token'          => Str::random(64),
+            'estado'         => 'pendiente',
+            'expires_at'     => now()->addHours(48),
+        ]);
+
+        $url = route('activacio-llista-espera.show', $activacio->token);
+
+        return response()->json(['url' => $url]);
+    }
+
+    public function enviarEnlacActivacioLlistaEspera(Inscripcion $inscripcion)
+    {
+        $inscripcion->load(['participante', 'edicion']);
+
+        if ($inscripcion->estado_pago !== 'lista_espera') {
+            return response()->json(['error' => 'La inscripció ha d\'estar en llista d\'espera.'], 422);
+        }
+
+        // Buscar activació vigent o crear-ne una de nova
+        $activacio = ActivacioLlistaEspera::where('inscripcion_id', $inscripcion->id)
+            ->where('estado', 'pendiente')
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if (!$activacio) {
+            // Invalidar anteriors
+            ActivacioLlistaEspera::where('inscripcion_id', $inscripcion->id)
+                ->where('estado', 'pendiente')
+                ->update(['estado' => 'caducado']);
+
+            $activacio = ActivacioLlistaEspera::create([
+                'inscripcion_id' => $inscripcion->id,
+                'token'          => Str::random(64),
+                'estado'         => 'pendiente',
+                'expires_at'     => now()->addHours(48),
+            ]);
+        }
+
+        $url = route('activacio-llista-espera.show', $activacio->token);
+
+        try {
+            Mail::to($inscripcion->participante->email)
+                ->send(new EnlacActivacioLlistaEspera($inscripcion, $url));
+            return response()->json(['ok' => true, 'url' => $url]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error enviant el correu: ' . $e->getMessage()], 500);
+        }
     }
 
     public function toggleDorsalRecogido(Inscripcion $inscripcion)

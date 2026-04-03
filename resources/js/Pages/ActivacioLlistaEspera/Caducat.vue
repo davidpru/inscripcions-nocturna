@@ -8,8 +8,8 @@ import { XCircle } from 'lucide-vue-next';
       <XCircle class="mx-auto mb-4 h-14 w-14 text-slate-400" />
       <h1 class="text-xl font-bold text-slate-900">Enllaç caducat</h1>
       <p class="mt-2 text-slate-500">
-        Aquest enllaç de canvi de dorsal ha caducat o ja no és vàlid. Contacta amb l'organització
-        per obtenir un nou enllaç.
+        Aquest enllaç d'activació ha caducat o ja no és vàlid. Contacta amb l'organització per
+        obtenir un nou enllaç.
       </p>
     </div>
   </div>

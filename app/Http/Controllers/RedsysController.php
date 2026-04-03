@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Inscripcion;
 use App\Models\Participante;
+use App\Models\ActivacioLlistaEspera;
 use App\Models\CambioDorsal;
 use App\Models\RedsysTransaccion;
 use App\Mail\InscripcionConfirmada;
 use App\Mail\CambioDorsalConfirmado;
 use App\Mail\DorsalTransferit;
+use App\Mail\PlacaActivada;
 use Creagia\Redsys\RedsysClient;
 use Creagia\Redsys\RedsysRequest;
 use Creagia\Redsys\Support\RequestParameters;
@@ -117,6 +119,36 @@ class RedsysController extends Controller
             'es_autobus' => $esAutobus,
             'payload' => $payload,
         ]);
+    }
+
+    /**
+     * Lògica per completar una activació de llista d'espera.
+     */
+    private function procesarActivacioCompletada(ActivacioLlistaEspera $activacio, ?string $authCode): void
+    {
+        $inscripcion = $activacio->inscripcion;
+
+        $inscripcion->update([
+            'estado_pago'          => 'pagado',
+            'numero_autorizacion'  => $authCode,
+            'fecha_pago'           => now(),
+            'numero_pedido'        => $activacio->numero_pedido,
+        ]);
+
+        $activacio->update(['estado' => 'completado']);
+
+        Log::info('ActivacioLlistaEspera completada', [
+            'activacio_id'   => $activacio->id,
+            'inscripcion_id' => $inscripcion->id,
+        ]);
+
+        $inscripcion->load(['participante', 'edicion']);
+
+        try {
+            Mail::to($inscripcion->participante->email)->send(new PlacaActivada($inscripcion));
+        } catch (\Exception $e) {
+            Log::error('Error enviant PlacaActivada', ['error' => $e->getMessage()]);
+        }
     }
 
     /**
@@ -372,8 +404,27 @@ class RedsysController extends Controller
             // Verificar si es un pago de autobús
             $esAutobus = isset($params->merchantData) && str_starts_with($params->merchantData, 'BUS_');
             $esCambioDorsal = isset($params->merchantData) && str_starts_with($params->merchantData, 'CDORSAL_');
+            $esActivacio = isset($params->merchantData) && str_starts_with($params->merchantData, 'ACTIV_');
             $importe = isset($params->amount) ? ((int) $params->amount) / 100 : null;
             $payload = $this->buildPayload($request, $params);
+
+            if ($esActivacio) {
+                $activacioId = str_replace('ACTIV_', '', $params->merchantData);
+                $activacio = ActivacioLlistaEspera::with('inscripcion.participante')->find($activacioId);
+
+                if (!$activacio) {
+                    Log::error('Redsys notification: ActivacioLlistaEspera not found', ['merchantData' => $params->merchantData]);
+                    $this->registrarTransaccion('notification', 'error', null, $payload, $params->order ?? null, $params->responseAuthorisationCode ?? null, $params->responseCode ?? null, 'Activació no trobada', $importe, false);
+                    return response('ActivacioLlistaEspera not found', 404);
+                }
+
+                if (!$activacio->estaCompletado()) {
+                    $this->procesarActivacioCompletada($activacio, $params->responseAuthorisationCode ?? null);
+                }
+
+                $this->registrarTransaccion('notification', 'pagado', $activacio->inscripcion, $payload, $params->order ?? null, $params->responseAuthorisationCode ?? null, $params->responseCode ?? null, null, $importe, false);
+                return response('OK');
+            }
 
             if ($esCambioDorsal) {
                 $cambioDorsalId = str_replace('CDORSAL_', '', $params->merchantData);
@@ -590,8 +641,30 @@ class RedsysController extends Controller
             // Verificar si es un pago de autobús
             $esAutobus = isset($params->merchantData) && str_starts_with($params->merchantData, 'BUS_');
             $esCambioDorsal = isset($params->merchantData) && str_starts_with($params->merchantData, 'CDORSAL_');
+            $esActivacio = isset($params->merchantData) && str_starts_with($params->merchantData, 'ACTIV_');
             $importe = isset($params->amount) ? ((int) $params->amount) / 100 : null;
             $payload = $this->buildPayload($request, $params);
+
+            if ($esActivacio) {
+                $activacioId = str_replace('ACTIV_', '', $params->merchantData);
+                $activacio = ActivacioLlistaEspera::with('inscripcion.participante')->find($activacioId);
+
+                if (!$activacio) {
+                    Log::error('Redsys success: ActivacioLlistaEspera not found', ['merchantData' => $params->merchantData]);
+                    $this->registrarTransaccion('success', 'error', null, $payload, $params->order ?? null, $params->responseAuthorisationCode ?? null, $params->responseCode ?? null, 'Activació no trobada', $importe, false);
+                    return redirect()->route('home')->with('error', 'Activació no trobada');
+                }
+
+                if (!$activacio->estaCompletado()) {
+                    $this->procesarActivacioCompletada($activacio, $params->responseAuthorisationCode ?? null);
+                    $activacio->refresh();
+                }
+
+                $this->registrarTransaccion('success', 'pagado', $activacio->inscripcion, $payload, $params->order ?? null, $params->responseAuthorisationCode ?? null, $params->responseCode ?? null, null, $importe, false);
+                return Inertia::render('ActivacioLlistaEspera/Exito', [
+                    'inscripcion' => $activacio->inscripcion->load(['participante', 'edicion']),
+                ]);
+            }
 
             if ($esCambioDorsal) {
                 $cambioDorsalId = str_replace('CDORSAL_', '', $params->merchantData);

@@ -4,6 +4,7 @@ use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\InscripcionPdfController;
 use App\Http\Controllers\ListaEsperaController;
 use App\Http\Controllers\RedsysController;
+use App\Http\Controllers\ActivacioLlistaEsperaController;
 use App\Http\Controllers\CambioDorsalController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -107,6 +108,10 @@ Route::prefix('pago')->name('redsys.')->group(function () {
 Route::get('/canvi-dorsal/{token}', [CambioDorsalController::class, 'show'])->name('canvi-dorsal.show');
 Route::post('/canvi-dorsal/{token}', [CambioDorsalController::class, 'procesar'])->name('canvi-dorsal.procesar');
 
+// Activació llista d'espera (enllaç privat generat per l'admin)
+Route::get('/activacio-llista-espera/{token}', [ActivacioLlistaEsperaController::class, 'show'])->name('activacio-llista-espera.show');
+Route::post('/activacio-llista-espera/{token}', [ActivacioLlistaEsperaController::class, 'procesar'])->name('activacio-llista-espera.procesar');
+
 // Preview email (solo para desarrollo)
 Route::get('/preview-email', function () {
     $inscripcion = App\Models\Inscripcion::with(['participante', 'edicion'])->latest()->first();
@@ -141,6 +146,8 @@ Route::prefix('uec-admin')->name('admin.')->middleware('admin.auth')->group(func
     Route::post('inscripciones/{inscripcion}/reenviar-correo', [AdminInscripcionController::class, 'reenviarCorreo'])->name('inscripciones.reenviar-correo');
     Route::post('inscripciones/{inscripcion}/toggle-dorsal', [AdminInscripcionController::class, 'toggleDorsalRecogido'])->name('inscripciones.toggle-dorsal');
     Route::post('inscripciones/{inscripcion}/generar-cambio-dorsal', [AdminInscripcionController::class, 'generarEnlaceCambioDorsal'])->name('inscripciones.generar-cambio-dorsal');
+    Route::post('inscripciones/{inscripcion}/generar-activacio-llista-espera', [AdminInscripcionController::class, 'generarEnlacActivacioLlistaEspera'])->name('inscripciones.generar-activacio-llista-espera');
+    Route::post('inscripciones/{inscripcion}/enviar-activacio-llista-espera', [AdminInscripcionController::class, 'enviarEnlacActivacioLlistaEspera'])->name('inscripciones.enviar-activacio-llista-espera');
     Route::post('inscripciones/{inscripcion}/devolucion', [RedsysController::class, 'procesarDevolucion'])->name('inscripciones.devolucion');
     Route::post('inscripciones/{inscripcion}/devolucion-manual', [RedsysController::class, 'devolucionManual'])->name('inscripciones.devolucion-manual');
 
