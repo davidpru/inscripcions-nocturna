@@ -188,7 +188,7 @@ class RedsysController extends Controller
     public function procesarPagoAutobus(Inscripcion $inscripcion)
     {
         // Verificar que la inscripción esté pagada y no tenga autobús
-        if ($inscripcion->estado_pago !== 'pagado') {
+        if (!in_array($inscripcion->estado_pago, ['pagado', 'invitado'])) {
             return redirect()->route('home')
                 ->with('error', 'La inscripción debe estar pagada');
         }

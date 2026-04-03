@@ -166,7 +166,7 @@ class InscripcionController extends Controller
         ]);
 
         // Verificar que la inscripción está pagada y no tiene autobús
-        if ($inscripcion->estado_pago !== 'pagado') {
+        if (!in_array($inscripcion->estado_pago, ['pagado', 'invitado'])) {
             return back()->withErrors(['general' => 'La inscripción debe estar pagada para contratar el autobús.']);
         }
 
