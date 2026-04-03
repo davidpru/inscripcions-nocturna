@@ -21,6 +21,7 @@ class Edicion extends Model
         'activa',
         // Autobuses (JSON array)
         'autobuses',
+        'plazas_autobus',
         // Nova estructura de preus
         'precio_inscripcion_socio_normal',
         'precio_inscripcion_publico_normal',
@@ -42,6 +43,7 @@ class Edicion extends Model
         'distancia_km' => 'float',
         'activa' => 'boolean',
         'autobuses' => 'array',
+        'plazas_autobus' => 'integer',
         'precio_inscripcion_socio_normal' => 'float',
         'precio_inscripcion_publico_normal' => 'float',
         'precio_inscripcion_socio_tardia' => 'float',
@@ -75,8 +77,26 @@ class Edicion extends Model
      */
     public function getTotalPlazasAutobusAttribute(): int
     {
-        $autobuses = $this->autobuses ?? [];
-        return collect($autobuses)->sum('plazas');
+        return $this->plazas_autobus ?? 0;
+    }
+
+    /**
+     * Obtener el número de plazas de autobús vendidas
+     */
+    public function getPlazasAutobusVendidasAttribute(): int
+    {
+        return $this->inscripciones()
+            ->where('necesita_autobus', true)
+            ->whereIn('estado_pago', ['pagado', 'invitado'])
+            ->count();
+    }
+
+    /**
+     * Obtener plazas de autobús disponibles (total - vendidas)
+     */
+    public function getPlazasAutobusDisponiblesAttribute(): int
+    {
+        return max(0, $this->total_plazas_autobus - $this->plazas_autobus_vendidas);
     }
 
     /**

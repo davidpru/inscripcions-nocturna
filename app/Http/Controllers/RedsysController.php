@@ -206,6 +206,12 @@ class RedsysController extends Controller
 
         $inscripcion->load(['participante', 'edicion']);
 
+        // Verificar disponibilidad de plazas de autobús
+        if ($inscripcion->edicion->plazas_autobus > 0 && $inscripcion->edicion->plazas_autobus_disponibles <= 0) {
+            return redirect()->route('inscripcion.consulta')
+                ->with('error', 'No queden places d\'autobús disponibles.');
+        }
+
         // Generar número de pedido único para el autobús
         // Formato: BUS + 3 dígitos ID + 6 caracteres timestamp
         $orderNumberFormatted = 'BUS' . str_pad((string)$inscripcion->id, 3, '0', STR_PAD_LEFT) . substr((string)time(), -6);

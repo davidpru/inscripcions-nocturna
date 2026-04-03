@@ -62,7 +62,14 @@ interface Inscripcion {
 const props = defineProps<{
   inscripcion: Inscripcion;
   precioAutobus?: number;
+  plazasAutobusDisponibles?: number | null;
 }>();
+
+const hayPlazasAutobus = computed(() => {
+  // null = sin límite configurado (plazas_autobus = 0), siempre disponible
+  if (props.plazasAutobusDisponibles === null || props.plazasAutobusDisponibles === undefined) return true;
+  return props.plazasAutobusDisponibles > 0;
+});
 
 const page = usePage();
 const mostrarFormularioAutobus = ref(false);
@@ -317,7 +324,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
       >
         <div class="flex items-start gap-4">
           <Bus class="h-8 w-8 shrink-0 text-blue-600" />
-          <div class="flex-1">
+          <div v-if="hayPlazasAutobus" class="flex-1">
             <h3 class="text-lg font-semibold text-blue-900">Necessites transport?</h3>
             <p class="mt-1 text-sm text-blue-700">
               Pots contractar el servei d'autobús per {{ precioAutobus || 12 }}€
@@ -375,6 +382,12 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
                 </Button>
               </div>
             </form>
+          </div>
+          <div v-else class="flex-1">
+            <h3 class="text-lg font-semibold text-blue-900">Servei de transport</h3>
+            <p class="mt-1 text-sm text-amber-700">
+              No queden places d'autobús disponibles.
+            </p>
           </div>
         </div>
       </div>

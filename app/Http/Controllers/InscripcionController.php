@@ -146,10 +146,16 @@ class InscripcionController extends Controller
             ? ($edicionActiva->precio_autobus_tardia ?? 14)
             : ($edicionActiva->precio_autobus_normal ?? 12);
 
+        // Calcular plazas de autobús disponibles
+        $plazasAutobusDisponibles = $edicionActiva->plazas_autobus > 0
+            ? $edicionActiva->plazas_autobus_disponibles
+            : null; // null = sin límite configurado
+
         // Mostrar siempre la vista de detalle de inscripción
         return Inertia::render('Inscripcion/ConsultaDetalle', [
             'inscripcion' => $inscripcion->load(['participante', 'edicion']),
             'precioAutobus' => $precioAutobus,
+            'plazasAutobusDisponibles' => $plazasAutobusDisponibles,
         ]);
     }
 
@@ -166,6 +172,12 @@ class InscripcionController extends Controller
 
         if ($inscripcion->necesita_autobus) {
             return back()->withErrors(['general' => 'Ya tienes contratado el servicio de autobús.']);
+        }
+
+        // Verificar disponibilidad de plazas de autobús
+        $edicion = $inscripcion->edicion;
+        if ($edicion->plazas_autobus > 0 && $edicion->plazas_autobus_disponibles <= 0) {
+            return back()->withErrors(['general' => 'No queden places d\'autobús disponibles.']);
         }
 
         // Guardar la parada temporalmente y redirigir al pago
