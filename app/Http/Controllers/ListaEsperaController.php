@@ -18,12 +18,12 @@ class ListaEsperaController extends Controller
 
     public function index(): Response
     {
-        $edicionActiva = Edicion::where('estado', 'abierta')
+        $edicionActiva = Edicion::where('activa', true)
             ->orderBy('anio', 'desc')
             ->first();
 
         if (!$edicionActiva) {
-            abort(404, 'No hay ediciones abiertas');
+            abort(404, 'No hay ediciones activas');
         }
 
         return Inertia::render('Inscripcion/ListaEspera', [
