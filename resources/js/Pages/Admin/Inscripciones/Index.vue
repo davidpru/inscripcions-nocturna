@@ -121,8 +121,32 @@ const busqueda = ref(props.filtros.busqueda || '');
 const saving = ref(false);
 const editingData = reactive<Record<number, any>>({});
 
-// Mostrar todas las inscripciones sin filtrado local (la búsqueda se hace en backend)
-const inscripcionesFiltradas = computed(() => props.inscripciones);
+// Tabs de filtrado por estado
+const tabActiva = ref<'inscrits' | 'llista_espera' | 'pendents'>('inscrits');
+
+// Filtrado local por tab
+const inscripcionesFiltradas = computed(() => {
+  switch (tabActiva.value) {
+    case 'inscrits':
+      return props.inscripciones.filter((i) =>
+        ['pagado', 'invitado'].includes(i.estado_pago)
+      );
+    case 'llista_espera':
+      return props.inscripciones.filter((i) => i.estado_pago === 'lista_espera');
+    case 'pendents':
+      return props.inscripciones.filter((i) =>
+        ['pendiente', 'cancelado', 'devuelto', 'devolucion_parcial', 'fallido'].includes(i.estado_pago)
+      );
+    default:
+      return props.inscripciones;
+  }
+});
+
+const contadorTabs = computed(() => ({
+  inscrits: props.inscripciones.filter((i) => ['pagado', 'invitado'].includes(i.estado_pago)).length,
+  llista_espera: props.inscripciones.filter((i) => i.estado_pago === 'lista_espera').length,
+  pendents: props.inscripciones.filter((i) => ['pendiente', 'cancelado', 'devuelto', 'devolucion_parcial', 'fallido'].includes(i.estado_pago)).length,
+}));
 
 // Renderizado incremental: mostrar filas progresivamente para no bloquear el DOM
 const RENDER_BATCH = 50;
@@ -140,6 +164,10 @@ watch(
     renderCount.value = RENDER_BATCH;
   }
 );
+
+watch(tabActiva, () => {
+  renderCount.value = RENDER_BATCH;
+});
 
 onMounted(() => {
   renderObserver = new IntersectionObserver(
@@ -768,6 +796,43 @@ const confirmarToggleDorsal = () => {
             </div>
           </div>
         </section>
+
+        <!-- Tabs -->
+        <div class="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1">
+          <button
+            type="button"
+            class="flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors"
+            :class="tabActiva === 'inscrits' ? 'bg-white text-slate-900 shadow' : 'text-slate-600 hover:text-slate-900'"
+            @click="tabActiva = 'inscrits'"
+          >
+            Inscrits
+            <span class="ml-1.5 rounded-full bg-teal-100 px-2 py-0.5 text-xs font-semibold text-teal-700">
+              {{ contadorTabs.inscrits }}
+            </span>
+          </button>
+          <button
+            type="button"
+            class="flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors"
+            :class="tabActiva === 'llista_espera' ? 'bg-white text-slate-900 shadow' : 'text-slate-600 hover:text-slate-900'"
+            @click="tabActiva = 'llista_espera'"
+          >
+            Llista d'Espera
+            <span class="ml-1.5 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
+              {{ contadorTabs.llista_espera }}
+            </span>
+          </button>
+          <button
+            type="button"
+            class="flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors"
+            :class="tabActiva === 'pendents' ? 'bg-white text-slate-900 shadow' : 'text-slate-600 hover:text-slate-900'"
+            @click="tabActiva = 'pendents'"
+          >
+            Pendents / Altres
+            <span class="ml-1.5 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-600">
+              {{ contadorTabs.pendents }}
+            </span>
+          </button>
+        </div>
 
         <!-- Tabla de Inscripciones -->
         <div class="overflow-hidden rounded-lg bg-white shadow">
