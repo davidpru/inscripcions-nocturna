@@ -107,13 +107,12 @@ const caducats = computed(() => props.canvis.filter((c) => c.estado === 'caducad
 
         <!-- Taula -->
         <div v-else class="overflow-x-auto rounded-lg bg-white shadow">
-          <table class="w-full min-w-[700px] text-sm">
+          <table class="w-full min-w-[580px] text-sm">
             <thead class="bg-slate-50 text-xs tracking-wider text-slate-500 uppercase">
               <tr>
                 <th class="px-4 py-3 text-left">Participant original</th>
                 <th class="px-4 py-3 text-left">Nou participant</th>
                 <th class="px-4 py-3 text-center">Estat</th>
-                <th class="px-4 py-3 text-center">Temps restant</th>
                 <th class="px-4 py-3 text-center">Preu</th>
                 <th class="px-4 py-3 text-left">Creat</th>
                 <th class="px-4 py-3 text-center">Accions</th>
@@ -124,8 +123,8 @@ const caducats = computed(() => props.canvis.filter((c) => c.estado === 'caducad
                 v-for="canvi in canvis"
                 :key="canvi.id"
                 :class="[
-                  canvi.estado === 'pendiente' ? 'bg-amber-50/40' : '',
-                  canvi.estado === 'completado' ? 'bg-green-50/30' : '',
+                  canvi.estado === 'pendiente' ? 'bg-amber-50' : '',
+                  canvi.estado === 'completado' ? 'bg-green-50/40' : '',
                 ]"
               >
                 <!-- Participant original -->
@@ -143,6 +142,12 @@ const caducats = computed(() => props.canvis.filter((c) => c.estado === 'caducad
                   >
                     #{{ canvi.inscripcion_id }}
                   </Link>
+                  <!-- Countdown sota el nom, només pendents -->
+                  <p v-if="canvi.estado === 'pendiente'" class="mt-1 font-mono text-xs" :key="ticks">
+                    <span :class="segsActuals(canvi) < 3600 ? 'font-semibold text-red-600' : 'text-amber-700'">
+                      <Clock class="mr-0.5 inline h-3 w-3" />{{ formatCountdown(segsActuals(canvi)) }}
+                    </span>
+                  </p>
                 </td>
 
                 <!-- Nou participant -->
@@ -174,22 +179,6 @@ const caducats = computed(() => props.canvis.filter((c) => c.estado === 'caducad
                     <XCircle class="mr-1 h-3 w-3" />
                     Caducat
                   </Badge>
-                </td>
-
-                <!-- Temps restant -->
-                <td class="px-4 py-3 text-center font-mono text-xs">
-                  <!-- força re-render cada tick mentre pendent -->
-                  <template v-if="canvi.estado === 'pendiente'">
-                    <span
-                      :key="ticks"
-                      :class="
-                        segsActuals(canvi) < 3600 ? 'font-semibold text-red-600' : 'text-amber-700'
-                      "
-                    >
-                      {{ formatCountdown(segsActuals(canvi)) }}
-                    </span>
-                  </template>
-                  <span v-else class="text-slate-400">—</span>
                 </td>
 
                 <!-- Preu -->
