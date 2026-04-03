@@ -11,7 +11,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $edicionActual = Edicion::where('estado', 'abierta')
+        $edicionActual = Edicion::where('activa', true)
             ->orderBy('anio', 'desc')
             ->first();
 
@@ -77,7 +77,7 @@ class DashboardController extends Controller
     private function calcularEstadistiques(?Edicion $edicion): array
     {
         if (!$edicion) {
-            return [];
+            return null;
         }
 
         $baseQuery = fn() => Inscripcion::where('edicion_id', $edicion->id)

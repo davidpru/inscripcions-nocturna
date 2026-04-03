@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminLayout from '@/layouts/AdminLayout.vue';
@@ -105,15 +106,15 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
 
         <form @submit.prevent="enviarFormulario">
           <Tabs default-value="edicio" class="w-full">
-            <TabsList class="mb-6">
-              <TabsTrigger value="edicio" class="">
-                <span class="flex items-center gap-2 px-10">
+            <TabsList class="mb-6 w-full sm:w-auto">
+              <TabsTrigger value="edicio" class="flex-1 sm:flex-none">
+                <span class="flex items-center gap-2 px-4 sm:px-10">
                   <PencilLine :size="16" />
                   Edició i Preus
                 </span>
               </TabsTrigger>
-              <TabsTrigger value="autobusos" class="flex items-center gap-2">
-                <span class="flex items-center gap-2 px-10">
+              <TabsTrigger value="autobusos" class="flex-1 sm:flex-none">
+                <span class="flex items-center gap-2 px-4 sm:px-10">
                   <Bus :size="16" />
                   Autobusos
                   <Badge variant="default" class="ml-1">
@@ -361,8 +362,10 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
                       Previsualització Tarifes Finals
                     </h3>
 
-                    <div class="overflow-hidden rounded-lg border border-slate-300 bg-white">
-                      <table class="w-full">
+                    <div class="overflow-x-auto">
+                      <table
+                        class="w-full min-w-[480px] rounded-lg border border-slate-300 bg-white"
+                      >
                         <thead class="bg-slate-100">
                           <tr>
                             <th
@@ -471,7 +474,7 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
                     <h3 class="mb-4 text-lg font-semibold text-slate-900">
                       Serveis Addicionals (€)
                     </h3>
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                       <div>
                         <label class="mb-2 block text-sm font-medium text-slate-700">
                           Autobús Normal

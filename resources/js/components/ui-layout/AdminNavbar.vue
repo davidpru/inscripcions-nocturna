@@ -17,6 +17,7 @@ import {
   LogOut,
   Menu,
   Receipt,
+  RefreshCw,
   Ticket,
   UserCog,
 } from 'lucide-vue-next';
@@ -28,6 +29,7 @@ const currentPath = computed(() => page.url);
 const navItems = [
   { name: 'Inici', href: '/uec-admin', icon: Home, exact: true },
   { name: 'Inscripcions', href: '/uec-admin/inscripciones', icon: ClipboardList },
+  { name: 'Canvis Dorsal', href: '/uec-admin/canvis-dorsal', icon: RefreshCw },
   { name: 'Transaccions', href: '/uec-admin/transacciones', icon: CreditCard },
   { name: 'Edicions', href: '/uec-admin/ediciones', icon: Calendar },
   { name: 'Cupons', href: '/uec-admin/cupones', icon: Ticket },

@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\EdicionController;
 use App\Http\Controllers\Admin\InscripcionController as AdminInscripcionController;
 use App\Http\Controllers\Admin\RedsysTransaccionController;
 use App\Http\Controllers\Admin\CuponController;
+use App\Http\Controllers\Admin\CambioDorsalController as AdminCambioDorsalController;
 use App\Http\Controllers\Admin\GastoController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -150,6 +151,9 @@ Route::prefix('uec-admin')->name('admin.')->middleware('admin.auth')->group(func
     Route::post('inscripciones/{inscripcion}/enviar-activacio-llista-espera', [AdminInscripcionController::class, 'enviarEnlacActivacioLlistaEspera'])->name('inscripciones.enviar-activacio-llista-espera');
     Route::post('inscripciones/{inscripcion}/devolucion', [RedsysController::class, 'procesarDevolucion'])->name('inscripciones.devolucion');
     Route::post('inscripciones/{inscripcion}/devolucion-manual', [RedsysController::class, 'devolucionManual'])->name('inscripciones.devolucion-manual');
+
+    // Canvis de dorsal
+    Route::get('canvis-dorsal', [AdminCambioDorsalController::class, 'index'])->name('canvis-dorsal.index');
 
     // Transacciones Redsys
     Route::get('transacciones', [RedsysTransaccionController::class, 'index'])->name('transacciones.index');
