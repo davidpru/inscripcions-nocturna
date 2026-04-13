@@ -132,7 +132,7 @@ class InscripcionController extends Controller
 
         $inscripcion = Inscripcion::where('participante_id', $participante->id)
             ->where('edicion_id', $edicionActiva->id)
-            ->whereIn('estado_pago', ['pagado', 'pendiente', 'invitado'])
+            ->whereIn('estado_pago', ['pagado', 'pendiente', 'invitado', 'compromiso'])
             ->latest('created_at')
             ->first();
 
@@ -166,7 +166,7 @@ class InscripcionController extends Controller
         ]);
 
         // Verificar que la inscripción está pagada y no tiene autobús
-        if (!in_array($inscripcion->estado_pago, ['pagado', 'invitado'])) {
+        if (!in_array($inscripcion->estado_pago, ['pagado', 'invitado', 'compromiso'])) {
             return back()->withErrors(['general' => 'La inscripción debe estar pagada para contratar el autobús.']);
         }
 

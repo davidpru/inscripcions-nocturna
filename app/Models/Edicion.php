@@ -68,7 +68,7 @@ class Edicion extends Model
     public function getNumeroInscritosAttribute(): int
     {
         return $this->inscripciones()
-            ->whereIn('estado_pago', ['pagado', 'invitado'])
+            ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
             ->count();
     }
 
@@ -87,7 +87,7 @@ class Edicion extends Model
     {
         return $this->inscripciones()
             ->where('necesita_autobus', true)
-            ->whereIn('estado_pago', ['pagado', 'invitado'])
+            ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
             ->count();
     }
 

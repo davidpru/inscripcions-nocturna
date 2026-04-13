@@ -128,7 +128,7 @@ const tabActiva = ref<'inscrits' | 'llista_espera' | 'pendents'>('inscrits');
 const inscripcionesFiltradas = computed(() => {
   switch (tabActiva.value) {
     case 'inscrits':
-      return props.inscripciones.filter((i) => ['pagado', 'invitado'].includes(i.estado_pago));
+      return props.inscripciones.filter((i) => ['pagado', 'invitado', 'compromiso'].includes(i.estado_pago));
     case 'llista_espera':
       return props.inscripciones.filter((i) => i.estado_pago === 'lista_espera');
     case 'pendents':
@@ -143,7 +143,7 @@ const inscripcionesFiltradas = computed(() => {
 });
 
 const contadorTabs = computed(() => ({
-  inscrits: props.inscripciones.filter((i) => ['pagado', 'invitado'].includes(i.estado_pago))
+  inscrits: props.inscripciones.filter((i) => ['pagado', 'invitado', 'compromiso'].includes(i.estado_pago))
     .length,
   llista_espera: props.inscripciones.filter((i) => i.estado_pago === 'lista_espera').length,
   pendents: props.inscripciones.filter((i) =>
@@ -203,7 +203,7 @@ const numeroInscripcionPorId = computed(() => {
   let pagadasVistas = 0;
 
   for (const inscripcion of inscripcionesFiltradas.value) {
-    if (['pagado', 'invitado'].includes(inscripcion.estado_pago)) {
+    if (['pagado', 'invitado', 'compromiso'].includes(inscripcion.estado_pago)) {
       map.set(inscripcion.id, totalInscripcionesPagadas.value - pagadasVistas);
       pagadasVistas += 1;
     }
@@ -669,6 +669,8 @@ const getEstadoPagoBadgeClass = (estado: string) => {
     return 'bg-purple-500 text-purple-100';
   } else if (estado === 'lista_espera') {
     return 'bg-amber-100 text-amber-800';
+  } else if (estado === 'compromiso') {
+    return 'bg-indigo-500 text-indigo-100';
   } else {
     return 'bg-gray-100 text-gray-700';
   }
@@ -682,6 +684,7 @@ const getEstadoPagoTexto = (estado: string) => {
     devuelto: 'Devolt',
     devolucion_parcial: 'Devolució Parcial',
     invitado: 'Invitat',
+    compromiso: 'Compromís',
     fallido: 'Fallit',
     lista_espera: 'Llista Espera',
   };
@@ -1686,6 +1689,7 @@ const confirmarToggleDorsal = () => {
                       <SelectItem value="pagado">Pagat</SelectItem>
                       <SelectItem value="pendiente">Pendent</SelectItem>
                       <SelectItem value="invitado">Invitat</SelectItem>
+                      <SelectItem value="compromiso">Compromís</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1694,7 +1698,7 @@ const confirmarToggleDorsal = () => {
 
             <!-- Resumen del precio -->
             <div
-              v-if="precioCalculadoNuevo && nuevaInscripcionForm.estado_pago !== 'invitado'"
+              v-if="precioCalculadoNuevo && !['invitado', 'compromiso'].includes(nuevaInscripcionForm.estado_pago)"
               class="rounded-lg border-2 border-blue-200 bg-blue-50 p-4"
             >
               <h3 class="mb-3 text-lg font-semibold text-blue-900">Resum del Preu</h3>
@@ -1735,11 +1739,11 @@ const confirmarToggleDorsal = () => {
             </div>
 
             <div
-              v-if="nuevaInscripcionForm.estado_pago === 'invitado'"
+              v-if="['invitado', 'compromiso'].includes(nuevaInscripcionForm.estado_pago)"
               class="rounded-lg border-2 border-green-200 bg-green-50 p-4"
             >
               <p class="text-sm text-green-800">
-                ℹ️ Els participants invitats no han de pagar. El preu total serà 0€.
+                ℹ️ Els participants {{ nuevaInscripcionForm.estado_pago === 'compromiso' ? 'amb compromís' : 'invitats' }} no han de pagar. El preu total serà 0€.
               </p>
             </div>
 

@@ -165,6 +165,14 @@ const getEstadoPagoInfo = (estado: string) => {
         textColor: 'text-blue-800',
         iconColor: 'text-blue-600',
       };
+    case 'compromiso':
+      return {
+        icon: CheckCircle,
+        text: 'Inscripció Confirmada (Compromís)',
+        bgColor: 'bg-indigo-100',
+        textColor: 'text-indigo-800',
+        iconColor: 'text-indigo-600',
+      };
     case 'devuelto':
       return {
         icon: XCircle,
@@ -291,7 +299,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
             <button
               v-if="
                 inscripcion.necesita_autobus &&
-                (inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado')
+                ['pagado', 'invitado', 'compromiso'].includes(inscripcion.estado_pago)
               "
               type="button"
               class="text-xs text-blue-600 hover:text-blue-800 hover:underline"
@@ -318,7 +326,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
       <!-- Opción de contratar autobús si está pagado y no tiene bus -->
       <div
         v-if="
-          (inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado') &&
+          ['pagado', 'invitado', 'compromiso'].includes(inscripcion.estado_pago) &&
           !inscripcion.necesita_autobus
         "
         class="mb-6 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 p-6"
@@ -531,7 +539,7 @@ const estadoInfo = getEstadoPagoInfo(props.inscripcion.estado_pago);
           <Button variant="outline">Tornar a l'inici</Button>
         </Link>
         <Button
-          v-if="inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado'"
+          v-if="['pagado', 'invitado', 'compromiso'].includes(inscripcion.estado_pago)"
           @click="reenviarCorreo"
           :disabled="enviandoCorreo"
           class="gap-2"

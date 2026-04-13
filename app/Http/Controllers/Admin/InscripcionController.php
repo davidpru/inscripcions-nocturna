@@ -46,7 +46,7 @@ class InscripcionController extends Controller
 
         // Clonar query para contar pagadas (incluye invitadas)
         $queryPagadas = clone $query;
-        $queryPagadas->whereIn('estado_pago', ['pagado', 'invitado']);
+        $queryPagadas->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso']);
         
         $inscripciones = $query->get();
         $ediciones = Edicion::orderBy('anio', 'desc')->get();
@@ -107,7 +107,7 @@ class InscripcionController extends Controller
             'talla_camiseta_caro' => 'required|string|max:10',
             'talla_camiseta_pauls' => 'required|string|max:10',
             'es_celiaco' => 'nullable|string|in:si,no',
-            'estado_pago' => 'required|in:pendiente,pagado,invitado',
+            'estado_pago' => 'required|in:pendiente,pagado,invitado,compromiso',
         ]);
 
         // Buscar o crear participante
@@ -139,10 +139,10 @@ class InscripcionController extends Controller
         // Obtener edición para calcular precio
         $edicion = Edicion::findOrFail($validated['edicion_id']);
 
-        // Calcular precio (0 si es invitado)
-        if ($validated['estado_pago'] === 'invitado') {
+        // Calcular precio (0 si es invitado o compromiso)
+        if (in_array($validated['estado_pago'], ['invitado', 'compromiso'])) {
             $precioTotal = 0;
-            $tarifaAplicada = 'Invitado';
+            $tarifaAplicada = $validated['estado_pago'] === 'compromiso' ? 'Compromiso' : 'Invitado';
         } else {
             $tarifaService = new TarifaService();
             $resultadoCalculo = $tarifaService->calcularPrecio(
@@ -173,7 +173,7 @@ class InscripcionController extends Controller
             'precio_total' => $precioTotal,
             'tarifa_aplicada' => $tarifaAplicada,
             'estado_pago' => $validated['estado_pago'],
-            'fecha_pago' => in_array($validated['estado_pago'], ['pagado', 'invitado']) ? now() : null,
+            'fecha_pago' => in_array($validated['estado_pago'], ['pagado', 'invitado', 'compromiso']) ? now() : null,
             'hash_token' => \Illuminate\Support\Str::random(32),
         ]);
 
@@ -196,7 +196,7 @@ class InscripcionController extends Controller
             'genero' => 'required|in:masculino,femenino',
             'fecha_nacimiento' => 'required|date',
             // Datos de la inscripción
-            'estado_pago' => 'required|in:pendiente,pagado,cancelado,invitado',
+            'estado_pago' => 'required|in:pendiente,pagado,cancelado,invitado,compromiso',
             'es_socio_uec' => 'boolean',
             'esta_federado' => 'boolean',
             'numero_licencia' => 'nullable|string|max:50',
@@ -241,9 +241,9 @@ class InscripcionController extends Controller
         }
 
         if ($cambiaTarifa) {
-            if ($validated['estado_pago'] === 'invitado') {
+            if (in_array($validated['estado_pago'], ['invitado', 'compromiso'])) {
                 $precioTotal = 0;
-                $tarifaAplicada = 'Invitado';
+                $tarifaAplicada = $validated['estado_pago'] === 'compromiso' ? 'Compromiso' : 'Invitado';
                 $descuentoCupon = 0;
             } else {
                 $tarifaService = new TarifaService();
@@ -332,7 +332,7 @@ class InscripcionController extends Controller
     {
         $inscripcion->load(['participante', 'edicion']);
 
-        if (!in_array($inscripcion->estado_pago, ['pagado', 'invitado'])) {
+        if (!in_array($inscripcion->estado_pago, ['pagado', 'invitado', 'compromiso'])) {
             return response()->json(['error' => 'La inscripció ha d\'estar pagada per generar un canvi de dorsal.'], 422);
         }
 
@@ -431,7 +431,7 @@ class InscripcionController extends Controller
     public function exportar(Request $request)
     {
         $query = Inscripcion::with(['participante', 'edicion'])
-            ->whereIn('estado_pago', ['pagado', 'invitado'])
+            ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('edicion_id')) {
@@ -510,7 +510,7 @@ class InscripcionController extends Controller
                     $i->seguro_anulacion ? 'Sí' : 'No',
                     number_format($i->precio_total, 2, ',', '') . '€',
                     $i->descuento_cupon ? number_format($i->descuento_cupon, 2, ',', '') . '€' : '',
-                    $i->estado_pago === 'pagado' ? 'Pagat' : 'Invitat',
+                    $i->estado_pago === 'pagado' ? 'Pagat' : ($i->estado_pago === 'compromiso' ? 'Compromís' : 'Invitat'),
                     $i->fecha_pago ?? '',
                     substr($i->created_at, 0, 10),
                     $i->dorsal_recogido ? 'Sí' : 'No',

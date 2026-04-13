@@ -289,7 +289,7 @@ const getTipoDescuentoCupon = () => {
         <TabsContent value="resumen" class="mt-4 space-y-6">
           <!-- QR Code (pagado/invitado) -->
           <div
-            v-if="inscripcion.estado_pago === 'pagado' || inscripcion.estado_pago === 'invitado'"
+            v-if="['pagado', 'invitado', 'compromiso'].includes(inscripcion.estado_pago)"
             class="flex flex-col items-center rounded-lg border bg-white p-4 sm:p-6"
           >
             <QrCode class="mb-2 h-15 w-15 text-slate-300 sm:h-20 sm:w-20" />
@@ -445,6 +445,7 @@ const getTipoDescuentoCupon = () => {
                     'bg-amber-100 text-amber-800': inscripcion.estado_pago === 'pendiente',
                     'bg-red-100 text-red-800': inscripcion.estado_pago === 'cancelado',
                     'bg-blue-100 text-blue-800': inscripcion.estado_pago === 'invitado',
+                    'bg-indigo-100 text-indigo-800': inscripcion.estado_pago === 'compromiso',
                     'bg-purple-100 text-purple-800': inscripcion.estado_pago === 'devuelto',
                     'bg-orange-100 text-orange-800':
                       inscripcion.estado_pago === 'devolucion_parcial',
@@ -670,6 +671,7 @@ const getTipoDescuentoCupon = () => {
                     <option value="cancelado">Cancelado</option>
                     <option value="devuelto">Devuelto</option>
                     <option value="invitado">Invitado</option>
+                    <option value="compromiso">Compromiso</option>
                   </select>
                 </div>
                 <!-- Precio Actual (solo lectura) -->
