@@ -104,6 +104,7 @@ interface Inscripcion {
   dorsal_recogido: boolean;
   importe_devolucion: number | null;
   fecha_devolucion: string | null;
+  cambio_dorsal_pendent: { id: number; token: string; expires_at: string } | null;
 }
 
 const props = defineProps<{
