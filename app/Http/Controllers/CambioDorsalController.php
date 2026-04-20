@@ -103,7 +103,7 @@ class CambioDorsalController extends Controller
             $jaInscrit = Inscripcion::where('participante_id', $participantExistent->id)
                 ->where('edicion_id', $inscripcion->edicion_id)
                 ->where('id', '!=', $inscripcion->id)
-                ->whereNotIn('estado_pago', ['devuelto', 'cancelado'])
+                ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
                 ->exists();
             if ($jaInscrit) {
                 return back()->withErrors(['dni' => 'Aquest participant ja té una inscripció activa en aquesta edició.']);

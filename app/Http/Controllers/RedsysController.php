@@ -184,7 +184,7 @@ class RedsysController extends Controller
         $conflicte = \App\Models\Inscripcion::where('participante_id', $nuevoParticipante->id)
             ->where('edicion_id', $inscripcion->edicion_id)
             ->where('id', '!=', $inscripcion->id)
-            ->whereNotIn('estado_pago', ['devuelto', 'cancelado'])
+            ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
             ->exists();
 
         if ($conflicte) {
