@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
-import { CheckCircle, Clock, Copy, ExternalLink, XCircle } from 'lucide-vue-next';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { CheckCircle, Clock, Copy, ExternalLink, Trash2, XCircle } from 'lucide-vue-next';
 import { computed, onUnmounted, ref } from 'vue';
 
 interface ParticipantInfo {
@@ -75,6 +75,11 @@ const copiarUrl = async (canvi: CanviDorsal) => {
 const pendents = computed(() => props.canvis.filter((c) => c.estado === 'pendiente'));
 const completats = computed(() => props.canvis.filter((c) => c.estado === 'completado'));
 const caducats = computed(() => props.canvis.filter((c) => c.estado === 'caducado'));
+
+const eliminar = (canvi: CanviDorsal) => {
+  if (!confirm(`Eliminar el canvi de dorsal de ${canvi.participant_original?.nom ?? canvi.nom_participant_original}?`)) return;
+  router.delete(`/uec-admin/canvis-dorsal/${canvi.id}`);
+};
 </script>
 
 <template>
@@ -213,6 +218,15 @@ const caducats = computed(() => props.canvis.filter((c) => c.estado === 'caducad
                     >
                       <ExternalLink class="h-4 w-4" />
                     </a>
+                    <!-- Eliminar (pendents i caducats) -->
+                    <button
+                      v-if="canvi.estado !== 'completado'"
+                      title="Eliminar"
+                      class="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                      @click="eliminar(canvi)"
+                    >
+                      <Trash2 class="h-4 w-4" />
+                    </button>
                   </div>
                   <p
                     v-if="copiat === canvi.id"

@@ -25,6 +25,7 @@ class InscripcionController extends Controller
             'participante',
             'edicion',
             'cupon:id,codigo,descripcion,descuento_tipo,descuento_valor',
+            'cambioDorsalPendent:id,inscripcion_id,token,expires_at',
         ])
             ->orderBy('created_at', 'desc');
 

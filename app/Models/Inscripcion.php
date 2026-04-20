@@ -94,4 +94,12 @@ class Inscripcion extends Model
     {
         return $this->hasMany(RedsysTransaccion::class);
     }
+
+    public function cambioDorsalPendent(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(CambioDorsal::class)
+            ->where('estado', 'pendiente')
+            ->where('expires_at', '>', now())
+            ->latest();
+    }
 }

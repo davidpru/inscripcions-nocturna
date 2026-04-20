@@ -154,6 +154,7 @@ Route::prefix('uec-admin')->name('admin.')->middleware('admin.auth')->group(func
 
     // Canvis de dorsal
     Route::get('canvis-dorsal', [AdminCambioDorsalController::class, 'index'])->name('canvis-dorsal.index');
+    Route::delete('canvis-dorsal/{cambioDorsal}', [AdminCambioDorsalController::class, 'destroy'])->name('canvis-dorsal.destroy');
 
     // Transacciones Redsys
     Route::get('transacciones', [RedsysTransaccionController::class, 'index'])->name('transacciones.index');

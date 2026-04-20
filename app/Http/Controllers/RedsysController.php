@@ -180,6 +180,25 @@ class RedsysController extends Controller
             ]
         );
 
+        // Verificar que el nuevo participante no tenga ya una inscripción activa en la misma edición
+        $conflicte = \App\Models\Inscripcion::where('participante_id', $nuevoParticipante->id)
+            ->where('edicion_id', $inscripcion->edicion_id)
+            ->where('id', '!=', $inscripcion->id)
+            ->whereNotIn('estado_pago', ['devuelto', 'cancelado'])
+            ->exists();
+
+        if ($conflicte) {
+            Log::error('CambioDorsal: el nou participant ja té una inscripció activa en aquesta edició', [
+                'cambio_dorsal_id'   => $cambioDorsal->id,
+                'inscripcion_id'     => $inscripcion->id,
+                'nou_participante_id'=> $nuevoParticipante->id,
+                'edicion_id'         => $inscripcion->edicion_id,
+            ]);
+            // Marcar el canvi com a fallat per evitar reintents, però no fer el update de participante
+            $cambioDorsal->update(['estado' => 'caducado']);
+            return;
+        }
+
         // Transferir la inscripción al nuevo participante
         $inscripcion->update([
             'participante_id'       => $nuevoParticipante->id,

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\CambioDorsal;
+use App\Models\Inscripcion;
+use App\Models\Participante;
 use Creagia\Redsys\Enums\ConsumerLanguage;
 use Creagia\Redsys\Enums\Currency;
 use Creagia\Redsys\Enums\Environment;
@@ -94,8 +96,21 @@ class CambioDorsalController extends Controller
         // Excluir email_confirm del JSON guardado
         unset($validated['email_confirm']);
 
-        // Calcular precio real: base + federativa si origen no la tenía y destino sí
+        // Verificar que el nuevo participante no tenga ya una inscripción en la misma edición
         $inscripcion = $cambioDorsal->inscripcion;
+        $participantExistent = Participante::where('dni', strtoupper(trim($validated['dni'])))->first();
+        if ($participantExistent) {
+            $jaInscrit = Inscripcion::where('participante_id', $participantExistent->id)
+                ->where('edicion_id', $inscripcion->edicion_id)
+                ->where('id', '!=', $inscripcion->id)
+                ->whereNotIn('estado_pago', ['devuelto', 'cancelado'])
+                ->exists();
+            if ($jaInscrit) {
+                return back()->withErrors(['dni' => 'Aquest participant ja té una inscripció activa en aquesta edició.']);
+            }
+        }
+
+        // Calcular precio real: base + federativa si origen no la tenía y destino sí
         $precioFinal = (float) $cambioDorsal->precio; // precio base (10€)
         $esFederado = (bool) ($validated['esta_federado'] ?? false);
         $esSoci = (bool) ($validated['es_socio_uec'] ?? false);

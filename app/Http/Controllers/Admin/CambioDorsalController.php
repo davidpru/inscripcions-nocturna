@@ -53,4 +53,15 @@ class CambioDorsalController extends Controller
             'canvis' => $canvis,
         ]);
     }
+
+    public function destroy(CambioDorsal $cambioDorsal)
+    {
+        if ($cambioDorsal->estado === 'completado') {
+            return back()->withErrors(['error' => 'No es pot eliminar un canvi de dorsal completat.']);
+        }
+
+        $cambioDorsal->delete();
+
+        return back()->with('success', 'Canvi de dorsal eliminat correctament.');
+    }
 }

@@ -74,6 +74,7 @@ interface Inscripcion {
     descuento_valor: number;
   } | null;
   importe_devolucion: number | null;
+  cambio_dorsal_pendent: { id: number; token: string; expires_at: string } | null;
 }
 
 const props = defineProps<{
@@ -94,6 +95,10 @@ const emit = defineEmits<{
 const handleOpenChange = (open: boolean) => {
   if (open) {
     emit('open');
+    urlCambioDorsal.value = props.inscripcion.cambio_dorsal_pendent
+      ? `${window.location.origin}/canvi-dorsal/${props.inscripcion.cambio_dorsal_pendent.token}`
+      : null;
+    errorCambioDorsal.value = null;
   } else {
     emit('close');
   }
