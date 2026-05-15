@@ -16,16 +16,17 @@ class DashboardController extends Controller
             ->first();
 
         $stats = [
-            'totalInscripciones' => Inscripcion::whereIn('estado_pago', ['pagado', 'invitado'])->count(),
+            'totalInscripciones' => Inscripcion::whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])->count(),
             'inscripcionesPagadas' => Inscripcion::where('estado_pago', 'pagado')->count(),
             'inscripcionesInvitadas' => Inscripcion::where('estado_pago', 'invitado')->count(),
+            'inscripcionesCompromiso' => Inscripcion::where('estado_pago', 'compromiso')->count(),
             'inscripcionesPendientes' => Inscripcion::where('estado_pago', 'pendiente')->count(),
             'totalRecaudado' => Inscripcion::where('estado_pago', 'pagado')->sum('precio_total'),
             'edicionActual' => $edicionActual ? [
                 'id' => $edicionActual->id,
                 'anio' => $edicionActual->anio,
                 'inscritos' => Inscripcion::where('edicion_id', $edicionActual->id)
-                    ->whereIn('estado_pago', ['pagado', 'invitado'])
+                    ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
                     ->count(),
                 'limite' => $edicionActual->limite_inscritos,
             ] : null,
@@ -39,7 +40,7 @@ class DashboardController extends Controller
         if ($edicionActual) {
             // Obtener inscripciones agrupadas por día (created_at para incluir invitados sin fecha_pago)
             $inscripciones = Inscripcion::where('edicion_id', $edicionActual->id)
-                ->whereIn('estado_pago', ['pagado', 'invitado'])
+                ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
                 ->selectRaw('DATE(created_at) as fecha, COUNT(*) as total')
                 ->groupBy('fecha')
                 ->orderBy('fecha')
@@ -83,14 +84,14 @@ class DashboardController extends Controller
         $baseQuery = fn() => Inscripcion::where('edicion_id', $edicion->id)
             ->where('estado_pago', 'pagado');
         $baseQueryAll = fn() => Inscripcion::where('edicion_id', $edicion->id)
-            ->whereIn('estado_pago', ['pagado', 'invitado']);
+            ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso']);
 
         // Precios de referencia (usamos normal por defecto)
         $precioBus = $edicion->precio_autobus_normal ?? 12.50;
         $precioSeguro = $edicion->precio_seguro ?? 7.30;
 
-        // Total inscrits
-        $totalInscrits = $baseQuery()->count();
+        // Total inscrits (tots): cuenta pagado+invitado+compromiso, import solo pagados
+        $totalInscrits = $baseQueryAll()->count();
         $importTotal = $baseQuery()->sum('precio_total');
         $placesBus = $baseQuery()->where('necesita_autobus', true)->count();
         $importBus = $placesBus * $precioBus;
@@ -179,6 +180,7 @@ class DashboardController extends Controller
             ->sum('precio_total');
 
         $invitados = $baseQueryAll()->where('estado_pago', 'invitado')->count();
+        $compromisos = $baseQueryAll()->where('estado_pago', 'compromiso')->count();
         $celiacos = $baseQueryAll()->where('es_celiaco', true)->count();
 
         return [
@@ -218,15 +220,15 @@ class DashboardController extends Controller
                 'importAsseg' => $sociFederatAsseg * $precioSeguro,
             ],
             'placesBus' => [
-                'total' => $placesBus,
+                'total' => $baseQueryAll()->where('necesita_autobus', true)->count(),
                 'importTotal' => $importBus,
             ],
             'busTortosa' => [
-                'total' => $baseQuery()->where('necesita_autobus', true)->where('parada_autobus', 'tortosa')->count(),
+                'total' => $baseQueryAll()->where('necesita_autobus', true)->where('parada_autobus', 'tortosa')->count(),
                 'importTotal' => $baseQuery()->where('necesita_autobus', true)->where('parada_autobus', 'tortosa')->count() * $precioBus,
             ],
             'busPauls' => [
-                'total' => $baseQuery()->where('necesita_autobus', true)->where('parada_autobus', 'pauls')->count(),
+                'total' => $baseQueryAll()->where('necesita_autobus', true)->where('parada_autobus', 'pauls')->count(),
                 'importTotal' => $baseQuery()->where('necesita_autobus', true)->where('parada_autobus', 'pauls')->count() * $precioBus,
             ],
             'assegurances' => [
@@ -235,6 +237,9 @@ class DashboardController extends Controller
             ],
             'invitados' => [
                 'total' => $invitados,
+            ],
+            'compromisos' => [
+                'total' => $compromisos,
             ],
             'celiacos' => [
                 'total' => $celiacos,

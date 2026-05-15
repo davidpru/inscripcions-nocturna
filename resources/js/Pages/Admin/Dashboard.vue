@@ -13,13 +13,14 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { GroupedBar } from '@unovis/ts';
 import { VisAxis, VisGroupedBar, VisTooltip, VisXYContainer } from '@unovis/vue';
-import { BarChart3, Calendar, ClipboardList, Euro, Gift, TrendingUp, Users } from 'lucide-vue-next';
+import { BarChart3, Calendar, ClipboardList, Euro, Gift, Handshake, TrendingUp, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Stats {
   totalInscripciones: number;
   inscripcionesPagadas: number;
   inscripcionesInvitadas: number;
+  inscripcionesCompromiso: number;
   inscripcionesPendientes: number;
   totalRecaudado: number;
   edicionActual: {
@@ -54,6 +55,7 @@ interface Estadistiques {
   busPauls: { total: number; importTotal: number };
   assegurances: { total: number; importTotal: number };
   invitados: { total: number };
+  compromisos: { total: number };
   celiacos: { total: number };
 }
 
@@ -122,14 +124,14 @@ const estadistiques = computed(() => props.estadistiques);
         </div>
 
         <!-- Stats Grid -->
-        <div class="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-5">
+        <div class="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-6">
           <!-- Total Inscripciones -->
           <div class="rounded-lg bg-white p-4 shadow sm:p-6">
-            <div class="flex items-start">
+            <div class="flex flex-col items-start gap-2">
               <div class="rounded-full bg-blue-100 p-2 sm:p-3">
                 <ClipboardList class="h-4 w-4 text-blue-600 sm:h-6 sm:w-6" />
               </div>
-              <div class="ml-2 md:ml-4">
+              <div>
                 <p class="text-sm font-medium text-slate-500">Total Inscripciones</p>
                 <p class="text-2xl font-bold text-slate-900">
                   {{ stats.totalInscripciones }}
@@ -140,11 +142,11 @@ const estadistiques = computed(() => props.estadistiques);
 
           <!-- Pagadas -->
           <div class="rounded-lg bg-white p-4 shadow sm:p-6">
-            <div class="flex items-start">
+            <div class="flex flex-col items-start gap-2">
               <div class="rounded-full bg-green-100 p-2 sm:p-3">
                 <TrendingUp class="h-4 w-4 text-green-600 sm:h-6 sm:w-6" />
               </div>
-              <div class="ml-2 md:ml-4">
+              <div>
                 <p class="text-sm font-medium text-slate-500">Pagadas</p>
                 <p class="text-2xl font-bold text-slate-900">
                   {{ stats.inscripcionesPagadas }}
@@ -155,11 +157,11 @@ const estadistiques = computed(() => props.estadistiques);
 
           <!-- Invitados -->
           <div class="rounded-lg bg-white p-4 shadow sm:p-6">
-            <div class="flex items-start">
+            <div class="flex flex-col items-start gap-2">
               <div class="rounded-full bg-sky-100 p-2 sm:p-3">
                 <Gift class="h-4 w-4 text-sky-600 sm:h-6 sm:w-6" />
               </div>
-              <div class="ml-2 md:ml-4">
+              <div>
                 <p class="text-sm font-medium text-slate-500">Invitados</p>
                 <p class="text-2xl font-bold text-slate-900">
                   {{ stats.inscripcionesInvitadas }}
@@ -168,13 +170,28 @@ const estadistiques = computed(() => props.estadistiques);
             </div>
           </div>
 
+          <!-- Compromisos -->
+          <div class="rounded-lg bg-white p-4 shadow sm:p-6">
+            <div class="flex flex-col items-start gap-2">
+              <div class="rounded-full bg-indigo-100 p-2 sm:p-3">
+                <Handshake class="h-4 w-4 text-indigo-600 sm:h-6 sm:w-6" />
+              </div>
+              <div>
+                <p class="text-sm font-medium text-slate-500">Compromisos</p>
+                <p class="text-2xl font-bold text-slate-900">
+                  {{ stats.inscripcionesCompromiso }}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <!-- Pendientes -->
           <div class="rounded-lg bg-white p-4 shadow sm:p-6">
-            <div class="flex items-start">
+            <div class="flex flex-col items-start gap-2">
               <div class="rounded-full bg-amber-100 p-2 sm:p-3">
                 <Users class="h-4 w-4 text-amber-600 sm:h-6 sm:w-6" />
               </div>
-              <div class="ml-2 md:ml-4">
+              <div>
                 <p class="text-sm font-medium text-slate-500">Pendientes</p>
                 <p class="text-2xl font-bold text-slate-900">
                   {{ stats.inscripcionesPendientes }}
@@ -185,13 +202,13 @@ const estadistiques = computed(() => props.estadistiques);
 
           <!-- Total Recaudado -->
           <div class="col-span-2 rounded-lg bg-white p-4 shadow sm:col-span-1 sm:p-6 lg:col-span-1">
-            <div class="flex items-start">
+            <div class="flex flex-col items-start gap-2">
               <div class="rounded-full bg-purple-100 p-2 sm:p-3">
                 <Euro class="h-4 w-4 text-purple-600 sm:h-6 sm:w-6" />
               </div>
-              <div class="ml-2 md:ml-4">
+              <div class="w-full min-w-0">
                 <p class="text-sm font-medium text-slate-500">Recaudado</p>
-                <p class="text-2xl font-bold text-slate-900">
+                <p class="text-2xl font-bold tabular-nums text-slate-900">
                   {{ formatCurrency(stats.totalRecaudado) }}
                 </p>
               </div>
@@ -380,6 +397,15 @@ const estadistiques = computed(() => props.estadistiques);
                   <TableRow class="bg-green-100">
                     <TableCell class="font-medium">Invitats</TableCell>
                     <TableCell class="text-center">{{ estadistiques.invitados.total }}</TableCell>
+                    <TableCell class="text-right"></TableCell>
+                    <TableCell class="text-right"></TableCell>
+                    <TableCell class="text-right"></TableCell>
+                    <TableCell class="text-right"></TableCell>
+                  </TableRow>
+                  <!-- Compromisos -->
+                  <TableRow class="bg-indigo-100">
+                    <TableCell class="font-medium">Compromisos</TableCell>
+                    <TableCell class="text-center">{{ estadistiques.compromisos.total }}</TableCell>
                     <TableCell class="text-right"></TableCell>
                     <TableCell class="text-right"></TableCell>
                     <TableCell class="text-right"></TableCell>
