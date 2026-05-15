@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Edicion;
+use App\Models\Inscripcion;
+use App\Services\DorsalService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -39,6 +41,8 @@ class EdicionController extends Controller
             'fecha_limite_tarifa_normal' => 'required|date',
             'estado' => 'required|in:abierta,cerrada',
             'lista_espera_cerrada' => 'boolean',
+            'dorsal_primer_masculino_id' => 'nullable|integer|exists:inscripciones,id',
+            'dorsal_primera_femenina_id' => 'nullable|integer|exists:inscripciones,id',
             'activa' => 'boolean',
             // Autobuses
             'autobuses' => 'nullable|array',
@@ -86,12 +90,43 @@ class EdicionController extends Controller
             ->pluck('total', 'parada_autobus')
             ->toArray();
 
+        $candidatosDorsal = $edicion->inscripciones()
+            ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
+            ->with('participante:id,nombre,apellidos,dni,genero')
+            ->get(['id', 'participante_id', 'numero_dorsal', 'estado_pago', 'created_at'])
+            ->map(fn($i) => [
+                'id' => $i->id,
+                'nombre' => trim(($i->participante->nombre ?? '') . ' ' . ($i->participante->apellidos ?? '')),
+                'dni' => $i->participante->dni ?? '',
+                'genero' => $i->participante->genero ?? null,
+                'numero_dorsal' => $i->numero_dorsal,
+            ])
+            ->sortBy('nombre')
+            ->values();
+
+        $dorsalesStats = [
+            'asignados' => $edicion->inscripciones()->whereNotNull('numero_dorsal')->count(),
+            'pendientes' => $edicion->inscripciones()
+                ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
+                ->whereNull('numero_dorsal')
+                ->count(),
+        ];
+
         return Inertia::render('Admin/Ediciones/Edit', [
             'edicion' => $edicion,
             'plazasAutobusVendidas' => $plazasAutobusVendidas,
             'plazasPorParada' => $plazasPorParada,
             'plazasAutobusDisponibles' => $edicion->plazas_autobus - $plazasAutobusVendidas,
+            'candidatosDorsal' => $candidatosDorsal,
+            'dorsalesStats' => $dorsalesStats,
         ]);
+    }
+
+    public function asignarDorsales(Edicion $edicion, DorsalService $dorsalService)
+    {
+        $resultado = $dorsalService->asignar($edicion);
+
+        return back()->with('success', "Dorsals assignats. Reservats: 1=#{$resultado['reservado_1']}, 2=#{$resultado['reservado_2']}. Nous: {$resultado['asignados_nuevos']}.");
     }
 
     public function update(Request $request, Edicion $edicion)
@@ -105,6 +140,8 @@ class EdicionController extends Controller
             'fecha_limite_tarifa_normal' => 'required|date',
             'estado' => 'required|in:abierta,cerrada',
             'lista_espera_cerrada' => 'boolean',
+            'dorsal_primer_masculino_id' => 'nullable|integer|exists:inscripciones,id',
+            'dorsal_primera_femenina_id' => 'nullable|integer|exists:inscripciones,id',
             'activa' => 'boolean',
             // Autobuses
             'autobuses' => 'nullable|array',

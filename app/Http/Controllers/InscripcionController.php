@@ -39,6 +39,7 @@ class InscripcionController extends Controller
                 'id' => $inscripcion->id,
                 'participante' => $inscripcion->participante,
                 'club' => $inscripcion->club,
+                'numero_dorsal' => $inscripcion->numero_dorsal,
             ]);
 
         return Inertia::render('Inscripcion/Listado', [

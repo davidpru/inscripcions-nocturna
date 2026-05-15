@@ -11,6 +11,7 @@ use App\Mail\InscripcionConfirmada;
 use App\Mail\CambioDorsalConfirmado;
 use App\Mail\DorsalTransferit;
 use App\Mail\PlacaActivada;
+use App\Services\DorsalService;
 use Creagia\Redsys\RedsysClient;
 use Creagia\Redsys\RedsysRequest;
 use Creagia\Redsys\Support\RequestParameters;
@@ -136,6 +137,15 @@ class RedsysController extends Controller
         ]);
 
         $activacio->update(['estado' => 'completado']);
+
+        try {
+            app(DorsalService::class)->asignarSiguiente($inscripcion->fresh());
+        } catch (\Throwable $e) {
+            Log::error('Error asignando dorsal a activación lista_espera', [
+                'inscripcion_id' => $inscripcion->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         Log::info('ActivacioLlistaEspera completada', [
             'activacio_id'   => $activacio->id,

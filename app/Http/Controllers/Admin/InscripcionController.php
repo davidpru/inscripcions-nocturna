@@ -471,6 +471,7 @@ class InscripcionController extends Controller
             'Estado Pago',
             'Fecha Pago',
             'Fecha Inscripción',
+            'Dorsal',
             'Dorsal Recogido',
         ];
 
@@ -514,6 +515,7 @@ class InscripcionController extends Controller
                     $i->estado_pago === 'pagado' ? 'Pagat' : ($i->estado_pago === 'compromiso' ? 'Compromís' : 'Invitat'),
                     $i->fecha_pago ?? '',
                     substr($i->created_at, 0, 10),
+                    $i->numero_dorsal ?? '',
                     $i->dorsal_recogido ? 'Sí' : 'No',
                 ]);
             }

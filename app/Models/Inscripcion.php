@@ -37,6 +37,7 @@ class Inscripcion extends Model
         'fecha_devolucion',
         'importe_devolucion',
         'dorsal_recogido',
+        'numero_dorsal',
     ];
 
     protected $casts = [
@@ -46,6 +47,7 @@ class Inscripcion extends Model
         'seguro_anulacion' => 'boolean',
         'es_celiaco' => 'boolean',
         'dorsal_recogido' => 'boolean',
+        'numero_dorsal' => 'integer',
         'tarifa_aplicada' => 'string',
         'precio_total' => 'decimal:2',
         'descuento_cupon' => 'decimal:2',

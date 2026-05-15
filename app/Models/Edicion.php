@@ -19,6 +19,8 @@ class Edicion extends Model
         'fecha_limite_tarifa_normal',
         'estado',
         'lista_espera_cerrada',
+        'dorsal_primer_masculino_id',
+        'dorsal_primera_femenina_id',
         'activa',
         // Autobuses (JSON array)
         'autobuses',

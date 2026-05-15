@@ -3,9 +3,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
-import { Bus, PencilLine } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { Bus, PencilLine, Hash } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface Edicion {
   id: number;
@@ -17,6 +17,8 @@ interface Edicion {
   fecha_limite_tarifa_normal: string;
   estado: 'abierta' | 'cerrada';
   lista_espera_cerrada: boolean;
+  dorsal_primer_masculino_id: number | null;
+  dorsal_primera_femenina_id: number | null;
   activa: boolean;
   autobuses: Array<{ nombre: string; plazas: number; parada?: string }>;
   plazas_autobus: number;
@@ -31,11 +33,21 @@ interface Edicion {
   precio_seguro: number;
 }
 
+interface CandidatoDorsal {
+  id: number;
+  nombre: string;
+  dni: string;
+  genero: string | null;
+  numero_dorsal: number | null;
+}
+
 const props = defineProps<{
   edicion: Edicion;
   plazasAutobusVendidas: number;
   plazasPorParada: Record<string, number>;
   plazasAutobusDisponibles: number;
+  candidatosDorsal: CandidatoDorsal[];
+  dorsalesStats: { asignados: number; pendientes: number };
 }>();
 
 const form = useForm({
@@ -47,6 +59,8 @@ const form = useForm({
   fecha_limite_tarifa_normal: props.edicion.fecha_limite_tarifa_normal ?? '',
   estado: props.edicion.estado ?? 'abierta',
   lista_espera_cerrada: props.edicion.lista_espera_cerrada ?? false,
+  dorsal_primer_masculino_id: props.edicion.dorsal_primer_masculino_id ?? null,
+  dorsal_primera_femenina_id: props.edicion.dorsal_primera_femenina_id ?? null,
   activa: props.edicion.activa ?? false,
   autobuses: props.edicion.autobuses ?? [],
   plazas_autobus: props.edicion.plazas_autobus ?? 0,
@@ -67,6 +81,70 @@ const plazasDisponibles = computed(() => {
 
 const enviarFormulario = () => {
   form.put(`/uec-admin/ediciones/${props.edicion.id}`);
+};
+
+const asignandoDorsales = ref(false);
+
+const formatLabel = (c: CandidatoDorsal) =>
+  `${c.nombre} (${c.dni})${c.numero_dorsal ? ` — dorsal #${c.numero_dorsal}` : ''}`;
+
+const inputMasc = ref('');
+const inputFem = ref('');
+
+const sincronizarInputDesdeId = (
+  inputRef: typeof inputMasc,
+  id: number | null,
+) => {
+  if (id === null) {
+    inputRef.value = '';
+    return;
+  }
+  const c = props.candidatosDorsal.find((x) => x.id === id);
+  inputRef.value = c ? formatLabel(c) : '';
+};
+
+sincronizarInputDesdeId(inputMasc, form.dorsal_primer_masculino_id);
+sincronizarInputDesdeId(inputFem, form.dorsal_primera_femenina_id);
+
+const buscarPorTexto = (texto: string): CandidatoDorsal | null => {
+  if (!texto) return null;
+  const exact = props.candidatosDorsal.find((c) => formatLabel(c) === texto);
+  if (exact) return exact;
+  const q = texto.toLowerCase().trim();
+  const candidatos = props.candidatosDorsal.filter(
+    (c) => c.nombre.toLowerCase().includes(q) || c.dni.toLowerCase().includes(q),
+  );
+  return candidatos.length === 1 ? candidatos[0] : null;
+};
+
+const seleccionarMasc = () => {
+  const c = buscarPorTexto(inputMasc.value);
+  form.dorsal_primer_masculino_id = c ? c.id : null;
+  if (c) inputMasc.value = formatLabel(c);
+};
+const seleccionarFem = () => {
+  const c = buscarPorTexto(inputFem.value);
+  form.dorsal_primera_femenina_id = c ? c.id : null;
+  if (c) inputFem.value = formatLabel(c);
+};
+
+const generoSeleccionadoMasc = computed(() => {
+  const sel = props.candidatosDorsal.find((c) => c.id === form.dorsal_primer_masculino_id);
+  return sel?.genero ?? null;
+});
+const generoSeleccionadoFem = computed(() => {
+  const sel = props.candidatosDorsal.find((c) => c.id === form.dorsal_primera_femenina_id);
+  return sel?.genero ?? null;
+});
+
+const asignarDorsales = () => {
+  if (!confirm('Assignar dorsals? Es respectaran els ja assignats i es forçaran #1 i #2 als seleccionats.')) return;
+  asignandoDorsales.value = true;
+  router.post(
+    `/uec-admin/ediciones/${props.edicion.id}/asignar-dorsales`,
+    {},
+    { onFinish: () => (asignandoDorsales.value = false) },
+  );
 };
 
 // Computed: Tarifas finales (inscripción + licencia federativa para no federados)
@@ -121,6 +199,15 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
                   Autobusos
                   <Badge variant="default" class="ml-1">
                     {{ form.autobuses.length }}
+                  </Badge>
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="dorsals" class="flex-1 sm:flex-none">
+                <span class="flex items-center gap-2 px-4 sm:px-10">
+                  <Hash :size="16" />
+                  Dorsals
+                  <Badge variant="default" class="ml-1">
+                    {{ dorsalesStats.asignados }}
                   </Badge>
                 </span>
               </TabsTrigger>
@@ -608,6 +695,105 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
                       <p class="text-sm text-slate-500">Tortosa</p>
                     </div>
                   </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <!-- Tab: Dorsals -->
+            <TabsContent value="dorsals">
+              <div class="rounded-lg bg-white p-6 shadow">
+                <div class="mb-4">
+                  <h3 class="text-lg font-semibold text-slate-900">Assignació de dorsals</h3>
+                  <p class="text-sm text-slate-500">
+                    Per ordre d'inscripció (created_at). Reserva manual del #1 (primer masculí) i del #2 (primera femenina).
+                  </p>
+                </div>
+
+                <div class="mb-6 grid grid-cols-2 gap-4 text-sm">
+                  <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <p class="text-xs font-medium text-slate-500">Assignats</p>
+                    <p class="text-2xl font-bold text-slate-900">{{ dorsalesStats.asignados }}</p>
+                  </div>
+                  <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <p class="text-xs font-medium text-slate-500">Pendents sense dorsal</p>
+                    <p class="text-2xl font-bold text-slate-900">{{ dorsalesStats.pendientes }}</p>
+                  </div>
+                </div>
+
+                <div class="grid gap-6 md:grid-cols-2">
+                  <div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">
+                      Dorsal #1 — Primer masculí
+                    </label>
+                    <input
+                      v-model="inputMasc"
+                      type="text"
+                      list="candidatos-dorsal-list"
+                      placeholder="Escriu nom o DNI..."
+                      autocomplete="off"
+                      class="block w-full rounded-md border-slate-300 text-sm shadow-sm"
+                      @change="seleccionarMasc"
+                      @blur="seleccionarMasc"
+                    />
+                    <p class="mt-1 text-xs text-slate-500">
+                      Seleccionat: ID #{{ form.dorsal_primer_masculino_id ?? '—' }}
+                    </p>
+                    <p
+                      v-if="generoSeleccionadoMasc && generoSeleccionadoMasc !== 'masculino'"
+                      class="mt-1 text-sm text-amber-700"
+                    >
+                      ⚠ Aquest participant no consta com a masculí (gènere: {{ generoSeleccionadoMasc }})
+                    </p>
+                  </div>
+
+                  <div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">
+                      Dorsal #2 — Primera femenina
+                    </label>
+                    <input
+                      v-model="inputFem"
+                      type="text"
+                      list="candidatos-dorsal-list"
+                      placeholder="Escriu nom o DNI..."
+                      autocomplete="off"
+                      class="block w-full rounded-md border-slate-300 text-sm shadow-sm"
+                      @change="seleccionarFem"
+                      @blur="seleccionarFem"
+                    />
+                    <p class="mt-1 text-xs text-slate-500">
+                      Seleccionada: ID #{{ form.dorsal_primera_femenina_id ?? '—' }}
+                    </p>
+                    <p
+                      v-if="generoSeleccionadoFem && generoSeleccionadoFem !== 'femenino'"
+                      class="mt-1 text-sm text-amber-700"
+                    >
+                      ⚠ Aquest participant no consta com a femení (gènere: {{ generoSeleccionadoFem }})
+                    </p>
+                  </div>
+                </div>
+
+                <datalist id="candidatos-dorsal-list">
+                  <option
+                    v-for="c in candidatosDorsal"
+                    :key="c.id"
+                    :value="`${c.nombre} (${c.dni})${c.numero_dorsal ? ` — dorsal #${c.numero_dorsal}` : ''}`"
+                  />
+                </datalist>
+
+                <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                  <p class="font-medium">Important:</p>
+                  <ul class="ml-4 mt-1 list-disc space-y-1">
+                    <li>Primer desa els canvis (Guardar Canvis) per fixar els seleccionats.</li>
+                    <li>Després prem <strong>Assignar dorsals</strong> per executar l'assignació.</li>
+                    <li>Es respecten els dorsals ja assignats; només s'omplen els buits.</li>
+                    <li>Els canvis al #1/#2 es forcen: l'anterior holder queda sense dorsal i rebrà el següent en la pròxima execució.</li>
+                  </ul>
+                </div>
+
+                <div class="mt-4 flex justify-end">
+                  <Button type="button" :disabled="asignandoDorsales" @click="asignarDorsales">
+                    {{ asignandoDorsales ? 'Assignant...' : 'Assignar dorsals' }}
+                  </Button>
                 </div>
               </div>
             </TabsContent>

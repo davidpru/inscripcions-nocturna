@@ -102,6 +102,7 @@ interface Inscripcion {
   cupon?: CuponInfo | null;
   descuento_cupon: number | null;
   dorsal_recogido: boolean;
+  numero_dorsal: number | null;
   importe_devolucion: number | null;
   fecha_devolucion: string | null;
   cambio_dorsal_pendent: { id: number; token: string; expires_at: string } | null;
@@ -873,6 +874,11 @@ const confirmarToggleDorsal = () => {
                   <th
                     class="px-2 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
                   >
+                    Dorsal
+                  </th>
+                  <th
+                    class="px-2 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase"
+                  >
                     #
                   </th>
                   <th
@@ -930,6 +936,12 @@ const confirmarToggleDorsal = () => {
                       class="font-semibold text-blue-600"
                     >
                       {{ getNumeroInscripcion(inscripcion) }}
+                    </span>
+                    <span v-else class="text-slate-400">-</span>
+                  </td>
+                  <td class="px-2 py-3 text-sm whitespace-nowrap tabular-nums">
+                    <span v-if="inscripcion.numero_dorsal" class="font-semibold text-slate-900">
+                      {{ inscripcion.numero_dorsal }}
                     </span>
                     <span v-else class="text-slate-400">-</span>
                   </td>
