@@ -70,16 +70,16 @@ class EdicionController extends Controller
 
     public function edit(Edicion $edicion): Response
     {
-        // Contar plazas de autobús vendidas
+        // Plazas físicas ocupadas: pagado + invitado + compromiso
         $plazasAutobusVendidas = $edicion->inscripciones()
             ->where('necesita_autobus', true)
-            ->where('estado_pago', 'pagado')
+            ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
             ->count();
 
         // Contar plazas por parada
         $plazasPorParada = $edicion->inscripciones()
             ->where('necesita_autobus', true)
-            ->where('estado_pago', 'pagado')
+            ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
             ->selectRaw('parada_autobus, COUNT(*) as total')
             ->groupBy('parada_autobus')
             ->pluck('total', 'parada_autobus')
