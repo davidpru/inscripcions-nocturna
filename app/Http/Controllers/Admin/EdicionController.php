@@ -38,6 +38,7 @@ class EdicionController extends Controller
             'limite_tarifa_tardia_inscritos' => 'required|integer|min:1|lte:limite_inscritos',
             'fecha_limite_tarifa_normal' => 'required|date',
             'estado' => 'required|in:abierta,cerrada',
+            'lista_espera_cerrada' => 'boolean',
             'activa' => 'boolean',
             // Autobuses
             'autobuses' => 'nullable|array',
@@ -103,6 +104,7 @@ class EdicionController extends Controller
             'limite_tarifa_tardia_inscritos' => 'required|integer|min:1|lte:limite_inscritos',
             'fecha_limite_tarifa_normal' => 'required|date',
             'estado' => 'required|in:abierta,cerrada',
+            'lista_espera_cerrada' => 'boolean',
             'activa' => 'boolean',
             // Autobuses
             'autobuses' => 'nullable|array',
@@ -122,10 +124,10 @@ class EdicionController extends Controller
             'precio_seguro' => 'nullable|numeric|min:0',
         ]);
 
-        // Verificar que no se reduzcan las plazas por debajo de las vendidas
+        // Verificar que no se reduzcan las plazas por debajo de las ocupadas
         $plazasAutobusVendidas = $edicion->inscripciones()
             ->where('necesita_autobus', true)
-            ->where('estado_pago', 'pagado')
+            ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
             ->count();
 
         $nuevasPlazas = $validated['plazas_autobus'] ?? 0;

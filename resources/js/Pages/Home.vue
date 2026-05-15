@@ -23,6 +23,7 @@ const props = defineProps<{
   isTestMode?: boolean;
   estadoEdicion?: string;
   plazasAgotadas?: boolean;
+  listaEsperaCerrada?: boolean;
 }>();
 
 const dni = ref('');
@@ -223,22 +224,41 @@ onUnmounted(() => {
             <!-- Llista d'espera (places agotades o edició tancada) -->
             <Card
               v-else-if="(inscripcionesAbiertas && plazasAgotadas) || estadoEdicion === 'cerrada'"
-              class="border border-orange-500! bg-orange-50"
+              :class="
+                listaEsperaCerrada
+                  ? 'border border-slate-400! bg-slate-100'
+                  : 'border border-orange-500! bg-orange-50'
+              "
             >
               <CardHeader class="pb-2">
-                <CardTitle class="text-2xl">Places esgotades</CardTitle>
-                <CardDescription>Apunta't a la llista d'espera</CardDescription>
+                <CardTitle class="text-2xl">
+                  {{ listaEsperaCerrada ? 'Llista d\'espera tancada' : 'Places esgotades' }}
+                </CardTitle>
+                <CardDescription>
+                  {{
+                    listaEsperaCerrada
+                      ? 'Ja no s\'accepten més inscripcions a la llista d\'espera'
+                      : "Apunta't a la llista d'espera"
+                  }}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <p class="mb-4 text-balance text-slate-600">
-                  Les places s'han esgotat! Pots apuntar-te a la llista d'espera i l'organització es
-                  posarà en contacte amb tu si hi ha plaça disponible.
+                  <template v-if="listaEsperaCerrada">
+                    La llista d'espera s'ha tancat. No s'admeten més sol·licituds per a aquesta
+                    edició.
+                  </template>
+                  <template v-else>
+                    Les places s'han esgotat! Pots apuntar-te a la llista d'espera i l'organització
+                    es posarà en contacte amb tu si hi ha plaça disponible.
+                  </template>
                 </p>
-                <Link href="/llista-espera">
+                <Link v-if="!listaEsperaCerrada" href="/llista-espera">
                   <Button size="xl" class="w-full bg-red-600 hover:bg-red-700">
                     Llista d'espera
                   </Button>
                 </Link>
+                <Button v-else size="xl" class="w-full" disabled>Tancada</Button>
               </CardContent>
             </Card>
           </div>

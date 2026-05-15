@@ -16,6 +16,7 @@ interface Edicion {
   limite_tarifa_tardia_inscritos: number;
   fecha_limite_tarifa_normal: string;
   estado: 'abierta' | 'cerrada';
+  lista_espera_cerrada: boolean;
   activa: boolean;
   autobuses: Array<{ nombre: string; plazas: number; parada?: string }>;
   plazas_autobus: number;
@@ -45,6 +46,7 @@ const form = useForm({
   limite_tarifa_tardia_inscritos: props.edicion.limite_tarifa_tardia_inscritos ?? 650,
   fecha_limite_tarifa_normal: props.edicion.fecha_limite_tarifa_normal ?? '',
   estado: props.edicion.estado ?? 'abierta',
+  lista_espera_cerrada: props.edicion.lista_espera_cerrada ?? false,
   activa: props.edicion.activa ?? false,
   autobuses: props.edicion.autobuses ?? [],
   plazas_autobus: props.edicion.plazas_autobus ?? 0,
@@ -173,6 +175,22 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
                       </label>
                       <p class="mt-1 text-xs text-slate-500">
                         Només pot haver una edició activa alhora
+                      </p>
+                    </div>
+
+                    <div>
+                      <label class="flex cursor-pointer items-center gap-2">
+                        <input
+                          v-model="form.lista_espera_cerrada"
+                          type="checkbox"
+                          class="text-primary focus:ring-primary h-4 w-4 rounded border-slate-300"
+                        />
+                        <span class="text-sm font-medium text-slate-700">
+                          Tancar llista d'espera
+                        </span>
+                      </label>
+                      <p class="mt-1 text-xs text-slate-500">
+                        Bloqueja noves sol·licituds i mostra l'estat tancat a la pàgina principal
                       </p>
                     </div>
 

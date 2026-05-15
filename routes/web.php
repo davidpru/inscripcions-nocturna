@@ -41,6 +41,7 @@ Route::get('/', function () {
         'isTestMode' => $isTestIp && $edicion && !$edicion->inscripcionesAbiertas(),
         'estadoEdicion' => $edicion?->estado,
         'plazasAgotadas' => $plazasAgotadas,
+        'listaEsperaCerrada' => $edicion ? (bool) $edicion->lista_espera_cerrada : false,
     ]);
 })->name('home');
 

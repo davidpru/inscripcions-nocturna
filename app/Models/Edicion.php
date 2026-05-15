@@ -18,6 +18,7 @@ class Edicion extends Model
         'limite_tarifa_tardia_inscritos',
         'fecha_limite_tarifa_normal',
         'estado',
+        'lista_espera_cerrada',
         'activa',
         // Autobuses (JSON array)
         'autobuses',
@@ -42,6 +43,7 @@ class Edicion extends Model
         'fecha_limite_tarifa_normal' => 'date:Y-m-d',
         'distancia_km' => 'float',
         'activa' => 'boolean',
+        'lista_espera_cerrada' => 'boolean',
         'autobuses' => 'array',
         'plazas_autobus' => 'integer',
         'precio_inscripcion_socio_normal' => 'float',

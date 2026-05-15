@@ -28,6 +28,7 @@ class ListaEsperaController extends Controller
 
         return Inertia::render('Inscripcion/ListaEspera', [
             'edicion' => $edicionActiva,
+            'listaEsperaCerrada' => (bool) $edicionActiva->lista_espera_cerrada,
         ]);
     }
 
@@ -94,6 +95,11 @@ class ListaEsperaController extends Controller
 
         // Calcular precio
         $edicion = Edicion::findOrFail($validated['edicion_id']);
+
+        if ($edicion->lista_espera_cerrada) {
+            return back()->withErrors(['dni' => 'La llista d\'espera està tancada per a aquesta edició.']);
+        }
+
         $precio = $this->tarifaService->calcularPrecio(
             $edicion,
             $validated['es_socio_uec'],
