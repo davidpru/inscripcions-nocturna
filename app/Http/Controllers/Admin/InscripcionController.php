@@ -108,7 +108,7 @@ class InscripcionController extends Controller
             'talla_camiseta_caro' => 'required|string|max:10',
             'talla_camiseta_pauls' => 'required|string|max:10',
             'es_celiaco' => 'nullable|string|in:si,no',
-            'estado_pago' => 'required|in:pendiente,pagado,invitado,compromiso',
+            'estado_pago' => 'required|in:pendiente,pagado,invitado,compromiso,lista_espera',
         ]);
 
         // Buscar o crear participante
@@ -197,7 +197,7 @@ class InscripcionController extends Controller
             'genero' => 'required|in:masculino,femenino',
             'fecha_nacimiento' => 'required|date',
             // Datos de la inscripción
-            'estado_pago' => 'required|in:pendiente,pagado,cancelado,invitado,compromiso',
+            'estado_pago' => 'required|in:pendiente,pagado,cancelado,invitado,compromiso,lista_espera',
             'es_socio_uec' => 'boolean',
             'esta_federado' => 'boolean',
             'numero_licencia' => 'nullable|string|max:50',

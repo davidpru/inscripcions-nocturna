@@ -677,6 +677,7 @@ const getTipoDescuentoCupon = () => {
                     <option value="devuelto">Devuelto</option>
                     <option value="invitado">Invitado</option>
                     <option value="compromiso">Compromiso</option>
+                    <option value="lista_espera">Llista d'espera</option>
                   </select>
                 </div>
                 <!-- Precio Actual (solo lectura) -->

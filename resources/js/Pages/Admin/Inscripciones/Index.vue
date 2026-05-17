@@ -1703,6 +1703,7 @@ const confirmarToggleDorsal = () => {
                       <SelectItem value="pendiente">Pendent</SelectItem>
                       <SelectItem value="invitado">Invitat</SelectItem>
                       <SelectItem value="compromiso">Compromís</SelectItem>
+                      <SelectItem value="lista_espera">Llista d'espera</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
