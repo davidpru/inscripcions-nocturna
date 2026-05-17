@@ -533,6 +533,15 @@ const exportarInscripciones = () => {
   window.open(url, '_blank');
 };
 
+const exportar9hSports = () => {
+  const params = new URLSearchParams();
+  if (edicionSeleccionada.value) {
+    params.append('edicion_id', edicionSeleccionada.value.toString());
+  }
+  const url = `/uec-admin/inscripciones/exportar-9h-sports${params.toString() ? '?' + params.toString() : ''}`;
+  window.open(url, '_blank');
+};
+
 const reenviarCorreo = (id: number) => {
   if (confirm('¿Estás seguro de que deseas reenviar el correo de confirmación?')) {
     router.post(
@@ -795,6 +804,9 @@ const confirmarToggleDorsal = () => {
             </div>
             <div>
               <Button variant="outline" @click="exportarInscripciones">Exportar</Button>
+            </div>
+            <div>
+              <Button variant="outline" @click="exportar9hSports">Exportar 9h Sports</Button>
             </div>
             <div>
               <Button @click="abrirModalNuevaInscripcion">

@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InscripcionController extends Controller
 {
@@ -528,6 +531,95 @@ class InscripcionController extends Controller
         return response()->stream($callback, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function exportar9hSports(Request $request): StreamedResponse
+    {
+        $query = Inscripcion::with(['participante', 'edicion'])
+            ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso']);
+
+        if ($request->filled('edicion_id')) {
+            $query->where('edicion_id', $request->edicion_id);
+        }
+
+        $inscripciones = $query
+            ->orderByRaw('numero_dorsal IS NULL, numero_dorsal ASC')
+            ->orderBy('created_at')
+            ->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Inscrits');
+
+        $headers = [
+            'Nombre',
+            'Apellidos',
+            'DNI',
+            'Sexe',
+            'Data naixement',
+            'Email',
+            'Telefon',
+            'Direcció',
+            'Códi Postal',
+            'Talla',
+            'Club',
+            'Preu',
+            'Num. Federado',
+            'Cursa',
+            'Comentari',
+            'Dorsal',
+            'Dorsal equip',
+            'Nació',
+        ];
+        $sheet->fromArray($headers, null, 'A1');
+
+        $sexoMap = ['masculino' => 'H', 'femenino' => 'D'];
+        $row = 2;
+        foreach ($inscripciones as $i) {
+            $p = $i->participante;
+            if (!$p) {
+                continue;
+            }
+
+            $fechaNac = $p->fecha_nacimiento
+                ? \Carbon\Carbon::parse($p->fecha_nacimiento)->format('j-n-Y')
+                : '';
+
+            $sheet->fromArray([
+                mb_strtoupper($p->nombre ?? '', 'UTF-8'),
+                mb_strtoupper($p->apellidos ?? '', 'UTF-8'),
+                strtoupper($p->dni ?? ''),
+                $sexoMap[$p->genero] ?? '',
+                $fechaNac,
+                $p->email ?? '',
+                $p->telefono ?? '',
+                $p->direccion ?? '',
+                $p->codigo_postal ?? '',
+                '',
+                mb_strtoupper($i->club ?? '', 'UTF-8'),
+                '',
+                $i->numero_licencia ?? '',
+                'XXIX Travessia Nocturna Fredes-Paüls',
+                '',
+                $i->numero_dorsal ?? '',
+                '',
+                'ES',
+            ], null, "A{$row}");
+            $row++;
+        }
+
+        foreach (range('A', 'R') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $filename = '9hsports_inscrits_' . date('Y-m-d') . '.xlsx';
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
 }

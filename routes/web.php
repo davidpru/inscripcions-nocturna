@@ -141,6 +141,7 @@ Route::prefix('uec-admin')->name('admin.')->middleware('admin.auth')->group(func
     // Gestión de inscripciones
     Route::get('inscripciones', [AdminInscripcionController::class, 'index'])->name('inscripciones.index');
     Route::get('inscripciones/exportar', [AdminInscripcionController::class, 'exportar'])->name('inscripciones.exportar');
+    Route::get('inscripciones/exportar-9h-sports', [AdminInscripcionController::class, 'exportar9hSports'])->name('inscripciones.exportar-9h-sports');
     Route::post('inscripciones', [AdminInscripcionController::class, 'store'])->name('inscripciones.store');
     Route::get('inscripciones/{inscripcion}', [AdminInscripcionController::class, 'show'])->name('inscripciones.show');
     Route::get('inscripciones/{inscripcion}/edit', [AdminInscripcionController::class, 'edit'])->name('inscripciones.edit');
