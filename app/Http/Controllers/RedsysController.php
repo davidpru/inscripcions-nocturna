@@ -266,6 +266,12 @@ class RedsysController extends Controller
         // Cargar relaciones necesarias
         $inscripcion->load(['participante', 'edicion']);
 
+        // Bloquear si edición cerrada
+        if ($inscripcion->edicion->estado === 'cerrada') {
+            return redirect()->route('home')
+                ->with('error', 'Les inscripcions ja estan tancades. No es pot finalitzar el pagament.');
+        }
+
         // Generar número de pedido único (Redsys no permite repetidos)
         // Formato: 4 dígitos del ID + 8 caracteres timestamp = 12 chars máx
         $orderNumberFormatted = str_pad((string)$inscripcion->id, 4, '0', STR_PAD_LEFT) . substr((string)time(), -8);
@@ -563,6 +569,14 @@ class RedsysController extends Controller
                     'numero_autorizacion' => $params->responseAuthorisationCode,
                     'fecha_pago' => now(),
                 ]);
+                try {
+                    app(DorsalService::class)->asignarSiguiente($inscripcion->fresh());
+                } catch (\Throwable $e) {
+                    Log::error('Error asignando dorsal en notification Redsys', [
+                        'inscripcion_id' => $inscripcion->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
                 Log::info('Redsys notification: Payment successful', [
                     'inscripcion_id' => $inscripcion->id,
                     'amount' => $params->amount,
@@ -822,7 +836,15 @@ class RedsysController extends Controller
                     'numero_autorizacion' => $params->responseAuthorisationCode,
                     'fecha_pago' => now(),
                 ]);
-                
+                try {
+                    app(DorsalService::class)->asignarSiguiente($inscripcion->fresh());
+                } catch (\Throwable $e) {
+                    Log::error('Error asignando dorsal en success Redsys', [
+                        'inscripcion_id' => $inscripcion->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
                 // Enviar email de confirmación
                 try {
                     Mail::to($inscripcion->participante->email)->send(new InscripcionConfirmada($inscripcion));
