@@ -126,22 +126,41 @@ const editingData = reactive<Record<number, any>>({});
 // Tabs de filtrado por estado
 const tabActiva = ref<'inscrits' | 'llista_espera' | 'pendents'>('inscrits');
 
+// Ordenar por dorsal: 'none' | 'asc' | 'desc'
+const ordenDorsal = ref<'none' | 'asc' | 'desc'>('none');
+
+const aplicarOrden = (lista: Inscripcion[]): Inscripcion[] => {
+  if (ordenDorsal.value === 'none') return lista;
+  const dir = ordenDorsal.value === 'asc' ? 1 : -1;
+  const NULL_SENTINEL = ordenDorsal.value === 'asc' ? -1 : Number.MAX_SAFE_INTEGER;
+  return [...lista].sort((a, b) => {
+    const da = a.numero_dorsal ?? NULL_SENTINEL;
+    const db = b.numero_dorsal ?? NULL_SENTINEL;
+    return (da - db) * dir;
+  });
+};
+
 // Filtrado local por tab
 const inscripcionesFiltradas = computed(() => {
+  let lista: Inscripcion[];
   switch (tabActiva.value) {
     case 'inscrits':
-      return props.inscripciones.filter((i) => ['pagado', 'invitado', 'compromiso'].includes(i.estado_pago));
+      lista = props.inscripciones.filter((i) => ['pagado', 'invitado', 'compromiso'].includes(i.estado_pago));
+      break;
     case 'llista_espera':
-      return props.inscripciones.filter((i) => i.estado_pago === 'lista_espera');
+      lista = props.inscripciones.filter((i) => i.estado_pago === 'lista_espera');
+      break;
     case 'pendents':
-      return props.inscripciones.filter((i) =>
+      lista = props.inscripciones.filter((i) =>
         ['pendiente', 'cancelado', 'devuelto', 'devolucion_parcial', 'fallido'].includes(
           i.estado_pago
         )
       );
+      break;
     default:
-      return props.inscripciones;
+      lista = props.inscripciones;
   }
+  return aplicarOrden(lista);
 });
 
 const contadorTabs = computed(() => ({
@@ -871,6 +890,18 @@ const confirmarToggleDorsal = () => {
               {{ contadorTabs.pendents }}
             </span>
           </button>
+        </div>
+
+        <div class="mb-3 flex items-center justify-end gap-2 text-sm text-slate-700">
+          <label>Ordre:</label>
+          <select
+            v-model="ordenDorsal"
+            class="rounded-md border-slate-300 px-2 py-1 text-sm"
+          >
+            <option value="none">Inscripció</option>
+            <option value="asc">Dorsal ↑ (1, 2, 3...)</option>
+            <option value="desc">Dorsal ↓ (N, N-1, ...)</option>
+          </select>
         </div>
 
         <!-- Tabla de Inscripciones -->

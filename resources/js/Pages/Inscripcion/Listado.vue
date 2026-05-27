@@ -103,7 +103,6 @@ const inscritosFiltrados = computed(() => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead class="w-12">#</TableHead>
                 <TableHead class="w-16">Dorsal</TableHead>
                 <TableHead>Nom</TableHead>
                 <TableHead>Cognoms</TableHead>
@@ -112,10 +111,7 @@ const inscritosFiltrados = computed(() => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow class="" v-for="(inscrito, index) in inscritosFiltrados" :key="inscrito.id">
-                <TableCell class="text-uppercase font-medium text-slate-500">{{
-                  index + 1
-                }}</TableCell>
+              <TableRow class="" v-for="inscrito in inscritosFiltrados" :key="inscrito.id">
                 <TableCell class="font-semibold tabular-nums">{{
                   inscrito.numero_dorsal ?? '-'
                 }}</TableCell>
@@ -127,7 +123,7 @@ const inscritosFiltrados = computed(() => {
                 <TableCell class="text-uppercase">{{ inscrito.club || '-' }}</TableCell>
               </TableRow>
               <TableRow v-if="inscritosFiltrados.length === 0">
-                <TableCell colspan="6" class="py-8 text-center text-slate-500">
+                <TableCell colspan="5" class="py-8 text-center text-slate-500">
                   <template v-if="busqueda">
                     No s'han trobat inscrits amb "{{ busqueda }}"
                   </template>
