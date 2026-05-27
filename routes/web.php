@@ -137,6 +137,7 @@ Route::prefix('uec-admin')->name('admin.')->middleware('admin.auth')->group(func
         'ediciones' => 'edicion'
     ]);
     Route::post('ediciones/{edicion}/asignar-dorsales', [EdicionController::class, 'asignarDorsales'])->name('ediciones.asignar-dorsales');
+    Route::post('inscripciones/{inscripcion}/asignar-dorsal-manual', [EdicionController::class, 'asignarDorsalManual'])->name('inscripciones.asignar-dorsal-manual');
     
     // Gestión de inscripciones
     Route::get('inscripciones', [AdminInscripcionController::class, 'index'])->name('inscripciones.index');

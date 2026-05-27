@@ -211,6 +211,16 @@ class InscripcionController extends Controller
             'es_celiaco' => 'boolean',
             'talla_camiseta_caro' => 'required|string|max:10',
             'talla_camiseta_pauls' => 'required|string|max:10',
+            'numero_dorsal' => [
+                'nullable',
+                'integer',
+                'min:1',
+                \Illuminate\Validation\Rule::unique('inscripciones', 'numero_dorsal')
+                    ->where('edicion_id', $inscripcion->edicion_id)
+                    ->ignore($inscripcion->id),
+            ],
+        ], [
+            'numero_dorsal.unique' => 'Aquest dorsal ja està assignat a una altra inscripció d\'aquesta edició.',
         ]);
 
         // Si el DNI cambia y ya existe en otro participante, re-enlazar la inscripción
@@ -316,6 +326,7 @@ class InscripcionController extends Controller
             'es_celiaco' => $validated['es_celiaco'] ?? false,
             'talla_camiseta_caro' => $validated['talla_camiseta_caro'],
             'talla_camiseta_pauls' => $validated['talla_camiseta_pauls'],
+            'numero_dorsal' => array_key_exists('numero_dorsal', $validated) ? $validated['numero_dorsal'] : $inscripcion->numero_dorsal,
             'precio_total' => $precioTotal,
             'tarifa_aplicada' => $tarifaAplicada,
             'descuento_cupon' => $descuentoCupon ?? 0,

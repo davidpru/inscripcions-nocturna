@@ -172,6 +172,26 @@ class EdicionController extends Controller
         return back()->with('success', "Dorsals assignats. Reservats: 1=#{$resultado['reservado_1']}, 2=#{$resultado['reservado_2']}. Nous: {$resultado['asignados_nuevos']}.");
     }
 
+    public function asignarDorsalManual(\Illuminate\Http\Request $request, Inscripcion $inscripcion)
+    {
+        $validated = $request->validate([
+            'numero_dorsal' => [
+                'nullable',
+                'integer',
+                'min:1',
+                \Illuminate\Validation\Rule::unique('inscripciones', 'numero_dorsal')
+                    ->where('edicion_id', $inscripcion->edicion_id)
+                    ->ignore($inscripcion->id),
+            ],
+        ], [
+            'numero_dorsal.unique' => 'Aquest dorsal ja està assignat a una altra inscripció d\'aquesta edició.',
+        ]);
+
+        $inscripcion->update(['numero_dorsal' => $validated['numero_dorsal'] ?? null]);
+
+        return back()->with('success', 'Dorsal actualitzat.');
+    }
+
     public function update(Request $request, Edicion $edicion)
     {
         $validated = $request->validate([

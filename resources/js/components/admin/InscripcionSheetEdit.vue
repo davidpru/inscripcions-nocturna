@@ -74,6 +74,7 @@ interface Inscripcion {
     descuento_valor: number;
   } | null;
   importe_devolucion: number | null;
+  numero_dorsal: number | null;
   cambio_dorsal_pendent: { id: number; token: string; expires_at: string } | null;
 }
 
@@ -840,6 +841,20 @@ const getTipoDescuentoCupon = () => {
                       <option value="XXL">XXL</option>
                       <option value="XXXL">XXXL</option>
                     </select>
+                  </div>
+                  <!-- Dorsal -->
+                  <div>
+                    <Label class="text-xs text-slate-500">Dorsal</Label>
+                    <Input
+                      v-model.number="editingData.numero_dorsal"
+                      type="number"
+                      min="1"
+                      placeholder="Sense dorsal"
+                      class="mt-1"
+                    />
+                    <p class="mt-1 text-xs text-slate-400">
+                      Buit = sense dorsal. Si ja està assignat a un altre, donarà error.
+                    </p>
                   </div>
                 </div>
               </div>

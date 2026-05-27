@@ -155,6 +155,23 @@ const asignarDorsales = () => {
   );
 };
 
+const dorsalManualInputs = ref<Record<number, number | string>>({});
+const guardandoManual = ref<Record<number, boolean>>({});
+
+const asignarManualPendiente = (inscripcionId: number) => {
+  const raw = dorsalManualInputs.value[inscripcionId];
+  const numero_dorsal = raw === '' || raw === null || raw === undefined ? null : Number(raw);
+  guardandoManual.value[inscripcionId] = true;
+  router.post(
+    `/uec-admin/inscripciones/${inscripcionId}/asignar-dorsal-manual`,
+    { numero_dorsal },
+    {
+      preserveScroll: true,
+      onFinish: () => (guardandoManual.value[inscripcionId] = false),
+    },
+  );
+};
+
 // Computed: Tarifas finales (inscripción + licencia federativa para no federados)
 const tarifaFinalSocioNormalNoFederado = computed(
   () =>
@@ -792,15 +809,15 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
                   <p class="mb-2 text-sm font-semibold text-blue-900">
                     Previsualització: {{ previewAsignacion.length }} pendents rebran aquests dorsals
                   </p>
-                  <div class="max-h-64 overflow-y-auto rounded border border-blue-200 bg-white">
+                  <div class="max-h-80 overflow-y-auto rounded border border-blue-200 bg-white">
                     <table class="min-w-full divide-y divide-blue-100 text-sm">
                       <thead class="bg-blue-100 text-xs uppercase text-blue-900">
                         <tr>
-                          <th class="px-3 py-2 text-left">Dorsal</th>
+                          <th class="px-3 py-2 text-left">Previst</th>
                           <th class="px-3 py-2 text-left">Nom</th>
                           <th class="px-3 py-2 text-left">DNI</th>
                           <th class="px-3 py-2 text-left">Estat</th>
-                          <th class="px-3 py-2 text-left">Data inscripció</th>
+                          <th class="px-3 py-2 text-left">Manual</th>
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-blue-50">
@@ -811,7 +828,26 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
                           <td class="px-3 py-2">{{ row.nombre }}</td>
                           <td class="px-3 py-2 font-mono text-xs">{{ row.dni }}</td>
                           <td class="px-3 py-2">{{ row.estado_pago }}</td>
-                          <td class="px-3 py-2 text-xs text-slate-600">{{ row.created_at }}</td>
+                          <td class="px-3 py-2">
+                            <div class="flex items-center gap-2">
+                              <input
+                                v-model="dorsalManualInputs[row.id]"
+                                type="number"
+                                min="1"
+                                :placeholder="String(row.dorsal_previsto)"
+                                class="w-20 rounded border-slate-300 px-2 py-1 text-sm tabular-nums"
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                :disabled="guardandoManual[row.id]"
+                                @click="asignarManualPendiente(row.id)"
+                              >
+                                {{ guardandoManual[row.id] ? '...' : 'Assignar' }}
+                              </Button>
+                            </div>
+                          </td>
                         </tr>
                       </tbody>
                     </table>

@@ -474,6 +474,7 @@ const startEditing = (inscripcion: Inscripcion) => {
     es_celiaco: inscripcion.es_celiaco,
     talla_camiseta_caro: inscripcion.talla_camiseta_caro,
     talla_camiseta_pauls: inscripcion.talla_camiseta_pauls,
+    numero_dorsal: inscripcion.numero_dorsal,
   };
 };
 
