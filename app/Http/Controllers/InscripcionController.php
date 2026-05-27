@@ -32,8 +32,11 @@ class InscripcionController extends Controller
 
         $inscritos = Inscripcion::where('edicion_id', $edicionActiva->id)
             ->whereIn('estado_pago', ['pagado', 'invitado'])
+            ->join('participantes', 'participantes.id', '=', 'inscripciones.participante_id')
             ->with(['participante:id,nombre,apellidos,poblacion'])
-            ->orderBy('created_at', 'asc')
+            ->orderBy('participantes.apellidos', 'asc')
+            ->orderBy('participantes.nombre', 'asc')
+            ->select('inscripciones.*')
             ->get()
             ->map(fn ($inscripcion) => [
                 'id' => $inscripcion->id,
