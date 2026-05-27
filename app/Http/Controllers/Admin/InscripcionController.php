@@ -459,11 +459,12 @@ class InscripcionController extends Controller
         return redirect()->back();
     }
 
-    public function exportar(Request $request)
+    public function exportar(Request $request): StreamedResponse
     {
         $query = Inscripcion::with(['participante', 'edicion'])
             ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
-            ->orderBy('created_at', 'desc');
+            ->orderByRaw('numero_dorsal IS NULL, numero_dorsal ASC')
+            ->orderBy('created_at');
 
         if ($request->filled('edicion_id')) {
             $query->where('edicion_id', $request->edicion_id);
@@ -471,9 +472,8 @@ class InscripcionController extends Controller
 
         $inscripciones = $query->get();
 
-        // Generar CSV
         $headers = [
-            'ID',
+            'Dorsal',
             'Número Pedido',
             'Edición',
             'DNI',
@@ -501,63 +501,66 @@ class InscripcionController extends Controller
             'Estado Pago',
             'Fecha Pago',
             'Fecha Inscripción',
-            'Dorsal',
             'Dorsal Recogido',
         ];
 
-        $callback = function() use ($inscripciones, $headers) {
-            $file = fopen('php://output', 'w');
-            
-            // BOM para Excel
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
-            // Cabeceras
-            fputcsv($file, $headers);
-            
-            // Datos
-            foreach ($inscripciones as $i) {
-                fputcsv($file, [
-                    $i->id,
-                    $i->numero_pedido ?? '',
-                    $i->edicion->anio,
-                    $i->participante->dni,
-                    $i->participante->nombre,
-                    $i->participante->apellidos,
-                    $i->participante->email,
-                    $i->participante->telefono,
-                    $i->participante->direccion,
-                    $i->participante->codigo_postal,
-                    $i->participante->poblacion,
-                    $i->participante->provincia,
-                    $i->participante->genero === 'M' ? 'Masculí' : ($i->participante->genero === 'F' ? 'Femení' : $i->participante->genero),
-                    $i->participante->fecha_nacimiento,
-                    $i->es_socio_uec ? 'Sí' : 'No',
-                    $i->esta_federado ? 'Sí' : 'No',
-                    $i->club ?? '',
-                    $i->numero_licencia ?? '',
-                    $i->necesita_autobus ? 'Sí' : 'No',
-                    $i->parada_autobus ?? '',
-                    $i->talla_camiseta_caro,
-                    $i->talla_camiseta_pauls,
-                    $i->seguro_anulacion ? 'Sí' : 'No',
-                    number_format($i->precio_total, 2, ',', '') . '€',
-                    $i->descuento_cupon ? number_format($i->descuento_cupon, 2, ',', '') . '€' : '',
-                    $i->estado_pago === 'pagado' ? 'Pagat' : ($i->estado_pago === 'compromiso' ? 'Compromís' : 'Invitat'),
-                    $i->fecha_pago ?? '',
-                    substr($i->created_at, 0, 10),
-                    $i->numero_dorsal ?? '',
-                    $i->dorsal_recogido ? 'Sí' : 'No',
-                ]);
-            }
-            
-            fclose($file);
-        };
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Inscripcions');
+        $sheet->fromArray($headers, null, 'A1');
 
-        $filename = 'inscripcions_confirmades_' . date('Y-m-d') . '.csv';
+        $row = 2;
+        foreach ($inscripciones as $i) {
+            $p = $i->participante;
+            $numeroPedido = $i->numero_pedido ?: ($i->estado_pago === 'compromiso' ? 'Compromís' : ($i->estado_pago === 'invitado' ? 'Invitat' : ''));
+            $sheet->fromArray([
+                $i->numero_dorsal ?? '',
+                $numeroPedido,
+                $i->edicion->anio,
+                strtoupper($p->dni ?? ''),
+                mb_strtoupper($p->nombre ?? '', 'UTF-8'),
+                mb_strtoupper($p->apellidos ?? '', 'UTF-8'),
+                $p->email ?? '',
+                $p->telefono ?? '',
+                $p->direccion ?? '',
+                $p->codigo_postal ?? '',
+                $p->poblacion ?? '',
+                $p->provincia ?? '',
+                $p->genero === 'M' ? 'Masculí' : ($p->genero === 'F' ? 'Femení' : $p->genero),
+                $p->fecha_nacimiento,
+                $i->es_socio_uec ? 'Sí' : 'No',
+                $i->esta_federado ? 'Sí' : 'No',
+                $i->club ?? '',
+                $i->numero_licencia ?? '',
+                $i->necesita_autobus ? 'Sí' : 'No',
+                $i->parada_autobus ?? '',
+                $i->talla_camiseta_caro,
+                $i->talla_camiseta_pauls,
+                $i->seguro_anulacion ? 'Sí' : 'No',
+                number_format($i->precio_total, 2, ',', '') . '€',
+                $i->descuento_cupon ? number_format($i->descuento_cupon, 2, ',', '') . '€' : '',
+                $i->estado_pago === 'pagado' ? 'Pagat' : ($i->estado_pago === 'compromiso' ? 'Compromís' : 'Invitat'),
+                $i->fecha_pago ?? '',
+                substr($i->created_at, 0, 10),
+                $i->dorsal_recogido ? 'Sí' : 'No',
+            ], null, "A{$row}");
+            $row++;
+        }
 
-        return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        foreach (range('A', 'Z') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        foreach (['AA', 'AB', 'AC', 'AD'] as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $filename = 'inscripcions_confirmades_' . date('Y-m-d') . '.xlsx';
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
 

@@ -115,12 +115,12 @@ const inscritosFiltrados = computed(() => {
                 <TableCell class="font-semibold tabular-nums">{{
                   inscrito.numero_dorsal ?? '-'
                 }}</TableCell>
-                <TableCell class="text-uppercase">{{ inscrito.participante.nombre }}</TableCell>
-                <TableCell class="text-uppercase">{{ inscrito.participante.apellidos }}</TableCell>
-                <TableCell class="text-uppercase">{{
+                <TableCell class="uppercase">{{ inscrito.participante.nombre }}</TableCell>
+                <TableCell class="uppercase">{{ inscrito.participante.apellidos }}</TableCell>
+                <TableCell class="uppercase">{{
                   inscrito.participante.poblacion || '-'
                 }}</TableCell>
-                <TableCell class="text-uppercase">{{ inscrito.club || '-' }}</TableCell>
+                <TableCell class="uppercase">{{ inscrito.club || '-' }}</TableCell>
               </TableRow>
               <TableRow v-if="inscritosFiltrados.length === 0">
                 <TableCell colspan="5" class="py-8 text-center text-slate-500">
