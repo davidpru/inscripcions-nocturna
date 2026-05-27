@@ -48,6 +48,14 @@ const props = defineProps<{
   plazasAutobusDisponibles: number;
   candidatosDorsal: CandidatoDorsal[];
   dorsalesStats: { asignados: number; pendientes: number };
+  previewAsignacion: Array<{
+    id: number;
+    nombre: string;
+    dni: string;
+    estado_pago: string;
+    created_at: string;
+    dorsal_previsto: number;
+  }>;
 }>();
 
 const form = useForm({
@@ -779,6 +787,36 @@ const tarifaFinalPublicoTardiaNoFederado = computed(
                     :value="`${c.nombre} (${c.dni})${c.numero_dorsal ? ` — dorsal #${c.numero_dorsal}` : ''}`"
                   />
                 </datalist>
+
+                <div v-if="previewAsignacion.length > 0" class="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                  <p class="mb-2 text-sm font-semibold text-blue-900">
+                    Previsualització: {{ previewAsignacion.length }} pendents rebran aquests dorsals
+                  </p>
+                  <div class="max-h-64 overflow-y-auto rounded border border-blue-200 bg-white">
+                    <table class="min-w-full divide-y divide-blue-100 text-sm">
+                      <thead class="bg-blue-100 text-xs uppercase text-blue-900">
+                        <tr>
+                          <th class="px-3 py-2 text-left">Dorsal</th>
+                          <th class="px-3 py-2 text-left">Nom</th>
+                          <th class="px-3 py-2 text-left">DNI</th>
+                          <th class="px-3 py-2 text-left">Estat</th>
+                          <th class="px-3 py-2 text-left">Data inscripció</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-blue-50">
+                        <tr v-for="row in previewAsignacion" :key="row.id">
+                          <td class="px-3 py-2 font-semibold tabular-nums text-blue-900">
+                            #{{ row.dorsal_previsto }}
+                          </td>
+                          <td class="px-3 py-2">{{ row.nombre }}</td>
+                          <td class="px-3 py-2 font-mono text-xs">{{ row.dni }}</td>
+                          <td class="px-3 py-2">{{ row.estado_pago }}</td>
+                          <td class="px-3 py-2 text-xs text-slate-600">{{ row.created_at }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
 
                 <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
                   <p class="font-medium">Important:</p>

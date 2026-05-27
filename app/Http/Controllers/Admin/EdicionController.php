@@ -112,6 +112,48 @@ class EdicionController extends Controller
                 ->count(),
         ];
 
+        // Preview: qué dorsal recibiría cada pendiente al ejecutar
+        $pendientesPreview = $edicion->inscripciones()
+            ->whereIn('estado_pago', ['pagado', 'invitado', 'compromiso'])
+            ->whereNull('numero_dorsal')
+            ->with('participante:id,nombre,apellidos,dni')
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get();
+
+        $usados = array_flip(
+            $edicion->inscripciones()->whereNotNull('numero_dorsal')->pluck('numero_dorsal')->all()
+        );
+        // Si admin seleccionó #1/#2 y aún no están asignados, simular reserva
+        $reservadosSimulados = [];
+        foreach ([
+            1 => $edicion->dorsal_primer_masculino_id,
+            2 => $edicion->dorsal_primera_femenina_id,
+        ] as $dorsal => $inscId) {
+            if ($inscId) {
+                $reservadosSimulados[$dorsal] = $inscId;
+                $usados[$dorsal] = true;
+            }
+        }
+
+        $next = 1;
+        $previewAsignacion = $pendientesPreview->map(function ($i) use (&$next, &$usados) {
+            while (isset($usados[$next])) {
+                $next++;
+            }
+            $dorsalAsignado = $next;
+            $usados[$next] = true;
+            $next++;
+            return [
+                'id' => $i->id,
+                'nombre' => trim(($i->participante->nombre ?? '') . ' ' . ($i->participante->apellidos ?? '')),
+                'dni' => $i->participante->dni ?? '',
+                'estado_pago' => $i->estado_pago,
+                'created_at' => $i->created_at?->format('Y-m-d H:i'),
+                'dorsal_previsto' => $dorsalAsignado,
+            ];
+        })->values();
+
         return Inertia::render('Admin/Ediciones/Edit', [
             'edicion' => $edicion,
             'plazasAutobusVendidas' => $plazasAutobusVendidas,
@@ -119,6 +161,7 @@ class EdicionController extends Controller
             'plazasAutobusDisponibles' => $edicion->plazas_autobus - $plazasAutobusVendidas,
             'candidatosDorsal' => $candidatosDorsal,
             'dorsalesStats' => $dorsalesStats,
+            'previewAsignacion' => $previewAsignacion,
         ]);
     }
 

@@ -213,11 +213,16 @@ class InscripcionController extends Controller
             'talla_camiseta_pauls' => 'required|string|max:10',
         ]);
 
-        // Actualizar participante
-        $inscripcion->participante->update([
+        // Si el DNI cambia y ya existe en otro participante, re-enlazar la inscripción
+        // a ese participante existente (preserva histórico). Si no, update normal.
+        $dniNormalizado = strtoupper($validated['dni']);
+        $participanteExistente = Participante::where('dni', $dniNormalizado)
+            ->where('id', '!=', $inscripcion->participante_id)
+            ->first();
+
+        $datosParticipante = [
             'nombre' => $validated['nombre'],
             'apellidos' => $validated['apellidos'],
-            'dni' => $validated['dni'],
             'email' => $validated['email'],
             'telefono' => $validated['telefono'],
             'direccion' => $validated['direccion'],
@@ -226,7 +231,18 @@ class InscripcionController extends Controller
             'provincia' => $validated['provincia'],
             'genero' => $validated['genero'],
             'fecha_nacimiento' => $validated['fecha_nacimiento'],
-        ]);
+        ];
+
+        if ($participanteExistente) {
+            $participanteExistente->update($datosParticipante);
+            $inscripcion->participante_id = $participanteExistente->id;
+            $inscripcion->save();
+            $inscripcion->setRelation('participante', $participanteExistente);
+        } else {
+            $inscripcion->participante->update(array_merge($datosParticipante, [
+                'dni' => $dniNormalizado,
+            ]));
+        }
 
         // Recalcular precio y tarifa SOLO si cambian campos que afectan al precio
         $camposTarifa = ['es_socio_uec', 'esta_federado', 'necesita_autobus', 'seguro_anulacion', 'estado_pago'];
