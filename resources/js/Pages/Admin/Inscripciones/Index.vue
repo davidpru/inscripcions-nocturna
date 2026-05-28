@@ -127,7 +127,7 @@ const editingData = reactive<Record<number, any>>({});
 const tabActiva = ref<'inscrits' | 'llista_espera' | 'pendents'>('inscrits');
 
 // Ordenar por dorsal: 'none' | 'asc' | 'desc'
-const ordenDorsal = ref<'none' | 'asc' | 'desc'>('none');
+const ordenDorsal = ref<'none' | 'asc' | 'desc'>('desc');
 
 const aplicarOrden = (lista: Inscripcion[]): Inscripcion[] => {
   if (ordenDorsal.value === 'none') return lista;
